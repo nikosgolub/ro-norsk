@@ -511,8 +511,8 @@ es:{w_tag:"Convierte el aprendizaje en travesía.<br>Cada lección es una palada
 };
 const LANGS = [["ru","Русский 🇷🇺"],["en","English 🇬🇧"],["uk","Українська 🇺🇦"],["pl","Polski 🇵🇱"],["es","Español 🇪🇸"]];
 function t(k){ const d = UI[meta.lang] || UI.ru; return (d[k]!==undefined ? d[k] : UI.ru[k]) || k; }
-function srcText(q){ return q[meta.lang] || q.en || q.ru; }
-function wordSrc(w){ return w[meta.lang] || w.en || w.r; }
+function srcText(q){ if(!meta.lang || meta.lang==='ru') return q.ru; return q[meta.lang] || q.en || q.ru; }
+function wordSrc(w){ if(!meta.lang || meta.lang==='ru') return w.r; return w[meta.lang] || w.en || w.r; }
 
 // ─── META: streak, daily goal, mistakes ───
 let meta = {};
