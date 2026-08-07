@@ -147,6 +147,13 @@ button{touch-action:manipulation}
 .lesson-sub{font-size:12.5px;color:var(--ink3);margin-top:2px;line-height:1.4}
 .lesson-arrow{color:var(--ink3);font-size:16px;flex-shrink:0}
 
+.my-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.06)}
+.my-row:last-child{border-bottom:none}
+.my-txt{flex:1;min-width:0}
+.my-row .my-no{font-size:14.5px;font-weight:600;color:var(--ink)}
+.my-row .my-ru{font-size:12.5px;color:var(--ink3);margin-top:2px}
+.my-when{font-size:11px;color:var(--ink3);white-space:nowrap}
+.my-del{background:none;border:none;color:var(--ink3);cursor:pointer;padding:6px;line-height:0}
 .pl-time{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;margin-bottom:7px}
 .pl-track{height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;cursor:pointer;margin-bottom:14px}
 .pl-fill{height:100%;width:0;background:#fff;border-radius:3px}
@@ -686,6 +693,12 @@ function renderCourses(){
           '<div class="score-chip">' + dueN + '</div>' +
         '</div>';
       }
+      const myN = myList().length, myD = myDue().length;
+      out += '<div class="block-card" style="margin-bottom:10px" onclick="renderMyWords()">' +
+        '<div class="block-num">' + ic('pencil',17) + '</div>' +
+        '<div class="block-title">Мои слова</div>' +
+        '<div class="score-chip">' + (myN ? (myD ? myD + ' / ' + myN : String(myN)) : 'добавить') + '</div>' +
+      '</div>';
       if(meta.mistakes.length > 0){
         out += '<div class="block-card" style="margin-bottom:10px" onclick="startMistakes()">' +
           '<div class="block-num">' + ic('redo',17) + '</div>' +
@@ -1590,7 +1603,7 @@ function advance(){
 }
 
 // ─── FLASHCARDS (с SRS) ──────────────────────────────
-let wordsState = { deck: [], flipped: false, mode: "no-ru", review: false };
+let wordsState = { deck: [], flipped: false, mode: "no-ru", review: false, my: false };
 
 function startWords(i){
   currentLessonIdx = i;
@@ -1602,6 +1615,7 @@ function startWords(i){
   wordsState.deck = shuffle(deck);
   wordsState.flipped = false;
   wordsState.review = false;
+  wordsState.my = false;
   renderWords();
 }
 
@@ -1612,6 +1626,7 @@ function startWordsReview(){
   wordsState.deck = shuffle(due);
   wordsState.flipped = false;
   wordsState.review = true;
+  wordsState.my = false;
   renderWords();
 }
 
@@ -1621,7 +1636,11 @@ function renderWords(){
   if(wordsState.deck.length===0){
     const i = currentLessonIdx;
     let btn, sub, icon, title;
-    if(rev){
+    if(wordsState.my){
+      icon=ic('cards',44); title='Слова повторены!';
+      sub='Отличная работа со своим словарём.<br>Слова вернутся по интервалам 1 · 3 · 7 · 14 · 30 дней.';
+      btn='<button class="restart-btn" onclick="renderMyWords()">К моим словам</button>';
+    } else if(rev){
       icon=ic('cards',44); title=t('w_rev_done');
       sub='Память укреплена. Слова вернутся<br>по интервалам: 1 · 3 · 7 · 14 · 30 дней.';
       btn='<button class="restart-btn" onclick="renderCourses()">На главную</button>';
@@ -1635,7 +1654,7 @@ function renderWords(){
       '<canvas id="fw"></canvas>' +
       '<div class="header">' +
         '<div class="logo" onclick="renderCourses()">Ro!</div>' +
-        '<div class="header-right"><button class="back-btn" onclick="' + (rev?'renderCourses()':'renderLesson('+i+')') + '">' + (rev?'← Главная':'← Урок') + '</button></div>' +
+        '<div class="header-right"><button class="back-btn" onclick="' + (wordsState.my?'renderMyWords()':(rev?'renderCourses()':'renderLesson('+i+')')) + '">' + (wordsState.my?'← Мои слова':(rev?'← Главная':'← Урок')) + '</button></div>' +
       '</div>' +
       '<div class="card complete" style="margin-top:2rem">' +
         '<div class="words-done-icon">' + icon + '</div>' +
@@ -1648,11 +1667,14 @@ function renderWords(){
   }
 
   const cur = wordsState.deck[0];
-  const w = WORDS[cur.l][cur.wi];
-  const front = wordsState.mode==="no-ru" ? w.n : wordSrc(w);
-  const back  = wordsState.mode==="no-ru" ? wordSrc(w) : w.n;
+  const w = cur.my ? cur.w : WORDS[cur.l][cur.wi];
+  const front = wordsState.mode==="no-ru" ? w.n : (cur.my ? w.r : wordSrc(w));
+  const back  = wordsState.mode==="no-ru" ? (cur.my ? w.r : wordSrc(w)) : w.n;
   let headChip, metaSpan;
-  if(rev){
+  if(wordsState.my){
+    headChip = ic('cards',14) + ' ' + wordsState.deck.length;
+    metaSpan = 'Мои слова';
+  } else if(rev){
     headChip = ic('cards',14) + ' осталось ' + wordsState.deck.length;
     metaSpan = t('w_srs');
   } else {
@@ -1661,21 +1683,21 @@ function renderWords(){
     headChip = '' + ic('book',14) + ' ' + kc + ' / ' + list.length;
     metaSpan = t('w_of') + ' ' + (currentLessonIdx+1);
   }
-  const pct = rev ? 0 : Math.round(Math.min(wordsKnown(currentLessonIdx).length,WORDS[currentLessonIdx].length)/WORDS[currentLessonIdx].length*100);
+  const pct = (rev||wordsState.my) ? 0 : Math.round(Math.min(wordsKnown(currentLessonIdx).length,WORDS[currentLessonIdx].length)/WORDS[currentLessonIdx].length*100);
 
   document.getElementById("app").innerHTML =
     '<div class="header">' +
       '<div class="logo" onclick="renderCourses()">Ro!</div>' +
       '<div class="header-right">' +
         '<div class="score-chip">' + headChip + '</div>' +
-        '<button class="back-btn" onclick="' + (rev?'renderCourses()':'renderLesson('+currentLessonIdx+')') + '">' + (rev?'← Главная':'← Урок') + '</button>' +
+        '<button class="back-btn" onclick="' + (wordsState.my?'renderMyWords()':(rev?'renderCourses()':'renderLesson('+currentLessonIdx+')')) + '">' + (wordsState.my?'← Мои слова':(rev?'← Главная':'← Урок')) + '</button>' +
       '</div>' +
     '</div>' +
     '<div class="progress-section">' +
       '<div class="progress-meta"><span>' + metaSpan + '</span>' +
-        (rev ? '<span>' + t('in_d') + ' ' + wordsState.deck.length + '</span>' : '<span>' + t('w_pct') + ' ' + pct + '%</span>') +
+        ((rev||wordsState.my) ? '<span>' + t('in_d') + ' ' + wordsState.deck.length + '</span>' : '<span>' + t('w_pct') + ' ' + pct + '%</span>') +
       '</div>' +
-      (rev ? '' : '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>') +
+      ((rev||wordsState.my) ? '' : '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>') +
     '</div>' +
     '<div class="mode-toggle">' +
       '<button class="mode-btn ' + (wordsState.mode==="no-ru"?"active":"") + '" onclick="switchWordsMode(\'no-ru\')">🇳🇴 NO → RU</button>' +
@@ -1686,7 +1708,7 @@ function renderWords(){
       (wordsState.flipped
         ? '<div class="word-divider"></div><div class="word-back">' + back + '</div>'
         : '<div class="word-hint">' + t('tap_f') + '</div>') +
-      '<button class="listen-btn" onclick="event.stopPropagation();speak(WORDS[' + cur.l + '][' + cur.wi + '].n)">' + t('listen') + '</button>' +
+      '<button class="listen-btn" onclick="event.stopPropagation();speak(' + JSON.stringify(w.n) + ')">' + t('listen') + '</button>' +
     '</div>' +
     '<div class="btn-row">' +
       '<button class="submit-btn retry-btn" onclick="wordAgain()">' + t('again') + '</button>' +
@@ -1699,6 +1721,11 @@ function flipWord(){ wordsState.flipped = !wordsState.flipped; renderWords(); }
 function switchWordsMode(m){ wordsState.mode = m; wordsState.flipped = false; renderWords(); }
 function wordKnow(){
   const cur = wordsState.deck.shift();
+  if(cur.my){
+    const s = Math.min((cur.w.s||0)+1, SRS_INT.length);
+    cur.w.s = s; cur.w.d = dnum() + SRS_INT[s-1];
+    saveMeta(); wordsState.flipped = false; renderWords(); return;
+  }
   addKnownWord(cur.l, cur.wi);
   srsPromote(cur.l, cur.wi);
   wordsState.flipped = false;
@@ -1706,6 +1733,11 @@ function wordKnow(){
 }
 function wordAgain(){
   const cur = wordsState.deck[0];
+  if(cur.my){
+    cur.w.s = 0; cur.w.d = dnum(); saveMeta();
+    wordsState.deck.push(wordsState.deck.shift());
+    wordsState.flipped = false; renderWords(); return;
+  }
   srsReset(cur.l, cur.wi);
   wordsState.deck.push(wordsState.deck.shift());
   wordsState.flipped = false;
@@ -1991,6 +2023,63 @@ function cycleRate(){
 }
 function setRu(v){ showRu = v; const b = document.querySelector('.dl-box'); renderDialog(); }
 function closeDialog(){ if(AU){ AU.pause(); AU = null; } renderDialogs(); }
+
+// ─── МОИ СЛОВА ───
+function myList(){ if(!meta.my) meta.my = []; return meta.my; }
+function myDue(){ const t = dnum(); return myList().filter(function(w){ return (w.d===undefined ? true : w.d <= t); }); }
+function myAdd(){
+  const a = document.getElementById('my-no'), b = document.getElementById('my-ru');
+  const n = (a && a.value ? a.value : '').replace(/[<>&"]/g,'').trim().slice(0,60);
+  const r = (b && b.value ? b.value : '').replace(/[<>&"]/g,'').trim().slice(0,60);
+  if(!n || !r) return;
+  myList().unshift({ n:n, r:r, s:0, d:dnum() });
+  saveMeta();
+  renderMyWords();
+}
+function myDel(i){ myList().splice(i,1); saveMeta(); renderMyWords(); }
+
+function renderMyWords(){
+  screen = 'mywords';
+  const list = myList();
+  const due = myDue().length;
+  const rows = list.map(function(w,i){
+    const left = w.d===undefined ? 0 : Math.max(0, w.d - dnum());
+    return '<div class="my-row">' +
+      '<div class="my-txt"><div class="my-no">' + w.n + '</div><div class="my-ru">' + w.r + '</div></div>' +
+      '<div class="my-when">' + (left===0 ? 'к повтору' : 'через ' + left + ' д') + '</div>' +
+      '<button class="my-del" onclick="myDel(' + i + ')">' + ic('cross',15) + '</button>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML =
+    '<div class="header">' +
+      '<button class="back-btn" onclick="renderCourses()">' + t('back_h') + '</button>' +
+      '<div class="header-right"><div class="score-chip">' + ic('cards',14) + ' ' + list.length + '</div></div>' +
+    '</div>' +
+    '<div class="detail-title">Мои слова</div>' +
+    '<div class="detail-sub">Добавляй слова с курсов — они попадут в карточки с повторениями</div>' +
+    '<div class="card" style="margin-top:1rem">' +
+      '<input class="text-input" id="my-no" type="text" placeholder="Слово по-норвежски" style="margin-bottom:8px">' +
+      '<input class="text-input" id="my-ru" type="text" placeholder="Перевод" style="margin-bottom:12px" onkeydown="if(event.key===\'Enter\')myAdd()">' +
+      '<button class="submit-btn" onclick="myAdd()">Добавить слово</button>' +
+    '</div>' +
+    (list.length ?
+      '<button class="continue-btn" onclick="startMyWords()">' + ic('cards',16) + ' Учить карточки' + (due ? ' · ' + due + ' к повтору' : '') + '</button>' +
+      '<div class="card" style="padding:.6rem .8rem">' + rows + '</div>'
+      : '<div class="deck-count" style="margin-top:1.5rem">Пока пусто. Добавь первое слово выше.</div>');
+}
+
+function startMyWords(){
+  const due = myDue();
+  const deck = (due.length ? due : myList()).map(function(w){ return { my:true, w:w }; });
+  if(!deck.length){ renderMyWords(); return; }
+  screen = 'words';
+  wordsState.deck = shuffle(deck);
+  wordsState.flipped = false;
+  wordsState.review = false;
+  wordsState.my = true;
+  renderWords();
+}
 
 // ─── ЗНАКОМСТВО С ИНТЕРФЕЙСОМ ───
 const TOUR = [
