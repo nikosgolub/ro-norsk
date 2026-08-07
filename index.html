@@ -2098,11 +2098,9 @@ const TOUR = [
   { sel:'.hero-rings', t:'Два кольца прогресса',
     d:'Белое — фразы из упражнений, зелёное — слова из карточек. Это две разные оси: можно знать много слов, но ещё не собирать из них предложения.' },
   { sel:'.course-card', t:'Курсы',
-    d:'Каждый курс — отдельная программа со своим прогрессом. Тап открывает список уроков внутри.' },
-  { sel:'.lesson-list .lesson-card', t:'Карточка урока',
-    d:'Полоска справа — сколько фраз урока уже пройдено. Тап открывает страницу урока: там слова, три смысловых блока и экзамен.' },
-  { sel:'.lesson-card.locked', t:'Замок',
-    d:'Уроки открываются по очереди. Чтобы снять замок, сдай экзамен предыдущего урока на 100% — без единой ошибки.' },
+    d:'Каждый курс — своя программа и свой прогресс. Внутри уроки открываются по очереди: следующий даётся после экзамена на 100%. В аудиокурсе — после 9 часов прослушивания.' },
+  { sel:'.block-card', t:'Повторение и свои слова',
+    d:'Здесь появляются карточки со словами, у которых подошёл срок повторения, разбор твоих ошибок и личный словарь «Мои слова».' },
   { sel:'#sched-btn', t:'Расписание',
     d:'Здесь выбираешь дни занятий и добавляешь их в календарь телефона, чтобы напоминание приходило само. Там же виден календарь: зелёным отмечены дни, когда ты занимался.' }
 ];
@@ -2110,6 +2108,7 @@ let tourStep = 0;
 
 function startTour(){
   if(screen!=='courses') renderCourses();
+  try{ window.scrollTo(0,0); }catch(e){}
   tourStep = 0;
   const m = document.createElement('div');
   m.className = 'tour-mask';
@@ -2127,24 +2126,38 @@ function tourShow(){
   if(!hole || !tip) return;
   const el = document.querySelector(s.sel);
   if(!el){ tourNext(); return; }
-  const r = el.getBoundingClientRect();
-  const pad = 8;
-  hole.style.top = (r.top - pad) + 'px';
-  hole.style.left = (r.left - pad) + 'px';
-  hole.style.width = (r.width + pad*2) + 'px';
-  hole.style.height = (r.height + pad*2) + 'px';
-  const last = tourStep === TOUR.length-1;
-  tip.innerHTML =
-    '<div class="tour-step">' + (tourStep+1) + ' / ' + TOUR.length + '</div>' +
-    '<div class="tour-title">' + s.t + '</div>' +
-    '<div class="tour-text">' + s.d + '</div>' +
-    '<div class="tour-nav">' +
-      '<button class="tour-next" onclick="tourNext()">' + (last ? 'Понятно' : 'Далее') + '</button>' +
-      (last ? '' : '<button class="tour-skip" onclick="tourEnd()">Пропустить</button>') +
-    '</div>';
-  const below = r.bottom + 16;
-  const tipH = tip.offsetHeight || 190;
-  tip.style.top = (below + tipH > window.innerHeight - 12 ? Math.max(12, r.top - tipH - 16) : below) + 'px';
+
+  // подводим элемент в центр экрана, затем позиционируем подсветку
+  try{ el.scrollIntoView({ block:'center', behavior:'smooth' }); }catch(e){ el.scrollIntoView(); }
+
+  const place = function(){
+    const r = el.getBoundingClientRect();
+    const pad = 8;
+    hole.style.top = (r.top - pad) + 'px';
+    hole.style.left = (r.left - pad) + 'px';
+    hole.style.width = (r.width + pad*2) + 'px';
+    hole.style.height = (r.height + pad*2) + 'px';
+
+    const last = tourStep === TOUR.length-1;
+    tip.innerHTML =
+      '<div class="tour-step">' + (tourStep+1) + ' / ' + TOUR.length + '</div>' +
+      '<div class="tour-title">' + s.t + '</div>' +
+      '<div class="tour-text">' + s.d + '</div>' +
+      '<div class="tour-nav">' +
+        '<button class="tour-next" onclick="tourNext()">' + (last ? 'Понятно' : 'Далее') + '</button>' +
+        (last ? '' : '<button class="tour-skip" onclick="tourEnd()">Пропустить</button>') +
+      '</div>';
+
+    const tipH = tip.offsetHeight || 200;
+    const vh = window.innerHeight;
+    let top = r.bottom + 16;
+    if(top + tipH > vh - 12) top = r.top - tipH - 16;      // не влезает снизу — ставим сверху
+    if(top < 12) top = Math.min(vh - tipH - 12, r.bottom + 16); // не влезает сверху — возвращаем вниз
+    tip.style.top = Math.max(12, Math.min(top, vh - tipH - 12)) + 'px';
+  };
+
+  place();
+  setTimeout(place, 320);   // пересчёт после плавной прокрутки
 }
 
 function tourNext(){
