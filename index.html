@@ -9,7 +9,7 @@
 <title>Ro! — Норвежский тренажёр</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
@@ -19,11 +19,25 @@ html{-webkit-text-size-adjust:100%}
   --green-light:#0d2818;--red:#f87171;--red-light:#2d1414;
   --amber:#fbbf24;--amber-light:#2b2210;
 }
-body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
 button{touch-action:manipulation}
 
+.ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg);pointer-events:none}
+.amb{position:absolute;border-radius:50%;filter:blur(120px)}
+.amb.a1{width:70vw;height:70vw;min-width:420px;min-height:420px;top:-25%;right:-20%;background:radial-gradient(circle,rgba(122,162,247,0.20),transparent 70%)}
+.amb.a2{width:60vw;height:60vw;min-width:360px;min-height:360px;bottom:-20%;left:-18%;background:radial-gradient(circle,rgba(248,113,113,0.14),transparent 70%)}
+
+/* ─── матовое стекло ─── */
+.glass{
+  background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));
+  backdrop-filter:blur(26px) saturate(150%);
+  -webkit-backdrop-filter:blur(26px) saturate(150%);
+  border:1px solid rgba(255,255,255,0.10);
+  box-shadow:0 1px 0 rgba(255,255,255,0.09) inset, 0 8px 28px rgba(0,0,0,0.35);
+}
 .app{max-width:700px;margin:0 auto;padding:0 1rem 3rem;padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right));padding-top:env(safe-area-inset-top)}
 .header{padding:1.25rem 0 0;display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
+.ic{vertical-align:-3px;display:inline-block;flex-shrink:0}
 .logo{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-0.5px;cursor:pointer}
 .head-greet{font-size:17px;font-weight:700;letter-spacing:-0.3px;color:var(--ink);cursor:pointer;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
@@ -33,17 +47,14 @@ button{touch-action:manipulation}
 
 .progress-section{margin-bottom:1.25rem}
 .progress-meta{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);margin-bottom:5px;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
-.progress-track{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
-.progress-fill{height:100%;background:#fff;border-radius:3px;transition:width .5s cubic-bezier(.4,0,.2,1)}
-.milestones{display:flex;gap:3px;margin-top:6px}
-.ms{height:3px;flex:1;border-radius:2px;background:var(--line);transition:background .3s}
-.ms.done{background:#fff}
+.progress-track{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:#fff;border-radius:4px;transition:width .45s cubic-bezier(.4,0,.2,1)}
 
-.mode-toggle{display:flex;background:rgba(22,22,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:16px;padding:3px;margin-bottom:1.25rem;width:fit-content}
+.mode-toggle{display:flex;background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:16px;padding:3px;margin-bottom:1.25rem;width:fit-content}
 .mode-btn{padding:9px 18px;font-size:13px;font-weight:500;border:none;background:none;color:var(--ink2);border-radius:12px;cursor:pointer;transition:all .2s;font-family:inherit;min-height:38px}
 .mode-btn.active{background:#fff;color:#0a0a0a}
 
-.card{background:rgba(22,22,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:20px;padding:1.75rem;margin-bottom:1rem}
+.card{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:20px;padding:1.75rem;margin-bottom:1rem}
 .type-badge{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:var(--blue-light);color:var(--blue);margin-bottom:1rem}
 .q-ru{font-size:24px;font-weight:600;line-height:1.3;color:var(--ink);margin-bottom:1.5rem;letter-spacing:-0.3px}
 .pool-label{font-size:11px;text-transform:uppercase;letter-spacing:.05em;color:var(--ink3);font-weight:500;margin-bottom:7px}
@@ -99,7 +110,7 @@ button{touch-action:manipulation}
 .listen-btn:active{transform:scale(.97)}
 
 .complete{text-align:center;padding:3rem 1.5rem}
-.complete-icon{font-size:52px;margin-bottom:1rem}
+.complete-icon{margin-bottom:1rem;color:var(--ink)}
 .complete-title{font-size:28px;font-weight:700;margin-bottom:.5rem;letter-spacing:-0.5px}
 .complete-sub{color:var(--ink2);font-size:15px;margin-bottom:2rem;line-height:1.6}
 .stats{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap;margin-bottom:2rem}
@@ -112,11 +123,11 @@ button{touch-action:manipulation}
 .lessons-title{font-size:26px;font-weight:700;letter-spacing:-0.5px;margin:0.5rem 0 0.25rem}
 .lessons-sub{font-size:14px;color:var(--ink2);margin-bottom:1.5rem}
 .lesson-list{display:flex;flex-direction:column;gap:10px}
-.lesson-card{background:rgba(22,22,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:16px;padding:1.05rem 1.15rem;cursor:pointer;transition:border-color .2s,transform .1s;display:flex;align-items:center;gap:13px}
-.lesson-card:hover{border-color:var(--ink2)}
+.lesson-card{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:16px;padding:1.05rem 1.15rem;cursor:pointer;transition:border-color .2s,transform .1s;display:flex;align-items:center;gap:13px}
+.lesson-card:hover{border-color:rgba(255,255,255,0.22)}
 .lesson-card:active{transform:scale(.99)}
-.lesson-card.done{border-color:#1d5c34}
-.lesson-num{width:38px;height:38px;border-radius:12px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--ink2);flex-shrink:0}
+.lesson-card.done{border-color:rgba(74,222,128,0.35);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35),0 0 0 1px rgba(74,222,128,0.10)}
+.lesson-num{width:38px;height:38px;line-height:0;border-radius:12px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;color:var(--ink2);flex-shrink:0}
 .lesson-card.done .lesson-num{background:var(--green-light);border-color:#1d5c34;color:var(--green)}
 .lesson-info{flex:1;min-width:0}
 .lesson-title{font-size:15px;font-weight:600;color:var(--ink);line-height:1.35}
@@ -124,6 +135,12 @@ button{touch-action:manipulation}
 .lesson-arrow{color:var(--ink3);font-size:16px;flex-shrink:0}
 
 /* compact right-side progress on lesson cards */
+.lesson-card.locked{opacity:.5}
+.lesson-card.locked .lesson-num{background:var(--bg);border-color:var(--line);color:var(--ink3)}
+.lesson-card.expired{border-color:rgba(251,191,36,0.38)}
+.lesson-card.expired .lesson-num{background:var(--amber-light);border-color:#6b5a10;color:var(--amber)}
+.lock-note{font-size:11.5px;color:var(--ink3);margin-top:3px}
+.expire-note{font-size:11.5px;color:var(--amber);margin-top:3px}
 .lesson-mini{flex-shrink:0;display:flex;flex-direction:column;align-items:flex-end;gap:5px;width:64px}
 .lesson-mini-bar{width:64px;height:4px;background:var(--line);border-radius:2px;overflow:hidden}
 .lesson-mini-fill{height:100%;background:#fff;border-radius:2px;transition:width .4s ease}
@@ -136,7 +153,7 @@ button{touch-action:manipulation}
 .footer a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--line);transition:color .2s}
 .footer a:hover{color:var(--ink)}
 .today-row{display:flex;gap:8px;margin-bottom:12px}
-.today-chip{flex:1;background:rgba(22,22,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:14px;padding:10px 10px 11px;text-align:center;color:var(--ink2)}
+.today-chip{flex:1;background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:14px;padding:10px 10px 11px;text-align:center;color:var(--ink2)}
 .tc-val{font-size:15.5px;font-weight:700;color:var(--ink)}
 .tc-lbl{font-size:10.5px;color:var(--ink3);margin-top:3px;line-height:1.3}
 .today-chip.lit .tc-val{color:var(--amber)}
@@ -144,7 +161,7 @@ button{touch-action:manipulation}
 .today-chip.lit{color:var(--amber);border-color:#6b5a10}
 .today-chip.hit{color:var(--green);border-color:#1d5c34}
 /* hero ring on main screen */
-.hero{display:flex;flex-direction:column;gap:14px;background:rgba(22,22,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:20px;padding:1.15rem 1.35rem;margin-bottom:1.25rem}
+.hero{display:flex;flex-direction:column;gap:14px;background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:20px;padding:1.15rem 1.35rem;margin-bottom:1.25rem}
 .hero-rings{display:flex;gap:12px;align-items:stretch}
 .ring-divider{width:1px;background:var(--line);margin:6px 0;flex-shrink:0}
 .ring-cell{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px}
@@ -169,28 +186,28 @@ button{touch-action:manipulation}
 .section-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--ink3);margin:16px 0 0;display:flex;align-items:center;gap:10px}
 .section-label::after{content:"";flex:1;height:1px;background:var(--line)}
 .section-label:first-child{margin-top:0}
-.exam-card{border-color:#4a3f10}
+.exam-card{border-color:rgba(251,191,36,0.30)}
 .exam-card:hover{border-color:var(--amber)}
 .exam-card .block-num{background:var(--amber-light);border-color:#6b5a10;color:var(--amber)}
 .exam-card.full{border-color:#1d5c34}
 .exam-card.full .block-num{background:var(--green-light);border-color:#1d5c34;color:var(--green)}
-.block-card{background:rgba(22,22,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:16px;padding:1rem 1.15rem;cursor:pointer;transition:border-color .2s,transform .1s;display:flex;align-items:center;gap:13px}
-.block-card:hover{border-color:var(--ink2)}
+.block-card{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:16px;padding:1rem 1.15rem;cursor:pointer;transition:border-color .2s,transform .1s;display:flex;align-items:center;gap:13px}
+.block-card:hover{border-color:rgba(255,255,255,0.22)}
 .block-card:active{transform:scale(.99)}
-.block-card.full{border-color:#1d5c34}
-.block-num{width:34px;height:34px;border-radius:11px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--ink2);flex-shrink:0}
+.block-card.full{border-color:rgba(74,222,128,0.35)}
+.block-num{width:34px;height:34px;line-height:0;border-radius:11px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--ink2);flex-shrink:0}
 .block-card.full .block-num{background:var(--green-light);border-color:#1d5c34;color:var(--green)}
 .block-card.full .lesson-mini-fill{background:var(--green)}
 .block-title{flex:1;font-size:14.5px;font-weight:600;color:var(--ink);line-height:1.35;min-width:0}
 /* flashcards */
-.word-stage{background:rgba(22,22,22,0.72);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border:1px solid var(--line);border-radius:20px;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;gap:12px;padding:1.5rem;margin-bottom:1rem;user-select:none;-webkit-user-select:none;transition:border-color .2s}
+.word-stage{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:20px;min-height:240px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;cursor:pointer;gap:12px;padding:1.5rem;margin-bottom:1rem;user-select:none;-webkit-user-select:none;transition:border-color .2s}
 .word-stage:active{border-color:var(--ink2)}
 .word-main{font-size:30px;font-weight:700;letter-spacing:-0.5px;line-height:1.25}
 .word-divider{width:44px;height:1px;background:var(--line)}
 .word-back{font-size:19px;color:var(--ink2);font-weight:500;line-height:1.35;animation:slideIn .2s ease}
 .word-hint{font-size:12.5px;color:var(--ink3)}
-.deck-count{text-align:center;font-size:12.5px;color:var(--ink3);margin-top:12px}
-.words-done-icon{font-size:52px;margin-bottom:1rem}
+.deck-count{text-align:center;font-size:12.5px;color:var(--ink3);margin-top:12px;line-height:1.5}
+.words-done-icon{margin-bottom:1rem;color:var(--ink)}
 /* fireworks */
 #fw{position:fixed;inset:0;z-index:50;pointer-events:none}
 
@@ -235,13 +252,16 @@ button{touch-action:manipulation}
 .name-input:focus{border-color:rgba(255,255,255,0.6)}
 .hero-title .edit-hint{font-size:12px;opacity:.45;margin-left:6px}
 @media (max-width:480px){
+  .amb{filter:blur(90px)}
   .card{padding:1.2rem;border-radius:18px}
   .q-ru{font-size:21px}
   .welcome-logo{font-size:38px}
 }
 </style>
+<script data-goatcounter="https://nikosgolub.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
+<div class="ambient"><div class="amb a1"></div><div class="amb a2"></div></div>
 <div class="app" id="app"></div>
 
 <script>
@@ -348,7 +368,7 @@ function checkV2(user) {
   const after = tokens.slice(advEnd+1);
   if (after.length < 2) return null;
   if (SUBJECTS.has(after[0]) && VERBS.has(after[1])) {
-    return "⚡ Правило V2: после «" + tokens.slice(0,advEnd+1).join(" ") + "» глагол должен стоять 2-м — сразу после обстоятельства. Подлежащее идёт после глагола.";
+    return "<BT>Правило V2: после «" + tokens.slice(0,advEnd+1).join(" ") + "» глагол должен стоять 2-м — сразу после обстоятельства. Подлежащее идёт после глагола.";
   }
   return null;
 }
@@ -404,7 +424,7 @@ function pronounce(){
   if(!SR) return;
   const target = state.questions[state.idx].no;
   const btn = document.getElementById('mic-btn');
-  if(btn) btn.textContent = '🎙️ Слушаю…';
+  if(btn) btn.textContent = '<MC>Слушаю…';
   try{
     const rec = new SR();
     rec.lang = 'nb-NO';
@@ -419,20 +439,20 @@ function pronounce(){
       }
       const box = document.getElementById('pron-res');
       if(box) box.innerHTML = ok
-        ? '✅ Отличное произношение! Bra uttale!'
-        : '👂 Услышал: «' + heard + '»<br>Послушай образец и попробуй ещё раз';
+        ? '<OK>Отличное произношение! Bra uttale!'
+        : '<ER>Услышал: «' + heard + '»<br>Послушай образец и попробуй ещё раз';
       const b = document.getElementById('mic-btn');
-      if(b) b.textContent = '🎤 Ещё раз';
+      if(b) b.textContent = '<MC>Ещё раз';
     };
     rec.onerror = function(){
       const b = document.getElementById('mic-btn');
-      if(b) b.textContent = '🎤 Произнести';
+      if(b) b.textContent = '<MC>Произнести';
       const box = document.getElementById('pron-res');
       if(box) box.innerHTML = 'Микрофон недоступен — проверь разрешения браузера';
     };
     rec.onend = function(){
       const b = document.getElementById('mic-btn');
-      if(b && b.textContent.indexOf('Слушаю')>=0) b.textContent = '🎤 Произнести';
+      if(b && b.textContent.indexOf('Слушаю')>=0) b.textContent = '<MC>Произнести';
     };
     rec.start();
   }catch(e){}
@@ -470,8 +490,16 @@ function partDone(l,p){ return partProgress(l,p) >= partSize(l,p); }
 function lessonSolved(l){ let s=0; for(let p=0;p<PARTS;p++) s += partProgress(l,p); return s; }
 function examScore(l){ return (progress['l'+l]||{}).e || 0; }
 function setExamScore(l,pct){ if(!progress['l'+l]) progress['l'+l]={}; if(pct > (progress['l'+l].e||0)){ progress['l'+l].e = pct; saveProgress(); } }
-const EXAM_N = 20, EXAM_PASS = 85;
-function lessonDone(l){ for(let p=0;p<PARTS;p++){ if(!partDone(l,p)) return false; } return true; }
+const EXAM_N = 20, EXAM_PASS = 100;   // порог сдачи экзамена, %
+const EXPIRE_DAYS = 14;               // через сколько дней урок «остывает»
+function touchLesson(l){ if(!progress['l'+l]) progress['l'+l]={}; progress['l'+l].ts = dnum(); saveProgress(); }
+function lessonAge(l){ const ts=(progress['l'+l]||{}).ts; return ts===undefined ? null : dnum()-ts; }
+function examPassed(l){ return examScore(l) >= EXAM_PASS; }
+function everPassed(l){ return !!(progress['l'+l]||{}).ok; }
+function isExpired(l){ const a=lessonAge(l); return everPassed(l) && a!==null && a >= EXPIRE_DAYS; }
+function lessonUnlocked(l){ return l===0 || everPassed(l-1); }
+function expiredList(){ const out=[]; for(let i=0;i<LESSONS.length;i++) if(isExpired(i)) out.push(i); return out; }
+function lessonDone(l){ return examPassed(l) && !isExpired(l); }
 function lessonsDoneCount(){ let c=0; for(let i=0;i<LESSONS.length;i++){ if(lessonDone(i)) c++; } return c; }
 function totalPhrases(){ let s=0; for(let i=0;i<LESSONS.length;i++) s += lessonTotal(i); return s; }
 function totalSolved(){ let s=0; for(let i=0;i<LESSONS.length;i++) s += lessonSolved(i); return s; }
@@ -502,15 +530,58 @@ function shareText(t){
   if(typeof navigator!=="undefined" && navigator.share){ navigator.share({text:t}).catch(function(){}); }
 }
 
+function ic(n,sz){
+  const s = sz || 16;
+  const P = {
+    book:'<path d="M4 5a2 2 0 0 1 2-2h9v16H6a2 2 0 0 0-2 2z"/><path d="M15 3h3a1 1 0 0 1 1 1v15a1 1 0 0 1-1 1h-3"/>',
+    cap:'<path d="M12 4 2 9l10 5 10-5z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/>',
+    lock:'<rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+    clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    sound:'<path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 8.5a5 5 0 0 1 0 7"/>',
+    mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v3"/>',
+    grid:'<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+    keyb:'<rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/>',
+    head:'<path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2" y="13" width="5" height="7" rx="2"/><rect x="17" y="13" width="5" height="7" rx="2"/>',
+    redo:'<path d="M20 11a8 8 0 1 0-2.3 6"/><path d="M20 5v6h-6"/>',
+    check:'<path d="M4 12.5 9.5 18 20 6.5"/>',
+    cross:'<path d="M6 6l12 12M18 6 6 18"/>',
+    fire:'<path d="M12 3s5 4.4 5 9a5 5 0 0 1-10 0c0-1.8.8-3.2 1.6-4.2.3 1 .9 1.9 1.7 2.3C9.6 7.7 12 6 12 3z"/>',
+    target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
+    cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+    bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    ruler:'<rect x="2" y="8" width="20" height="8" rx="2"/><path d="M7 8v3M12 8v4M17 8v3"/>',
+    trophy:'<path d="M7 4h10v6a5 5 0 0 1-10 0z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/><path d="M10 15v3h4v-3M8 21h8"/>',
+    cards:'<rect x="7" y="4" width="12" height="16" rx="2"/><path d="M4 7v11a2 2 0 0 0 2 2"/>',
+    share:'<path d="M12 16V4"/><path d="M8 8l4-4 4 4"/><path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"/>',
+    down:'<path d="M12 4v12"/><path d="M8 12l4 4 4 4"/><path d="M5 20h14"/>',
+    ear:'<path d="M8 20c0-3-4-4-4-9a8 8 0 0 1 16 0c0 4-4 4-4 7a3 3 0 0 1-6 0"/>',
+    flag:'<path d="M5 21V4"/><path d="M5 5h13l-2.5 4L18 13H5z"/>',
+    pencil:'<path d="M4 20h4L20 8l-4-4L4 16z"/>',
+    star:'<path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9L6.7 19.6l1.1-6L3.4 9.4l6-.8z"/>',
+    party:'<path d="M4 20l5-13 8 8z"/><path d="M15 4v2M19 7h2M17.5 10.5l1.5 1.5"/>',
+    boat:'<path d="M3 17h18l-3 4H6z"/><path d="M12 3v10"/><path d="M12 5l6 3-6 3z"/>'
+  };
+  return '<svg class="ic" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + (P[n]||'') + '</svg>';
+}
+
 const UI = {
-ru:{w_tag:"Преврати обучение в поход.<br>Каждый урок — твой гребок веслом.<br>Чем ритмичнее прогресс, тем быстрее<br>ты покоришь фьорды языка.",w_btn:"Взяться за вёсла",next:"Далее",start:"Начать",skip:"Пропустить",n_q:"Как тебя зовут?<br>Имя появится на главном экране —<br>твой поход будет именным.",n_ph:"Твоё имя",save:"Сохранить",days1:"день",days2:"дня",days5:"дней",streak_lbl:"занятий подряд",goal_lbl:"цель дня: 1 урок (75 фраз)",cap_ph:"Выучено фраз",cap_w:"Выучено слов",of:"из",lessons:"Уроки",lessons_sub:"16 уроков · уровень A1–A2 · 3 смысловых блока в каждом",lesson:"Урок",cont:"▶ Продолжить: Урок",mist:"Работа над ошибками",srs_rev:"Повторение слов",plan:"📅 Сегодня по плану тренировка —",footer:"Ro! — норвежский тренажёр · версия 1.0<br>Автор:",l_of:"из",phr_done:"Пройдено",phrases:"фраз",start_l:"▶ Начать урок",cont_b:"▶ Продолжить:",repeat_l:"🔁 Повторить урок",sec1:"📖 Подготовка",sec2:"🧩 Практика — три блока",sec3:"🏁 Проверка знаний",w_card:"Слова урока",w_learned:" — выучены",exam:"Экзамен",exam_q:"вопросов без подсказок",exam_ok:" — сдан",back_l:"← Урок",back_ls:"← Уроки",back_h:"← Главная",mode_c:"🧩 Чипы",mode_t:"⌨️ Текст",mode_l:"🎧 На слух",your:"Твой ответ",pool:"Слова",tap_w:"Нажимай слова ниже, чтобы составить предложение…",inp_ph:"Напиши предложение по-норвежски…",check:"Проверить",nxt:"Следующее →",again:"🔄 Ещё раз",play:"🔊 Прослушать",l_hint:"Собери фразу, которую услышал",ok_t:"✅ Правильно! Bra jobbet!",err_t:"❌ Не совсем верно",v2_t:"⚡ Правило V2",rule:"📐 <b>Правило:</b> ",corr:"Правильный ответ:",listen:"🔊 Послушать",mic:"🎤 Произнести",mic_l:"🎙️ Слушаю…",mic_a:"🎤 Ещё раз",pron_ok:"✅ Отличное произношение! Bra uttale!",pron_h:"👂 Услышал:",pron_r:"Послушай образец и попробуй ещё раз",mic_e:"Микрофон недоступен — проверь разрешения браузера",done_l:"Урок завершён!",done_p:"— готово!",nxt_b:"Дальше:",all_done:"🏆 Все уроки пройдены!",st_ok:"Правильно",st_err:"Ошибок",st_acc:"Точность",to_ls:"К списку уроков",share:"📤 Поделиться успехом",know:"Знаю ✓",tap_f:"Нажми, чтобы увидеть перевод",deck:"Осталось в колоде:",w_of:"Слова урока",w_pct:"выучено",w_srs:"Повторение слов · интервалы SRS",in_d:"в колоде:",w_done:"Слова выучены!",w_rev_done:"Слова повторены!",sched:"📅 Расписание",sched_s:"Выбери дни занятий — и не пропускай гребки",cal_leg:"занимался · рамка — по плану",days_t:"Дни занятий",time_t:"Время напоминания",ics:"📆 Добавить в календарь телефона (.ics)",notif_on:"🔔 Напоминания браузера включены",notif_off:"🕽 Включить напоминания браузера",sched_n:"Браузерные напоминания работают, пока Ro! открыт.<br>Для гарантии добавь расписание в календарь телефона.",pick_days:"Сначала выбери дни занятий",rev_h:"🔁 Работа над ошибками",exam_h:"🎓 Экзамен · Урок",lang:"🌐 Язык / Language",wd:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],mo:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]},
-en:{w_tag:"Turn learning into a voyage.<br>Every lesson is a stroke of the oar.<br>The steadier your rhythm, the sooner<br>you conquer the fjords of the language.",w_btn:"Grab the oars",next:"Next",start:"Start",skip:"Skip",n_q:"What is your name?<br>It will appear on the home screen —<br>your voyage gets personal.",n_ph:"Your name",save:"Save",days1:"day",days2:"days",days5:"days",streak_lbl:"day streak",goal_lbl:"daily goal: 1 lesson (75 phrases)",cap_ph:"Phrases learned",cap_w:"Words learned",of:"of",lessons:"Lessons",lessons_sub:"16 lessons · level A1–A2 · 3 thematic blocks each",lesson:"Lesson",cont:"▶ Continue: Lesson",mist:"Review mistakes",srs_rev:"Word review",plan:"📅 Training planned for today —",footer:"Ro! — Norwegian trainer · version 1.0<br>Author:",l_of:"of",phr_done:"Completed",phrases:"phrases",start_l:"▶ Start lesson",cont_b:"▶ Continue:",repeat_l:"🔁 Repeat lesson",sec1:"📖 Preparation",sec2:"🧩 Practice — three blocks",sec3:"🏁 Knowledge check",w_card:"Lesson vocabulary",w_learned:" — learned",exam:"Exam",exam_q:"questions, no hints",exam_ok:" — passed",back_l:"← Lesson",back_ls:"← Lessons",back_h:"← Home",mode_c:"🧩 Chips",mode_t:"⌨️ Typing",mode_l:"🎧 Listening",your:"Your answer",pool:"Words",tap_w:"Tap the words below to build the sentence…",inp_ph:"Type the sentence in Norwegian…",check:"Check",nxt:"Next →",again:"🔄 Try again",play:"🔊 Play",l_hint:"Build the phrase you heard",ok_t:"✅ Correct! Bra jobbet!",err_t:"❌ Not quite",v2_t:"⚡ V2 rule",rule:"📐 <b>Rule:</b> ",corr:"Correct answer:",listen:"🔊 Listen",mic:"🎤 Pronounce",mic_l:"🎙️ Listening…",mic_a:"🎤 Once more",pron_ok:"✅ Great pronunciation! Bra uttale!",pron_h:"👂 I heard:",pron_r:"Listen to the sample and try again",mic_e:"Microphone unavailable — check browser permissions",done_l:"Lesson complete!",done_p:"— done!",nxt_b:"Next:",all_done:"🏆 All lessons complete!",st_ok:"Correct",st_err:"Mistakes",st_acc:"Accuracy",to_ls:"Back to lessons",share:"📤 Share progress",know:"I know ✓",tap_f:"Tap to see the translation",deck:"Left in deck:",w_of:"Lesson vocabulary",w_pct:"learned",w_srs:"Word review · SRS intervals",in_d:"in deck:",w_done:"Words learned!",w_rev_done:"Review complete!",sched:"📅 Schedule",sched_s:"Pick your training days — keep rowing",cal_leg:"practiced · outline — planned",days_t:"Training days",time_t:"Reminder time",ics:"📆 Add to phone calendar (.ics)",notif_on:"🔔 Browser reminders on",notif_off:"🕽 Enable browser reminders",sched_n:"Browser reminders work while Ro! is open.<br>For reliability add the schedule to your phone calendar.",pick_days:"Pick training days first",rev_h:"🔁 Mistake review",exam_h:"🎓 Exam · Lesson",lang:"🌐 Language",wd:["Mo","Tu","We","Th","Fr","Sa","Su"],mo:["January","February","March","April","May","June","July","August","September","October","November","December"]},
-uk:{w_tag:"Перетвори навчання на похід.<br>Кожен урок — твій помах весла.<br>Що ритмічніший прогрес, то швидше<br>ти підкориш фйорди мови.",w_btn:"Взятися за весла",next:"Далі",start:"Почати",skip:"Пропустити",n_q:"Як тебе звати?<br>Ім'я з'явиться на головному екрані —<br>твій похід буде іменним.",n_ph:"Твоє ім'я",save:"Зберегти",days1:"день",days2:"дні",days5:"днів",streak_lbl:"занять поспіль",goal_lbl:"ціль дня: 1 урок (75 фраз)",cap_ph:"Вивчено фраз",cap_w:"Вивчено слів",of:"з",lessons:"Уроки",lessons_sub:"16 уроків · рівень A1–A2 · 3 смислові блоки в кожному",lesson:"Урок",cont:"▶ Продовжити: Урок",mist:"Робота над помилками",srs_rev:"Повторення слів",plan:"📅 Сьогодні за планом тренування —",footer:"Ro! — норвезький тренажер · версія 1.0<br>Автор:",l_of:"з",phr_done:"Пройдено",phrases:"фраз",start_l:"▶ Почати урок",cont_b:"▶ Продовжити:",repeat_l:"🔁 Повторити урок",sec1:"📖 Підготовка",sec2:"🧩 Практика — три блоки",sec3:"🏁 Перевірка знань",w_card:"Слова уроку",w_learned:" — вивчені",exam:"Екзамен",exam_q:"питань без підказок",exam_ok:" — складено",back_l:"← Урок",back_ls:"← Уроки",back_h:"← Головна",mode_c:"🧩 Чипи",mode_t:"⌨️ Текст",mode_l:"🎧 На слух",your:"Твоя відповідь",pool:"Слова",tap_w:"Натискай слова нижче, щоб скласти речення…",inp_ph:"Напиши речення норвезькою…",check:"Перевірити",nxt:"Наступне →",again:"🔄 Ще раз",play:"🔊 Прослухати",l_hint:"Збери фразу, яку почув",ok_t:"✅ Правильно! Bra jobbet!",err_t:"❌ Не зовсім так",v2_t:"⚡ Правило V2",rule:"📐 <b>Правило:</b> ",corr:"Правильна відповідь:",listen:"🔊 Послухати",mic:"🎤 Вимовити",mic_l:"🎙️ Слухаю…",mic_a:"🎤 Ще раз",pron_ok:"✅ Чудова вимова! Bra uttale!",pron_h:"👂 Почув:",pron_r:"Послухай зразок і спробуй ще раз",mic_e:"Мікрофон недоступний — перевір дозволи браузера",done_l:"Урок завершено!",done_p:"— готово!",nxt_b:"Далі:",all_done:"🏆 Усі уроки пройдено!",st_ok:"Правильно",st_err:"Помилок",st_acc:"Точність",to_ls:"До списку уроків",share:"📤 Поділитися успіхом",know:"Знаю ✓",tap_f:"Натисни, щоб побачити переклад",deck:"Залишилось у колоді:",w_of:"Слова уроку",w_pct:"вивчено",w_srs:"Повторення слів · інтервали SRS",in_d:"у колоді:",w_done:"Слова вивчено!",w_rev_done:"Слова повторено!",sched:"📅 Розклад",sched_s:"Обери дні занять — і не пропускай гребків",cal_leg:"займався · рамка — за планом",days_t:"Дні занять",time_t:"Час нагадування",ics:"📆 Додати в календар телефону (.ics)",notif_on:"🔔 Нагадування браузера увімкнено",notif_off:"🕽 Увімкнути нагадування браузера",sched_n:"Браузерні нагадування працюють, поки Ro! відкрито.<br>Для гарантії додай розклад у календар телефону.",pick_days:"Спочатку обери дні занять",rev_h:"🔁 Робота над помилками",exam_h:"🎓 Екзамен · Урок",lang:"🌐 Мова",wd:["Пн","Вт","Ср","Чт","Пт","Сб","Нд"],mo:["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"]},
-pl:{w_tag:"Zamień naukę w wyprawę.<br>Każda lekcja to ruch wiosłem.<br>Im równiejszy rytm, tym szybciej<br>zdobędziesz fiordy języka.",w_btn:"Chwyć za wiosła",next:"Dalej",start:"Start",skip:"Pomiń",n_q:"Jak masz na imię?<br>Imię pojawi się na ekranie głównym —<br>Twoja wyprawa będzie osobista.",n_ph:"Twoje imię",save:"Zapisz",days1:"dzień",days2:"dni",days5:"dni",streak_lbl:"dni z rzędu",goal_lbl:"cel dnia: 1 lekcja (75 fraz)",cap_ph:"Nauczone frazy",cap_w:"Nauczone słowa",of:"z",lessons:"Lekcje",lessons_sub:"16 lekcji · poziom A1–A2 · 3 bloki tematyczne",lesson:"Lekcja",cont:"▶ Kontynuuj: Lekcja",mist:"Praca nad błędami",srs_rev:"Powtórka słów",plan:"📅 Dziś zaplanowany trening —",footer:"Ro! — trener norweskiego · wersja 1.0<br>Autor:",l_of:"z",phr_done:"Ukończono",phrases:"fraz",start_l:"▶ Rozpocznij lekcję",cont_b:"▶ Kontynuuj:",repeat_l:"🔁 Powtórz lekcję",sec1:"📖 Przygotowanie",sec2:"🧩 Praktyka — trzy bloki",sec3:"🏁 Sprawdzian wiedzy",w_card:"Słówka lekcji",w_learned:" — nauczone",exam:"Egzamin",exam_q:"pytań bez podpowiedzi",exam_ok:" — zdany",back_l:"← Lekcja",back_ls:"← Lekcje",back_h:"← Start",mode_c:"🧩 Klocki",mode_t:"⌨️ Pisanie",mode_l:"🎧 Ze słuchu",your:"Twoja odpowiedź",pool:"Słowa",tap_w:"Dotykaj słów poniżej, aby ułożyć zdanie…",inp_ph:"Napisz zdanie po norwesku…",check:"Sprawdź",nxt:"Następne →",again:"🔄 Jeszcze raz",play:"🔊 Odtwórz",l_hint:"Ułóż frazę, którą usłyszałeś",ok_t:"✅ Dobrze! Bra jobbet!",err_t:"❌ Nie do końca",v2_t:"⚡ Reguła V2",rule:"📐 <b>Reguła:</b> ",corr:"Poprawna odpowiedź:",listen:"🔊 Posłuchaj",mic:"🎤 Wymów",mic_l:"🎙️ Słucham…",mic_a:"🎤 Jeszcze raz",pron_ok:"✅ Świetna wymowa! Bra uttale!",pron_h:"👂 Usłyszałem:",pron_r:"Posłuchaj wzoru i spróbuj ponownie",mic_e:"Mikrofon niedostępny — sprawdź uprawnienia",done_l:"Lekcja ukończona!",done_p:"— gotowe!",nxt_b:"Dalej:",all_done:"🏆 Wszystkie lekcje ukończone!",st_ok:"Poprawnie",st_err:"Błędy",st_acc:"Dokładność",to_ls:"Do listy lekcji",share:"📤 Udostępnij postęp",know:"Znam ✓",tap_f:"Dotknij, aby zobaczyć tłumaczenie",deck:"Zostało w talii:",w_of:"Słówka lekcji",w_pct:"nauczono",w_srs:"Powtórka słów · interwały SRS",in_d:"w talii:",w_done:"Słówka nauczone!",w_rev_done:"Powtórka zakończona!",sched:"📅 Harmonogram",sched_s:"Wybierz dni nauki — nie opuszczaj wioseł",cal_leg:"ćwiczyłeś · ramka — zaplanowane",days_t:"Dni nauki",time_t:"Czas przypomnienia",ics:"📆 Dodaj do kalendarza telefonu (.ics)",notif_on:"🔔 Przypomnienia przeglądarki włączone",notif_off:"🕽 Włącz przypomnienia przeglądarki",sched_n:"Przypomnienia działają, gdy Ro! jest otwarte.<br>Dla pewności dodaj harmonogram do kalendarza.",pick_days:"Najpierw wybierz dni nauki",rev_h:"🔁 Praca nad błędami",exam_h:"🎓 Egzamin · Lekcja",lang:"🌐 Język",wd:["Pn","Wt","Śr","Cz","Pt","So","Nd"],mo:["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"]},
-es:{w_tag:"Convierte el aprendizaje en travesía.<br>Cada lección es una palada de remo.<br>Cuanto más constante el ritmo, antes<br>conquistarás los fiordos del idioma.",w_btn:"Toma los remos",next:"Siguiente",start:"Empezar",skip:"Omitir",n_q:"¿Cómo te llamas?<br>Tu nombre aparecerá en la pantalla principal —<br>tu travesía será personal.",n_ph:"Tu nombre",save:"Guardar",days1:"día",days2:"días",days5:"días",streak_lbl:"días seguidos",goal_lbl:"meta diaria: 1 lección (75 frases)",cap_ph:"Frases aprendidas",cap_w:"Palabras aprendidas",of:"de",lessons:"Lecciones",lessons_sub:"16 lecciones · nivel A1–A2 · 3 bloques temáticos",lesson:"Lección",cont:"▶ Continuar: Lección",mist:"Repaso de errores",srs_rev:"Repaso de palabras",plan:"📅 Hoy hay entrenamiento —",footer:"Ro! — entrenador de noruego · versión 1.0<br>Autor:",l_of:"de",phr_done:"Completadas",phrases:"frases",start_l:"▶ Empezar lección",cont_b:"▶ Continuar:",repeat_l:"🔁 Repetir lección",sec1:"📖 Preparación",sec2:"🧩 Práctica — tres bloques",sec3:"🏁 Comprobación",w_card:"Vocabulario de la lección",w_learned:" — aprendido",exam:"Examen",exam_q:"preguntas sin pistas",exam_ok:" — aprobado",back_l:"← Lección",back_ls:"← Lecciones",back_h:"← Inicio",mode_c:"🧩 Fichas",mode_t:"⌨️ Teclado",mode_l:"🎧 De oído",your:"Tu respuesta",pool:"Palabras",tap_w:"Toca las palabras para formar la frase…",inp_ph:"Escribe la frase en noruego…",check:"Comprobar",nxt:"Siguiente →",again:"🔄 Otra vez",play:"🔊 Escuchar",l_hint:"Arma la frase que escuchaste",ok_t:"✅ ¡Correcto! Bra jobbet!",err_t:"❌ No exactamente",v2_t:"⚡ Regla V2",rule:"📐 <b>Regla:</b> ",corr:"Respuesta correcta:",listen:"🔊 Escuchar",mic:"🎤 Pronunciar",mic_l:"🎙️ Escuchando…",mic_a:"🎤 Otra vez",pron_ok:"✅ ¡Gran pronunciación! Bra uttale!",pron_h:"👂 Escuché:",pron_r:"Escucha el ejemplo e inténtalo de nuevo",mic_e:"Micrófono no disponible — revisa los permisos",done_l:"¡Lección completada!",done_p:"— ¡listo!",nxt_b:"Siguiente:",all_done:"🏆 ¡Todas las lecciones completadas!",st_ok:"Correctas",st_err:"Errores",st_acc:"Precisión",to_ls:"A la lista de lecciones",share:"📤 Compartir progreso",know:"Lo sé ✓",tap_f:"Toca para ver la traducción",deck:"Quedan en el mazo:",w_of:"Vocabulario de la lección",w_pct:"aprendido",w_srs:"Repaso de palabras · intervalos SRS",in_d:"en el mazo:",w_done:"¡Palabras aprendidas!",w_rev_done:"¡Repaso completado!",sched:"📅 Horario",sched_s:"Elige tus días — y sigue remando",cal_leg:"practicaste · borde — planificado",days_t:"Días de estudio",time_t:"Hora del recordatorio",ics:"📆 Añadir al calendario del teléfono (.ics)",notif_on:"🔔 Recordatorios del navegador activados",notif_off:"🕽 Activar recordatorios del navegador",sched_n:"Los recordatorios funcionan mientras Ro! está abierto.<br>Para asegurar, añade el horario al calendario.",pick_days:"Primero elige los días",rev_h:"🔁 Repaso de errores",exam_h:"🎓 Examen · Lección",lang:"🌐 Idioma",wd:["Lu","Ma","Mi","Ju","Vi","Sá","Do"],mo:["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]}
+ru:{w_tag:"Преврати обучение в поход.<br>Каждый урок — твой гребок веслом.<br>Чем ритмичнее прогресс, тем быстрее<br>ты покоришь фьорды языка.",w_btn:"Взяться за вёсла",next:"Далее",start:"Начать",skip:"Пропустить",n_q:"Как тебя зовут?<br>Имя появится на главном экране —<br>твой поход будет именным.",n_ph:"Твоё имя",save:"Сохранить",days1:"день",days2:"дня",days5:"дней",streak_lbl:"занятий подряд",goal_lbl:"цель дня: 1 урок (75 фраз)",cap_ph:"Выучено фраз",cap_w:"Выучено слов",of:"из",lessons:"Уроки",lessons_sub:"16 уроков · уровень A1–A2 · 3 смысловых блока в каждом",lesson:"Урок",cont:"▶ Продолжить: Урок",mist:"Работа над ошибками",srs_rev:"Повторение слов",plan:"<CL>Сегодня по плану тренировка —",footer:"Ro! — норвежский тренажёр · версия 1.0<br>Автор:",l_of:"из",phr_done:"Пройдено",phrases:"фраз",start_l:"▶ Начать урок",cont_b:"▶ Продолжить:",repeat_l:"<RD>Повторить урок",sec1:"<BK>Подготовка",sec2:"<CH>Практика — три блока",sec3:"<FL>Проверка знаний",w_card:"Слова урока",w_learned:" — выучены",exam:"Экзамен",exam_q:"вопросов без подсказок",exam_ok:" — сдан",back_l:"← Урок",back_ls:"← Уроки",back_h:"← Главная",mode_c:"<CH>Чипы",mode_t:"<KB>Текст",mode_l:"<HD>На слух",your:"Твой ответ",pool:"Слова",tap_w:"Нажимай слова ниже, чтобы составить предложение…",inp_ph:"Напиши предложение по-норвежски…",check:"Проверить",nxt:"Следующее →",again:"<RD>Ещё раз",play:"<SD>Прослушать",l_hint:"Собери фразу, которую услышал",ok_t:"<OK>Правильно! Bra jobbet!",err_t:"<NO>Не совсем верно",v2_t:"<BT>Правило V2",rule:"<RL><b>Правило:</b> ",corr:"Правильный ответ:",listen:"<SD>Послушать",mic:"<MC>Произнести",mic_l:"<MC>Слушаю…",mic_a:"<MC>Ещё раз",pron_ok:"<OK>Отличное произношение! Bra uttale!",pron_h:"<ER>Услышал:",pron_r:"Послушай образец и попробуй ещё раз",mic_e:"Микрофон недоступен — проверь разрешения браузера",done_l:"Урок завершён!",done_p:"— готово!",nxt_b:"Дальше:",all_done:"<TR>Все уроки пройдены!",st_ok:"Правильно",st_err:"Ошибок",st_acc:"Точность",to_ls:"К списку уроков",share:"<SH>Поделиться успехом",know:"Знаю <CK>",tap_f:"Нажми, чтобы увидеть перевод",deck:"Осталось в колоде:",w_of:"Слова урока",w_pct:"выучено",w_srs:"Повторение слов · интервалы SRS",in_d:"в колоде:",w_done:"Слова выучены!",w_rev_done:"Слова повторены!",sched:"<CL>Расписание",sched_s:"Выбери дни занятий — и не пропускай гребки",cal_leg:"занимался · рамка — по плану",days_t:"Дни занятий",time_t:"Время напоминания",ics:"<CL>Добавить в календарь телефона (.ics)",notif_on:" Напоминания браузера включены",notif_off:" Включить напоминания браузера",sched_n:"Браузерные напоминания работают, пока Ro! открыт.<br>Для гарантии добавь расписание в календарь телефона.",pick_days:"Сначала выбери дни занятий",rev_h:"<RD>Работа над ошибками",exam_h:"<GC>Экзамен · Урок",lang:"<GL>Язык / Language",wd:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],mo:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]},
+en:{w_tag:"Turn learning into a voyage.<br>Every lesson is a stroke of the oar.<br>The steadier your rhythm, the sooner<br>you conquer the fjords of the language.",w_btn:"Grab the oars",next:"Next",start:"Start",skip:"Skip",n_q:"What is your name?<br>It will appear on the home screen —<br>your voyage gets personal.",n_ph:"Your name",save:"Save",days1:"day",days2:"days",days5:"days",streak_lbl:"day streak",goal_lbl:"daily goal: 1 lesson (75 phrases)",cap_ph:"Phrases learned",cap_w:"Words learned",of:"of",lessons:"Lessons",lessons_sub:"16 lessons · level A1–A2 · 3 thematic blocks each",lesson:"Lesson",cont:"▶ Continue: Lesson",mist:"Review mistakes",srs_rev:"Word review",plan:"<CL>Training planned for today —",footer:"Ro! — Norwegian trainer · version 1.0<br>Author:",l_of:"of",phr_done:"Completed",phrases:"phrases",start_l:"▶ Start lesson",cont_b:"▶ Continue:",repeat_l:"<RD>Repeat lesson",sec1:"<BK>Preparation",sec2:"<CH>Practice — three blocks",sec3:"<FL>Knowledge check",w_card:"Lesson vocabulary",w_learned:" — learned",exam:"Exam",exam_q:"questions, no hints",exam_ok:" — passed",back_l:"← Lesson",back_ls:"← Lessons",back_h:"← Home",mode_c:"<CH>Chips",mode_t:"<KB>Typing",mode_l:"<HD>Listening",your:"Your answer",pool:"Words",tap_w:"Tap the words below to build the sentence…",inp_ph:"Type the sentence in Norwegian…",check:"Check",nxt:"Next →",again:"<RD>Try again",play:"<SD>Play",l_hint:"Build the phrase you heard",ok_t:"<OK>Correct! Bra jobbet!",err_t:"<NO>Not quite",v2_t:"<BT>V2 rule",rule:"<RL><b>Rule:</b> ",corr:"Correct answer:",listen:"<SD>Listen",mic:"<MC>Pronounce",mic_l:"<MC>Listening…",mic_a:"<MC>Once more",pron_ok:"<OK>Great pronunciation! Bra uttale!",pron_h:"<ER>I heard:",pron_r:"Listen to the sample and try again",mic_e:"Microphone unavailable — check browser permissions",done_l:"Lesson complete!",done_p:"— done!",nxt_b:"Next:",all_done:"<TR>All lessons complete!",st_ok:"Correct",st_err:"Mistakes",st_acc:"Accuracy",to_ls:"Back to lessons",share:"<SH>Share progress",know:"I know <CK>",tap_f:"Tap to see the translation",deck:"Left in deck:",w_of:"Lesson vocabulary",w_pct:"learned",w_srs:"Word review · SRS intervals",in_d:"in deck:",w_done:"Words learned!",w_rev_done:"Review complete!",sched:"<CL>Schedule",sched_s:"Pick your training days — keep rowing",cal_leg:"practiced · outline — planned",days_t:"Training days",time_t:"Reminder time",ics:"<CL>Add to phone calendar (.ics)",notif_on:" Browser reminders on",notif_off:" Enable browser reminders",sched_n:"Browser reminders work while Ro! is open.<br>For reliability add the schedule to your phone calendar.",pick_days:"Pick training days first",rev_h:"<RD>Mistake review",exam_h:"<GC>Exam · Lesson",lang:"<GL>Language",wd:["Mo","Tu","We","Th","Fr","Sa","Su"],mo:["January","February","March","April","May","June","July","August","September","October","November","December"]},
+uk:{w_tag:"Перетвори навчання на похід.<br>Кожен урок — твій помах весла.<br>Що ритмічніший прогрес, то швидше<br>ти підкориш фйорди мови.",w_btn:"Взятися за весла",next:"Далі",start:"Почати",skip:"Пропустити",n_q:"Як тебе звати?<br>Ім'я з'явиться на головному екрані —<br>твій похід буде іменним.",n_ph:"Твоє ім'я",save:"Зберегти",days1:"день",days2:"дні",days5:"днів",streak_lbl:"занять поспіль",goal_lbl:"ціль дня: 1 урок (75 фраз)",cap_ph:"Вивчено фраз",cap_w:"Вивчено слів",of:"з",lessons:"Уроки",lessons_sub:"16 уроків · рівень A1–A2 · 3 смислові блоки в кожному",lesson:"Урок",cont:"▶ Продовжити: Урок",mist:"Робота над помилками",srs_rev:"Повторення слів",plan:"<CL>Сьогодні за планом тренування —",footer:"Ro! — норвезький тренажер · версія 1.0<br>Автор:",l_of:"з",phr_done:"Пройдено",phrases:"фраз",start_l:"▶ Почати урок",cont_b:"▶ Продовжити:",repeat_l:"<RD>Повторити урок",sec1:"<BK>Підготовка",sec2:"<CH>Практика — три блоки",sec3:"<FL>Перевірка знань",w_card:"Слова уроку",w_learned:" — вивчені",exam:"Екзамен",exam_q:"питань без підказок",exam_ok:" — складено",back_l:"← Урок",back_ls:"← Уроки",back_h:"← Головна",mode_c:"<CH>Чипи",mode_t:"<KB>Текст",mode_l:"<HD>На слух",your:"Твоя відповідь",pool:"Слова",tap_w:"Натискай слова нижче, щоб скласти речення…",inp_ph:"Напиши речення норвезькою…",check:"Перевірити",nxt:"Наступне →",again:"<RD>Ще раз",play:"<SD>Прослухати",l_hint:"Збери фразу, яку почув",ok_t:"<OK>Правильно! Bra jobbet!",err_t:"<NO>Не зовсім так",v2_t:"<BT>Правило V2",rule:"<RL><b>Правило:</b> ",corr:"Правильна відповідь:",listen:"<SD>Послухати",mic:"<MC>Вимовити",mic_l:"<MC>Слухаю…",mic_a:"<MC>Ще раз",pron_ok:"<OK>Чудова вимова! Bra uttale!",pron_h:"<ER>Почув:",pron_r:"Послухай зразок і спробуй ще раз",mic_e:"Мікрофон недоступний — перевір дозволи браузера",done_l:"Урок завершено!",done_p:"— готово!",nxt_b:"Далі:",all_done:"<TR>Усі уроки пройдено!",st_ok:"Правильно",st_err:"Помилок",st_acc:"Точність",to_ls:"До списку уроків",share:"<SH>Поділитися успіхом",know:"Знаю <CK>",tap_f:"Натисни, щоб побачити переклад",deck:"Залишилось у колоді:",w_of:"Слова уроку",w_pct:"вивчено",w_srs:"Повторення слів · інтервали SRS",in_d:"у колоді:",w_done:"Слова вивчено!",w_rev_done:"Слова повторено!",sched:"<CL>Розклад",sched_s:"Обери дні занять — і не пропускай гребків",cal_leg:"займався · рамка — за планом",days_t:"Дні занять",time_t:"Час нагадування",ics:"<CL>Додати в календар телефону (.ics)",notif_on:" Нагадування браузера увімкнено",notif_off:" Увімкнути нагадування браузера",sched_n:"Браузерні нагадування працюють, поки Ro! відкрито.<br>Для гарантії додай розклад у календар телефону.",pick_days:"Спочатку обери дні занять",rev_h:"<RD>Робота над помилками",exam_h:"<GC>Екзамен · Урок",lang:"<GL>Мова",wd:["Пн","Вт","Ср","Чт","Пт","Сб","Нд"],mo:["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"]},
+pl:{w_tag:"Zamień naukę w wyprawę.<br>Każda lekcja to ruch wiosłem.<br>Im równiejszy rytm, tym szybciej<br>zdobędziesz fiordy języka.",w_btn:"Chwyć za wiosła",next:"Dalej",start:"Start",skip:"Pomiń",n_q:"Jak masz na imię?<br>Imię pojawi się na ekranie głównym —<br>Twoja wyprawa będzie osobista.",n_ph:"Twoje imię",save:"Zapisz",days1:"dzień",days2:"dni",days5:"dni",streak_lbl:"dni z rzędu",goal_lbl:"cel dnia: 1 lekcja (75 fraz)",cap_ph:"Nauczone frazy",cap_w:"Nauczone słowa",of:"z",lessons:"Lekcje",lessons_sub:"16 lekcji · poziom A1–A2 · 3 bloki tematyczne",lesson:"Lekcja",cont:"▶ Kontynuuj: Lekcja",mist:"Praca nad błędami",srs_rev:"Powtórka słów",plan:"<CL>Dziś zaplanowany trening —",footer:"Ro! — trener norweskiego · wersja 1.0<br>Autor:",l_of:"z",phr_done:"Ukończono",phrases:"fraz",start_l:"▶ Rozpocznij lekcję",cont_b:"▶ Kontynuuj:",repeat_l:"<RD>Powtórz lekcję",sec1:"<BK>Przygotowanie",sec2:"<CH>Praktyka — trzy bloki",sec3:"<FL>Sprawdzian wiedzy",w_card:"Słówka lekcji",w_learned:" — nauczone",exam:"Egzamin",exam_q:"pytań bez podpowiedzi",exam_ok:" — zdany",back_l:"← Lekcja",back_ls:"← Lekcje",back_h:"← Start",mode_c:"<CH>Klocki",mode_t:"<KB>Pisanie",mode_l:"<HD>Ze słuchu",your:"Twoja odpowiedź",pool:"Słowa",tap_w:"Dotykaj słów poniżej, aby ułożyć zdanie…",inp_ph:"Napisz zdanie po norwesku…",check:"Sprawdź",nxt:"Następne →",again:"<RD>Jeszcze raz",play:"<SD>Odtwórz",l_hint:"Ułóż frazę, którą usłyszałeś",ok_t:"<OK>Dobrze! Bra jobbet!",err_t:"<NO>Nie do końca",v2_t:"<BT>Reguła V2",rule:"<RL><b>Reguła:</b> ",corr:"Poprawna odpowiedź:",listen:"<SD>Posłuchaj",mic:"<MC>Wymów",mic_l:"<MC>Słucham…",mic_a:"<MC>Jeszcze raz",pron_ok:"<OK>Świetna wymowa! Bra uttale!",pron_h:"<ER>Usłyszałem:",pron_r:"Posłuchaj wzoru i spróbuj ponownie",mic_e:"Mikrofon niedostępny — sprawdź uprawnienia",done_l:"Lekcja ukończona!",done_p:"— gotowe!",nxt_b:"Dalej:",all_done:"<TR>Wszystkie lekcje ukończone!",st_ok:"Poprawnie",st_err:"Błędy",st_acc:"Dokładność",to_ls:"Do listy lekcji",share:"<SH>Udostępnij postęp",know:"Znam <CK>",tap_f:"Dotknij, aby zobaczyć tłumaczenie",deck:"Zostało w talii:",w_of:"Słówka lekcji",w_pct:"nauczono",w_srs:"Powtórka słów · interwały SRS",in_d:"w talii:",w_done:"Słówka nauczone!",w_rev_done:"Powtórka zakończona!",sched:"<CL>Harmonogram",sched_s:"Wybierz dni nauki — nie opuszczaj wioseł",cal_leg:"ćwiczyłeś · ramka — zaplanowane",days_t:"Dni nauki",time_t:"Czas przypomnienia",ics:"<CL>Dodaj do kalendarza telefonu (.ics)",notif_on:" Przypomnienia przeglądarki włączone",notif_off:" Włącz przypomnienia przeglądarki",sched_n:"Przypomnienia działają, gdy Ro! jest otwarte.<br>Dla pewności dodaj harmonogram do kalendarza.",pick_days:"Najpierw wybierz dni nauki",rev_h:"<RD>Praca nad błędami",exam_h:"<GC>Egzamin · Lekcja",lang:"<GL>Język",wd:["Pn","Wt","Śr","Cz","Pt","So","Nd"],mo:["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"]},
+es:{w_tag:"Convierte el aprendizaje en travesía.<br>Cada lección es una palada de remo.<br>Cuanto más constante el ritmo, antes<br>conquistarás los fiordos del idioma.",w_btn:"Toma los remos",next:"Siguiente",start:"Empezar",skip:"Omitir",n_q:"¿Cómo te llamas?<br>Tu nombre aparecerá en la pantalla principal —<br>tu travesía será personal.",n_ph:"Tu nombre",save:"Guardar",days1:"día",days2:"días",days5:"días",streak_lbl:"días seguidos",goal_lbl:"meta diaria: 1 lección (75 frases)",cap_ph:"Frases aprendidas",cap_w:"Palabras aprendidas",of:"de",lessons:"Lecciones",lessons_sub:"16 lecciones · nivel A1–A2 · 3 bloques temáticos",lesson:"Lección",cont:"▶ Continuar: Lección",mist:"Repaso de errores",srs_rev:"Repaso de palabras",plan:"<CL>Hoy hay entrenamiento —",footer:"Ro! — entrenador de noruego · versión 1.0<br>Autor:",l_of:"de",phr_done:"Completadas",phrases:"frases",start_l:"▶ Empezar lección",cont_b:"▶ Continuar:",repeat_l:"<RD>Repetir lección",sec1:"<BK>Preparación",sec2:"<CH>Práctica — tres bloques",sec3:"<FL>Comprobación",w_card:"Vocabulario de la lección",w_learned:" — aprendido",exam:"Examen",exam_q:"preguntas sin pistas",exam_ok:" — aprobado",back_l:"← Lección",back_ls:"← Lecciones",back_h:"← Inicio",mode_c:"<CH>Fichas",mode_t:"<KB>Teclado",mode_l:"<HD>De oído",your:"Tu respuesta",pool:"Palabras",tap_w:"Toca las palabras para formar la frase…",inp_ph:"Escribe la frase en noruego…",check:"Comprobar",nxt:"Siguiente →",again:"<RD>Otra vez",play:"<SD>Escuchar",l_hint:"Arma la frase que escuchaste",ok_t:"<OK>¡Correcto! Bra jobbet!",err_t:"<NO>No exactamente",v2_t:"<BT>Regla V2",rule:"<RL><b>Regla:</b> ",corr:"Respuesta correcta:",listen:"<SD>Escuchar",mic:"<MC>Pronunciar",mic_l:"<MC>Escuchando…",mic_a:"<MC>Otra vez",pron_ok:"<OK>¡Gran pronunciación! Bra uttale!",pron_h:"<ER>Escuché:",pron_r:"Escucha el ejemplo e inténtalo de nuevo",mic_e:"Micrófono no disponible — revisa los permisos",done_l:"¡Lección completada!",done_p:"— ¡listo!",nxt_b:"Siguiente:",all_done:"<TR>¡Todas las lecciones completadas!",st_ok:"Correctas",st_err:"Errores",st_acc:"Precisión",to_ls:"A la lista de lecciones",share:"<SH>Compartir progreso",know:"Lo sé <CK>",tap_f:"Toca para ver la traducción",deck:"Quedan en el mazo:",w_of:"Vocabulario de la lección",w_pct:"aprendido",w_srs:"Repaso de palabras · intervalos SRS",in_d:"en el mazo:",w_done:"¡Palabras aprendidas!",w_rev_done:"¡Repaso completado!",sched:"<CL>Horario",sched_s:"Elige tus días — y sigue remando",cal_leg:"practicaste · borde — planificado",days_t:"Días de estudio",time_t:"Hora del recordatorio",ics:"<CL>Añadir al calendario del teléfono (.ics)",notif_on:" Recordatorios del navegador activados",notif_off:" Activar recordatorios del navegador",sched_n:"Los recordatorios funcionan mientras Ro! está abierto.<br>Para asegurar, añade el horario al calendario.",pick_days:"Primero elige los días",rev_h:"<RD>Repaso de errores",exam_h:"<GC>Examen · Lección",lang:"<GL>Idioma",wd:["Lu","Ma","Mi","Ju","Vi","Sá","Do"],mo:["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]}
 };
 const LANGS = [["ru","Русский 🇷🇺"],["en","English 🇬🇧"],["uk","Українська 🇺🇦"],["pl","Polski 🇵🇱"],["es","Español 🇪🇸"]];
-function t(k){ const d = UI[meta.lang] || UI.ru; return (d[k]!==undefined ? d[k] : UI.ru[k]) || k; }
+const ICP = {'<CH>':'grid','<KB>':'keyb','<HD>':'head','<SD>':'sound','<MC>':'mic','<RD>':'redo','<BK>':'book','<FL>':'flag','<CL>':'cal','<GL>':'target','<SH>':'share','<GC>':'cap','<TR>':'trophy','<OK>':'check','<NO>':'cross','<BT>':'bolt','<RL>':'ruler','<ER>':'ear','<CK>':'check','<CD>':'cards','<FR>':'fire','<TG>':'target'};
+function t(k){
+  const d = UI[meta.lang] || UI.ru;
+  let v = (d[k]!==undefined ? d[k] : UI.ru[k]);
+  if(v===undefined) return k;
+  if(typeof v === 'string' && v.indexOf('<')>=0){
+    v = v.replace(/<(CH|KB|HD|SD|MC|RD|BK|FL|CL|GL|SH|GC|TR|OK|NO|BT|RL|ER|CK|CD|FR|TG)>/g, function(m){ return ic(ICP[m]) + ' '; });
+  }
+  return v;
+}
 function srcText(q){ if(!meta.lang || meta.lang==='ru') return q.ru; return q[meta.lang] || q.en || q.ru; }
 function wordSrc(w){ if(!meta.lang || meta.lang==='ru') return w.r; return w[meta.lang] || w.en || w.r; }
 
@@ -603,13 +674,13 @@ const ONB = [
     t: "1200 фраз — с нуля до A2",
     s: "16 уроков — от базовых глаголов до фразовых. Собирай предложения из слов, а правило V2 станет рефлексом.",
     svg: '<svg width="230" height="170" viewBox="0 0 230 170" fill="none">' +
-      '<rect x="18" y="18" width="86" height="40" rx="14" fill="#7aa2f7"/><text x="61" y="44" text-anchor="middle" font-family="Inter,sans-serif" font-size="17" font-weight="700" fill="#0a0a0a">Hei!</text>' +
+      '<rect x="18" y="18" width="86" height="40" rx="14" fill="#7aa2f7"/><text x="61" y="44" text-anchor="middle" font-family="Manrope,sans-serif" font-size="17" font-weight="700" fill="#0a0a0a">Hei!</text>' +
       '<path d="M40 58 l8 12 l6 -12 z" fill="#7aa2f7"/>' +
-      '<rect x="118" y="40" width="96" height="40" rx="14" fill="#f87171"/><text x="166" y="66" text-anchor="middle" font-family="Inter,sans-serif" font-size="17" font-weight="700" fill="#0a0a0a">Hallo!</text>' +
+      '<rect x="118" y="40" width="96" height="40" rx="14" fill="#f87171"/><text x="166" y="66" text-anchor="middle" font-family="Manrope,sans-serif" font-size="17" font-weight="700" fill="#0a0a0a">Hallo!</text>' +
       '<path d="M188 80 l6 12 l8 -12 z" fill="#f87171"/>' +
-      '<rect x="24" y="112" width="52" height="30" rx="9" fill="#161616" stroke="#3a3a3a"/><text x="50" y="132" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" fill="#f5f5f5">Jeg</text>' +
-      '<rect x="84" y="112" width="66" height="30" rx="9" fill="#fff"/><text x="117" y="132" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="600" fill="#0a0a0a">lærer</text>' +
-      '<rect x="158" y="112" width="56" height="30" rx="9" fill="#161616" stroke="#3a3a3a"/><text x="186" y="132" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" fill="#f5f5f5">norsk</text>' +
+      '<rect x="24" y="112" width="52" height="30" rx="9" fill="#161616" stroke="#3a3a3a"/><text x="50" y="132" text-anchor="middle" font-family="Manrope,sans-serif" font-size="13" fill="#f5f5f5">Jeg</text>' +
+      '<rect x="84" y="112" width="66" height="30" rx="9" fill="#fff"/><text x="117" y="132" text-anchor="middle" font-family="Manrope,sans-serif" font-size="13" font-weight="600" fill="#0a0a0a">lærer</text>' +
+      '<rect x="158" y="112" width="56" height="30" rx="9" fill="#161616" stroke="#3a3a3a"/><text x="186" y="132" text-anchor="middle" font-family="Manrope,sans-serif" font-size="13" fill="#f5f5f5">norsk</text>' +
     '</svg>'
   },
   {
@@ -619,11 +690,11 @@ const ONB = [
       '<rect x="52" y="38" width="126" height="84" rx="16" fill="#1c1c1c" stroke="#3a3a3a" transform="rotate(-6 115 80)"/>' +
       '<rect x="52" y="30" width="126" height="84" rx="16" fill="#232323" stroke="#3a3a3a" transform="rotate(4 115 72)"/>' +
       '<rect x="52" y="26" width="126" height="88" rx="16" fill="#fff"/>' +
-      '<text x="115" y="62" text-anchor="middle" font-family="Inter,sans-serif" font-size="20" font-weight="700" fill="#0a0a0a">ei bok</text>' +
+      '<text x="115" y="62" text-anchor="middle" font-family="Manrope,sans-serif" font-size="20" font-weight="700" fill="#0a0a0a">ei bok</text>' +
       '<rect x="88" y="72" width="54" height="2" rx="1" fill="#d4d4d4"/>' +
-      '<text x="115" y="98" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" fill="#666">книга</text>' +
-      '<circle cx="60" cy="140" r="13" fill="#0d2818" stroke="#1d5c34"/><text x="60" y="145" text-anchor="middle" font-size="12" fill="#4ade80">✓</text>' +
-      '<circle cx="96" cy="140" r="13" fill="#0d2818" stroke="#1d5c34"/><text x="96" y="145" text-anchor="middle" font-size="12" fill="#4ade80">✓</text>' +
+      '<text x="115" y="98" text-anchor="middle" font-family="Manrope,sans-serif" font-size="14" fill="#666">книга</text>' +
+      '<circle cx="60" cy="140" r="13" fill="#0d2818" stroke="#1d5c34"/><text x="60" y="145" text-anchor="middle" font-size="12" fill="#4ade80"><CK></text>' +
+      '<circle cx="96" cy="140" r="13" fill="#0d2818" stroke="#1d5c34"/><text x="96" y="145" text-anchor="middle" font-size="12" fill="#4ade80"><CK></text>' +
       '<circle cx="132" cy="140" r="13" fill="#2b2210" stroke="#6b5a10"/><text x="132" y="145" text-anchor="middle" font-size="11" fill="#fbbf24">3д</text>' +
       '<circle cx="168" cy="140" r="13" fill="#2b2210" stroke="#6b5a10"/><text x="168" y="145" text-anchor="middle" font-size="11" fill="#fbbf24">7д</text>' +
     '</svg>'
@@ -638,7 +709,7 @@ const ONB = [
       '<rect x="103" y="76" width="24" height="42" rx="12" fill="#fff"/>' +
       '<path d="M96 104 a19 19 0 0 0 38 0" stroke="#fff" stroke-width="5" fill="none" stroke-linecap="round"/>' +
       '<rect x="112" y="126" width="6" height="12" fill="#fff"/><rect x="102" y="138" width="26" height="5" rx="2.5" fill="#fff"/>' +
-      '<text x="196" y="52" font-size="24">🔥</text><text x="14" y="52" font-size="24">🎓</text>' +
+      
     '</svg>'
   }
 ];
@@ -650,7 +721,7 @@ function renderLangSelect(back){
   const w = document.createElement("div");
   w.className = "welcome";
   w.innerHTML = '<div class="welcome-content" style="margin-top:calc(14vh + env(safe-area-inset-top))">' +
-      '<div class="welcome-logo">🌐</div>' +
+      '<div class="welcome-logo"><GL></div>' +
       '<div class="onb-title">Velg språk · Choose language</div>' +
       '<div class="lang-list">' + LANGS.map(l =>
         '<button class="lang-btn' + (meta.lang===l[0]?' on':'') + '" onclick="setLang(\'' + l[0] + '\',' + (back?1:0) + ')">' + l[1] + '</button>').join('') +
@@ -710,7 +781,7 @@ function renderName(){
   const w = document.createElement("div");
   w.className = "welcome";
   w.innerHTML = '<div class="welcome-content">' +
-      '<div class="welcome-logo">Hei! 👋</div>' +
+      '<div class="welcome-logo">Hei! </div>' +
       '<div class="welcome-tagline">' + t('n_q') + '</div>' +
       '<input class="name-input" id="name-inp" type="text" maxlength="20" placeholder="'+t('n_ph')+'" value="' + (meta.name||"") + '"' +
       ' onkeydown="if(event.key===\'Enter\')saveName()">' +
@@ -746,12 +817,24 @@ function renderLessons(){
     const total = lessonTotal(i);
     const solved = lessonSolved(i);
     const pct = Math.round(solved/total*100);
-    const done = lessonDone(i);
-    return '<div class="lesson-card' + (done?' done':'') + '" onclick="renderLesson(' + i + ')">' +
-      '<div class="lesson-num">' + (done ? '✓' : (i+1)) + '</div>' +
+    const unlocked = lessonUnlocked(i);
+    const expired = isExpired(i);
+    const done = examPassed(i) && !expired;
+    let cls = 'lesson-card';
+    if(!unlocked) cls += ' locked';
+    else if(expired) cls += ' expired';
+    else if(done) cls += ' done';
+    const icon = !unlocked ? ic('lock',16) : expired ? ic('clock',16) : done ? ic('check',16) : (i+1);
+    const note = !unlocked
+      ? '<div class="lock-note">Сдай экзамен урока ' + i + ' на 100%</div>'
+      : expired
+        ? '<div class="expire-note">Остыл — пересдай экзамен</div>'
+        : '';
+    return '<div class="' + cls + '" onclick="' + (unlocked ? 'renderLesson(' + i + ')' : 'lockedHint(' + i + ')') + '">' +
+      '<div class="lesson-num">' + icon + '</div>' +
       '<div class="lesson-info">' +
         '<div class="lesson-title">' + l.title + '</div>' +
-        '<div class="lesson-sub">' + l.sub + '</div>' +
+        (note || '<div class="lesson-sub">' + l.sub + '</div>') +
       '</div>' +
       '<div class="lesson-mini">' +
         '<div class="lesson-mini-bar"><div class="lesson-mini-fill" style="width:' + pct + '%"></div></div>' +
@@ -764,14 +847,19 @@ function renderLessons(){
   const goalHit = tc >= DAILY_GOAL;
   const sc = streakCount();
   let continueBtn = '';
-  if(meta.last && !lessonDone(meta.last.l)){
+  if(meta.last && lessonUnlocked(meta.last.l) && !lessonDone(meta.last.l)){
     continueBtn = '<button class="continue-btn" onclick="startNextPart(' + meta.last.l + ')">' + t('cont') + ' ' + (meta.last.l+1) + ' · ' + LESSONS[meta.last.l].title + '</button>';
+  }
+  const exp = expiredList();
+  let expBanner = '';
+  if(exp.length > 0){
+    expBanner = '<div class="plan-banner" onclick="renderLesson(' + exp[0] + ')">⏳ Остыло уроков: ' + exp.length + ' — пора освежить (' + LESSONS[exp[0]].title + ')</div>';
   }
   let srsCard = '';
   const due = srsDue().length;
   if(due > 0){
     srsCard = '<div class="block-card" style="margin-bottom:1rem" onclick="startWordsReview()">' +
-      '<div class="block-num">🃏</div>' +
+      '<div class="block-num">' + ic('cards',17) + '</div>' +
       '<div class="block-title">' + t('srs_rev') + '</div>' +
       '<div class="score-chip">' + due + '</div>' +
     '</div>';
@@ -779,22 +867,23 @@ function renderLessons(){
   let mistakesCard = '';
   if(meta.mistakes.length > 0){
     mistakesCard = '<div class="block-card" style="margin-bottom:1rem" onclick="startMistakes()">' +
-      '<div class="block-num">🔁</div>' +
+      '<div class="block-num">' + ic('redo',17) + '</div>' +
       '<div class="block-title">' + t('mist') + '</div>' +
       '<div class="score-chip">' + meta.mistakes.length + '</div>' +
     '</div>';
   }
   document.getElementById("app").innerHTML =
     '<div class="header">' +
-      '<div class="head-greet" onclick="renderName()">' + (meta.name ? 'Hei, ' + meta.name + '! 👋' : 'Hei! 👋') + '<span class="edit-hint">✏️</span></div>' +
+      '<div class="head-greet" onclick="renderName()">' + (meta.name ? 'Hei, ' + meta.name + '!' : 'Hei!') + '<span class="edit-hint">' + ic('pencil',13) + '</span></div>' +
       '<div class="header-right">' +
-        '<button class="back-btn" onclick="renderSchedule()">📅</button>' +
+        '<button class="back-btn" onclick="renderSchedule()">' + ic('cal',17) + '</button>' +
         '<div class="score-chip">' + lessonsDoneCount() + ' / ' + LESSONS.length + '</div></div>' +
     '</div>' +
+    expBanner +
     (isPlannedToday() && todayCount() < DAILY_GOAL ? '<div class="plan-banner" onclick="renderSchedule()">' + t('plan') + ' ' + sched().time + '</div>' : '') +
     '<div class="today-row">' +
-      '<div class="today-chip' + (sc>0?' lit':'') + '"><div class="tc-val">🔥 ' + sc + '</div><div class="tc-lbl">' + dayWord(sc) + ' · ' + t('streak_lbl') + '</div></div>' +
-      '<div class="today-chip' + (goalHit?' hit':'') + '"><div class="tc-val">🎯 ' + Math.min(tc,DAILY_GOAL) + ' / ' + DAILY_GOAL + (goalHit?' ✓':'') + '</div><div class="tc-lbl">' + t('goal_lbl') + '</div></div>' +
+      '<div class="today-chip' + (sc>0?' lit':'') + '"><div class="tc-val"><FR>' + sc + '</div><div class="tc-lbl">' + dayWord(sc) + ' · ' + t('streak_lbl') + '</div></div>' +
+      '<div class="today-chip' + (goalHit?' hit':'') + '"><div class="tc-val"><TG>' + Math.min(tc,DAILY_GOAL) + ' / ' + DAILY_GOAL + (goalHit?' ' + ic('check',14):'') + '</div><div class="tc-lbl">' + t('goal_lbl') + '</div></div>' +
     '</div>' +
     '<div class="hero">' +
       '<div class="hero-rings">' +
@@ -817,6 +906,10 @@ function renderLessons(){
 }
 
 // ─── LESSON DETAIL PAGE ───
+function lockedHint(i){
+  alert('Урок ' + (i+1) + ' закрыт.\n\nЧтобы открыть его, сдай экзамен урока ' + i + ' на ' + EXAM_PASS + '% — без единой ошибки.');
+}
+
 function renderLesson(i){
   screen = "lesson";
   currentLessonIdx = i;
@@ -830,7 +923,7 @@ function renderLesson(i){
   const wfull = wk >= wt;
   const wordsCard =
     '<div class="block-card' + (wfull?' full':'') + '" onclick="startWords(' + i + ')">' +
-      '<div class="block-num">📖</div>' +
+      '<div class="block-num">' + ic('book',17) + '</div>' +
       '<div class="block-title">' + t('w_card') + (wfull?t('w_learned'):'') + '</div>' +
       '<div class="lesson-mini">' +
         '<div class="lesson-mini-bar"><div class="lesson-mini-fill" style="width:' + wpct + '%"></div></div>' +
@@ -844,7 +937,7 @@ function renderLesson(i){
     const pct = Math.round(pd/sz*100);
     const full = pd >= sz;
     return '<div class="block-card' + (full?' full':'') + '" onclick="startPart(' + i + ',' + pi + ')">' +
-      '<div class="block-num">' + (full?'✓':(pi+1)) + '</div>' +
+      '<div class="block-num">' + (full?ic('check',16):(pi+1)) + '</div>' +
       '<div class="block-title">' + p.t + '</div>' +
       '<div class="lesson-mini">' +
         '<div class="lesson-mini-bar"><div class="lesson-mini-fill" style="width:' + pct + '%"' + (full?' ':'') + '></div></div>' +
@@ -882,8 +975,8 @@ function renderLesson(i){
         blocks +
         '<div class="section-label">' + t('sec3') + '</div>' +
         '<div class="block-card exam-card' + (passed?' full':'') + '" onclick="startExam(' + i + ')">' +
-          '<div class="block-num">🎓</div>' +
-          '<div class="block-title">' + t('exam') + (passed ? t('exam_ok') : ' · ' + EXAM_N + ' ' + t('exam_q')) + '</div>' +
+          '<div class="block-num">' + ic('cap',17) + '</div>' +
+          '<div class="block-title">' + t('exam') + (passed ? (isExpired(i) ? ' — остыл, пересдай' : t('exam_ok')) : ' · ' + EXAM_N + ' вопросов, нужно 100%') + '</div>' +
           (es > 0 ? '<div class="lesson-mini-pct"' + (passed?' style="color:var(--green)"':' style="color:var(--amber)"') + '>' + es + '%</div>' : '') +
         '</div>' +
       '</div>';
@@ -953,8 +1046,7 @@ function render(){
   const {questions,idx,mode,phase,pool,selected,textVal,feedback,score} = state;
   const total = questions.length;
   const current = questions[idx];
-  const pct = Math.round(idx/total*100);
-  const milestones = Array.from({length:15},(_,i)=>Math.floor(i*total/15));
+  const pct = Math.round(state.correctCount/total*100);
   const lesson = LESSONS[currentLessonIdx];
   const headSpan = state.exam ? (t('exam_h') + ' ' + (currentLessonIdx+1)) : state.review ? t('rev_h') : (t('lesson') + ' ' + (currentLessonIdx+1) + ' · ' + lesson.parts[currentPartIdx].t);
   const backCall = state.review ? 'renderLessons()' : 'renderLesson(currentLessonIdx)';
@@ -963,7 +1055,13 @@ function render(){
     if(state.exam){
       const pct = Math.round(state.correctCount/total*100);
       const passed = pct >= EXAM_PASS;
-      if(passed) setExamScore(currentLessonIdx, pct);
+      if(passed){
+        setExamScore(currentLessonIdx, pct);
+        if(!progress['l'+currentLessonIdx]) progress['l'+currentLessonIdx]={};
+        progress['l'+currentLessonIdx].ok = 1;
+        saveProgress();
+      }
+      touchLesson(currentLessonIdx);
       buzz(passed ? "win" : "err");
       document.getElementById("app").innerHTML =
         (passed ? '<canvas id="fw"></canvas>' : '') +
@@ -972,11 +1070,11 @@ function render(){
           '<div class="header-right"><button class="back-btn" onclick="renderLesson(currentLessonIdx)">' + t('back_l') + '</button></div>' +
         '</div>' +
         '<div class="card complete" style="margin-top:2rem">' +
-          '<div class="complete-icon">' + (passed ? '🎓' : '📚') + '</div>' +
+          '<div class="complete-icon">' + (passed ? ic('cap',44) : ic('book',44)) + '</div>' +
           '<div class="complete-title">' + (passed ? 'Экзамен сдан!' : 'Пока не сдан') + '</div>' +
           '<div class="complete-sub">' + (passed
-            ? 'Урок «' + lesson.title + '» официально покорён.<br>Результат: ' + pct + '% — så flink du er!'
-            : 'Твой результат: ' + pct + '% (нужно ' + EXAM_PASS + '%).<br>Загляни в блоки — и попробуй снова, всё получится!') + '</div>' +
+            ? 'Урок «' + lesson.title + '» покорён без единой ошибки!<br>' + (currentLessonIdx+1 < LESSONS.length ? 'Открыт урок ' + (currentLessonIdx+2) + ' — så flink du er!' : 'Så flink du er!')
+            : 'Твой результат: ' + pct + '% — нужно ' + EXAM_PASS + '% без ошибок.<br>Загляни в блоки и попробуй снова, всё получится!') + '</div>' +
           '<div class="stats">' +
             '<div class="stat"><div class="stat-num">' + state.correctCount + '</div><div class="stat-label">Верно</div></div>' +
             '<div class="stat"><div class="stat-num">' + (total-state.correctCount) + '</div><div class="stat-label">' + t('st_err') + '</div></div>' +
@@ -984,7 +1082,7 @@ function render(){
           '</div>' +
           (passed
             ? '<button class="restart-btn" onclick="renderLessons()">' + t('to_ls') + '</button>'
-            : '<button class="restart-btn" onclick="startExam(' + currentLessonIdx + ')">🎓 Попробовать снова</button>') +
+            : '<button class="restart-btn" onclick="startExam(' + currentLessonIdx + ')">' + ic('cap',16) + ' Попробовать снова</button>') +
         '</div>';
       if(passed) setTimeout(launchFireworks, 60);
       return;
@@ -997,7 +1095,7 @@ function render(){
           '<div class="header-right"><button class="back-btn" onclick="renderLessons()">' + t('back_h') + '</button></div>' +
         '</div>' +
         '<div class="card complete" style="margin-top:2rem">' +
-          '<div class="complete-icon">💪</div>' +
+          '<div class="complete-icon">' + ic('trophy',44) + '</div>' +
           '<div class="complete-title">Ошибки разобраны!</div>' +
           '<div class="complete-sub">' + (meta.mistakes.length===0
             ? 'Колода ошибок пуста — отличная работа!'
@@ -1014,10 +1112,10 @@ function render(){
     let nextBtn;
     if(!isLastPart){
       nextBtn = '<button class="restart-btn" onclick="startPart(' + currentLessonIdx + ',' + (currentPartIdx+1) + ')">' + t('nxt_b') + ' «' + lesson.parts[currentPartIdx+1].t + '» →</button>';
-    } else if(!isLastLesson){
+    } else if(!isLastLesson && lessonUnlocked(currentLessonIdx+1)){
       nextBtn = '<button class="restart-btn" onclick="startPart(' + (currentLessonIdx+1) + ',0)">' + t('lesson') + ' ' + (currentLessonIdx+2) + ': ' + LESSONS[currentLessonIdx+1].title + ' →</button>';
     } else {
-      nextBtn = '<button class="restart-btn" onclick="renderLessons()">' + t('all_done') + '</button>';
+      nextBtn = '<button class="restart-btn" onclick="renderLesson(currentLessonIdx)">' + ic('cap',16) + ' Сдай экзамен, чтобы открыть дальше</button>';
     }
     const title = isLastPart ? t('done_l') : '«' + lesson.parts[currentPartIdx].t + '» ' + t('done_p');
     const sub = isLastPart
@@ -1030,7 +1128,7 @@ function render(){
         '<div class="header-right"><button class="back-btn" onclick="renderLesson(currentLessonIdx)">' + t('back_l') + '</button></div>' +
       '</div>' +
       '<div class="card complete" style="margin-top:2rem">' +
-        '<div class="complete-icon">🎉</div>' +
+        '<div class="complete-icon">' + ic('party',44) + '</div>' +
         '<div class="complete-title">' + title + '</div>' +
         '<div class="complete-sub">' + sub + '</div>' +
         '<div class="stats">' +
@@ -1039,7 +1137,7 @@ function render(){
           '<div class="stat"><div class="stat-num">' + Math.round(state.correctCount/total*100) + '%</div><div class="stat-label">' + t('st_acc') + '</div></div>' +
         '</div>' +
         nextBtn +
-        (canShare() ? '<div style="margin-top:12px"><button class="back-btn" onclick="shareText(\'Я прохожу норвежский в Ro! 🚣 Стрик: ' + streakCount() + ' ' + dayWord(streakCount()) + ', пройдено фраз: ' + totalSolved() + '\')">📤 Поделиться успехом</button></div>' : '') +
+        (canShare() ? '<div style="margin-top:12px"><button class="back-btn" onclick="shareText(\'Я прохожу норвежский в Ro!  Стрик: ' + streakCount() + ' ' + dayWord(streakCount()) + ', пройдено фраз: ' + totalSolved() + '\')"><SH>Поделиться успехом</button></div>' : '') +
       '</div>';
     buzz("win");
     setTimeout(launchFireworks, 60);
@@ -1110,17 +1208,16 @@ function render(){
     '<div class="header">' +
       '<div class="logo" onclick="renderLessons()">Ro!</div>' +
       '<div class="header-right">' +
-        '<div class="score-chip">⭐ ' + score + ' / ' + idx + '</div>' +
+        '<div class="score-chip">' + ic('star',14) + ' ' + score + ' / ' + idx + '</div>' +
         '<button class="back-btn" onclick="' + backCall + '">' + (state.review?t('back_h'):t('back_l')) + '</button>' +
       '</div>' +
     '</div>' +
     '<div class="progress-section">' +
       '<div class="progress-meta">' +
         '<span>' + headSpan + '</span>' +
-        '<span>' + idx + ' / ' + total + '</span>' +
+        '<span>' + state.correctCount + ' / ' + total + '</span>' +
       '</div>' +
       '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>' +
-      '<div class="milestones">' + milestones.map(m=>'<div class="ms ' + (idx>m?"done":"") + '"></div>').join("") + '</div>' +
     '</div>' +
     '<div class="mode-toggle">' +
       '<button class="mode-btn ' + (mode==="builder"?"active":"") + '" onclick="switchMode(\'builder\')">' + t('mode_c') + '</button>' +
@@ -1213,6 +1310,7 @@ function advance(){
   const next=state.idx+1;
   bumpDaily();
   if(!state.review && !state.exam) setPartProgress(currentLessonIdx, currentPartIdx, next);
+  if(!state.review) touchLesson(currentLessonIdx);
   if(next>=state.questions.length){state.phase="done";render();return;}
   state.idx=next;state.phase="answering";state.feedback=null;
   state.selected=[];state.textVal="";
@@ -1254,12 +1352,12 @@ function renderWords(){
     const i = currentLessonIdx;
     let btn, sub, icon, title;
     if(rev){
-      icon='🃏'; title=t('w_rev_done');
+      icon=ic('cards',44); title=t('w_rev_done');
       sub='Память укреплена. Слова вернутся<br>по интервалам: 1 · 3 · 7 · 14 · 30 дней.';
       btn='<button class="restart-btn" onclick="renderLessons()">На главную</button>';
     } else {
       const np=(function(){for(let p=0;p<PARTS;p++){if(!partDone(i,p))return p;}return 0;})();
-      icon='📖'; title=t('w_done');
+      icon=ic('book',44); title=t('w_done');
       sub='Все '+WORDS[i].length+' слов урока «'+LESSONS[i].title+'» в кармане.<br>Теперь фразы соберутся сами собой!';
       btn='<button class="restart-btn" onclick="startPart('+i+','+np+')">К фразам: «'+LESSONS[i].parts[np].t+'» →</button>';
     }
@@ -1285,12 +1383,12 @@ function renderWords(){
   const back  = wordsState.mode==="no-ru" ? wordSrc(w) : w.n;
   let headChip, metaSpan;
   if(rev){
-    headChip = '🃏 осталось ' + wordsState.deck.length;
+    headChip = ic('cards',14) + ' осталось ' + wordsState.deck.length;
     metaSpan = t('w_srs');
   } else {
     const list = WORDS[currentLessonIdx];
     const kc = Math.min(wordsKnown(currentLessonIdx).length, list.length);
-    headChip = '📖 ' + kc + ' / ' + list.length;
+    headChip = '' + ic('book',14) + ' ' + kc + ' / ' + list.length;
     metaSpan = t('w_of') + ' ' + (currentLessonIdx+1);
   }
   const pct = rev ? 0 : Math.round(Math.min(wordsKnown(currentLessonIdx).length,WORDS[currentLessonIdx].length)/WORDS[currentLessonIdx].length*100);
@@ -1372,7 +1470,6 @@ function renderSchedule(){
     cells += '<div class="'+cls+'">'+d+'</div>';
   }
   const monthName = t('mo')[m];
-  const notifOn = meta.notif && (typeof Notification!=='undefined') && Notification.permission==='granted';
 
   document.getElementById("app").innerHTML =
     '<div class="header">' +
@@ -1390,9 +1487,9 @@ function renderSchedule(){
       '<div class="wd-row">' + WDl().map((w,i)=>'<div class="wd-chip'+(s.days.indexOf(i)>=0?' on':'')+'" onclick="toggleDay('+i+')">'+w+'</div>').join('') + '</div>' +
       '<div class="sched-row"><span class="sched-label">' + t('time_t') + '</span>' +
         '<input class="time-input" id="sched-time" type="time" value="'+s.time+'" onchange="setSchedTime(this.value)"></div>' +
-      '<button class="submit-btn" style="margin-bottom:10px" onclick="downloadICS()">' + t('ics') + '</button>' +
-      '<button class="submit-btn retry-btn" id="notif-btn" onclick="toggleNotif()">' + (notifOn?t('notif_on'):t('notif_off')) + '</button>' +
-      '<div class="deck-count" style="margin-top:10px">' + t('sched_n') + '</div>' +
+      '<button class="submit-btn" style="margin-bottom:10px" onclick="addToGoogleCal()">' + ic('cal',16) + ' Добавить в Google Календарь</button>' +
+      '<button class="submit-btn retry-btn" onclick="downloadICS()">' + ic('down',16) + ' Скачать файл .ics (Apple Календарь)</button>' +
+      '<div class="deck-count" style="margin-top:10px">Добавь расписание в календарь телефона —<br>напоминания придут даже когда Ro! закрыт.</div>' +
     '</div>';
 }
 
@@ -1404,46 +1501,55 @@ function toggleDay(i){
 }
 function setSchedTime(v){ sched().time = v || '19:00'; saveMeta(); }
 
-function downloadICS(){
+function schedRule(){
   const s = sched();
-  if(s.days.length===0){ alert(t('pick_days')); return; }
+  if(s.days.length===0){ alert(t('pick_days')); return null; }
   const BY = ['MO','TU','WE','TH','FR','SA','SU'];
-  const [hh,mm] = s.time.split(':');
+  const hm = (s.time||'19:00').split(':');
   const now = new Date();
-  let st = new Date(now.getFullYear(), now.getMonth(), now.getDate(), +hh, +mm);
+  let st = new Date(now.getFullYear(), now.getMonth(), now.getDate(), +hm[0], +hm[1]);
   while(s.days.indexOf((st.getDay()+6)%7)<0 || st < now) st = new Date(st.getTime()+864e5);
   const p = n => (n<10?'0':'')+n;
-  const dt = st.getFullYear()+p(st.getMonth()+1)+p(st.getDate())+'T'+p(st.getHours())+p(st.getMinutes())+'00';
-  const ics = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Ro//NO\r\nBEGIN:VEVENT\r\nUID:ro-norsk-'+Date.now()+'\r\nDTSTART:'+dt+'\r\nDURATION:PT20M\r\nRRULE:FREQ=WEEKLY;BYDAY='+s.days.map(d=>BY[d]).join(',')+'\r\nSUMMARY:Ro! — норвежский 🚣\r\nDESCRIPTION:Запланированная сессия: 10 фраз и пара слов. Ro ro ro!\r\nBEGIN:VALARM\r\nTRIGGER:-PT0M\r\nACTION:DISPLAY\r\nDESCRIPTION:Пора грести!\r\nEND:VALARM\r\nEND:VEVENT\r\nEND:VCALENDAR\r\n';
-  const a = document.createElement('a');
-  a.href = 'data:text/calendar;charset=utf-8,' + encodeURIComponent(ics);
-  a.download = 'ro-norsk.ics';
-  document.body.appendChild(a); a.click(); a.remove();
+  const fmt = d => d.getFullYear()+p(d.getMonth()+1)+p(d.getDate())+'T'+p(d.getHours())+p(d.getMinutes())+'00';
+  return { start: fmt(st), end: fmt(new Date(st.getTime()+20*60000)), by: s.days.map(d=>BY[d]).join(',') };
 }
 
-function toggleNotif(){
-  if(typeof Notification==='undefined'){ alert('Браузер не поддерживает уведомления'); return; }
-  if(meta.notif && Notification.permission==='granted'){ meta.notif = 0; saveMeta(); renderSchedule(); return; }
-  Notification.requestPermission().then(function(p){
-    if(p==='granted'){ meta.notif = 1; saveMeta(); }
-    renderSchedule();
-  });
+function openLinkSmart(url){
+  if(TG && TG.openLink){ try{ TG.openLink(url); return; }catch(e){} }
+  window.open(url, '_blank');
 }
 
-let lastNotifMin = '';
-setInterval(function(){
+function addToGoogleCal(){
+  const r = schedRule();
+  if(!r) return;
+  const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    '&text=' + encodeURIComponent('Ro! — norsk') +
+    '&details=' + encodeURIComponent('Запланированная сессия: один урок в Ro!') +
+    '&dates=' + r.start + '/' + r.end +
+    '&recur=' + encodeURIComponent('RRULE:FREQ=WEEKLY;BYDAY=' + r.by);
+  openLinkSmart(url);
+}
+
+function downloadICS(){
+  const r = schedRule();
+  if(!r) return;
+  const ics = ['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Ro//NO','BEGIN:VEVENT',
+    'UID:ro-' + Date.now() + '@ro.app','DTSTART:' + r.start,'DTEND:' + r.end,
+    'RRULE:FREQ=WEEKLY;BYDAY=' + r.by,'SUMMARY:Ro! — norsk',
+    'DESCRIPTION:Запланированная сессия в Ro!',
+    'BEGIN:VALARM','TRIGGER:-PT10M','ACTION:DISPLAY','DESCRIPTION:Ro!','END:VALARM',
+    'END:VEVENT','END:VCALENDAR'].join('\r\n');
   try{
-    if(!meta.notif || typeof Notification==='undefined' || Notification.permission!=='granted') return;
-    if(!isPlannedToday()) return;
-    const n = new Date();
-    const cur = (n.getHours()<10?'0':'')+n.getHours()+':'+(n.getMinutes()<10?'0':'')+n.getMinutes();
-    if(cur===sched().time && lastNotifMin!==cur+dstr(0)){
-      lastNotifMin = cur+dstr(0);
-      new Notification('Ro! 🚣', {body:'Сегодня запланированная сессия — урок ждёт!'});
-      buzz('ok');
-    }
-  }catch(e){}
-}, 30000);
+    const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'ro-norsk.ics';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 1500);
+  }catch(e){
+    alert('Не удалось скачать файл. Попробуй кнопку Google Календаря.');
+  }
+}
 
 // ─── FIREWORKS ──────────────────────────────────────
 function launchFireworks(){
