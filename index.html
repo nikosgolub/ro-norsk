@@ -1948,7 +1948,6 @@ function renderDialog(){
         '<button class="pl-btn" onclick="skip(-5)">−5</button>' +
         '<button class="pl-play" id="pl-play" onclick="togglePlay()">' + ic('sound',22) + '</button>' +
         '<button class="pl-btn" onclick="skip(5)">+5</button>' +
-        '<button class="pl-btn" id="pl-rate" onclick="cycleRate()">1×</button>' +
         '<button class="pl-btn' + (meta.loop?' on':'') + '" id="pl-loop" onclick="toggleLoop()">' + ic('redo',16) + '</button>' +
       '</div>' +
     '</div>' +
@@ -1964,10 +1963,7 @@ function renderDialog(){
 function bindAudio(){
   AU = document.getElementById('au');
   if(!AU) return;
-  AU.playbackRate = meta.rate || 1;
   AU.loop = !!meta.loop;
-  const rb = document.getElementById('pl-rate');
-  if(rb) rb.textContent = (meta.rate || 1) + '×';
   AU.addEventListener('loadedmetadata', function(){
     const dd = document.getElementById('pl-dur');
     if(dd) dd.textContent = mmss(AU.duration);
@@ -2034,15 +2030,6 @@ function seekPct(e){
   const tr = document.getElementById('pl-track');
   const r = tr.getBoundingClientRect();
   AU.currentTime = ((e.clientX - r.left) / r.width) * AU.duration;
-}
-function cycleRate(){
-  const rates = [0.75, 1, 1.25];
-  const cur = meta.rate || 1;
-  const next = rates[(rates.indexOf(cur) + 1) % rates.length];
-  meta.rate = next; saveMeta();
-  if(AU) AU.playbackRate = next;
-  const rb = document.getElementById('pl-rate');
-  if(rb) rb.textContent = next + '×';
 }
 function setRu(v){ showRu = v; const b = document.querySelector('.dl-box'); renderDialog(); }
 function closeDialog(){ if(AU){ AU.pause(); AU = null; } renderDialogs(); }
