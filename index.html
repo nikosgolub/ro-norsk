@@ -160,6 +160,8 @@ button{touch-action:manipulation}
 .pl-row{display:flex;align-items:center;justify-content:center;gap:12px}
 .pl-btn{min-width:52px;min-height:44px;background:var(--bg);border:1px solid var(--line);border-radius:13px;color:var(--ink);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
 .pl-btn:hover{border-color:var(--ink2)}
+.pl-btn.on{background:#fff;color:#0a0a0a;border-color:#fff}
+.pl-btn.on svg{color:#0a0a0a}
 .pl-play{width:60px;height:60px;border-radius:50%;background:#fff;color:#0a0a0a;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .pl-play:active{transform:scale(.96)}
 .pl-pause{display:inline-block;width:16px;height:18px;border-left:5px solid #0a0a0a;border-right:5px solid #0a0a0a}
@@ -1858,8 +1860,12 @@ function downloadICS(){
 COURSES[0].L = LESSONS; COURSES[0].W = WORDS;
 
 // ─── АУДИОДИАЛОГИ ───
+const DLG_HOURS = 9;
+const DLG_GOAL = DLG_HOURS * 3600;
+function dlgUnlocked(i){ return i===0 || dlgDone(DIALOGS[i-1].id); }
+function dlgHrs(id){ return (dlgStat(id).sec||0) / 3600; }
 function dlgStat(id){ const s = (meta.dlg||{})[id]; return s || {sec:0, max:0, plays:0}; }
-function dlgDone(id){ const s = dlgStat(id); return s.max >= 0.9; }
+function dlgDone(id){ return (dlgStat(id).sec||0) >= DLG_GOAL; }
 function dlgSave(id, patch){
   if(!meta.dlg) meta.dlg = {};
   const s = meta.dlg[id] || {sec:0, max:0, plays:0};
@@ -1868,21 +1874,29 @@ function dlgSave(id, patch){
 }
 function mmss(s){ s = Math.max(0, Math.floor(s||0)); const m = Math.floor(s/60); const r = s%60; return m + ':' + (r<10?'0':'') + r; }
 
+function dlgLockHint(i){
+  alert('Диалог ' + (i+1) + ' закрыт.\n\nМетод матричного аудирования: слушай текущий диалог, пока не наберётся ' + DLG_HOURS + ' часов. Так звучание закрепится, и следующий пойдёт легче.');
+}
+
 function renderDialogs(){
   screen = 'dialogs';
   const cards = DIALOGS.map(function(d,i){
     const st = dlgStat(d.id);
-    const pct = Math.round((st.max||0)*100);
+    const hrs = dlgHrs(d.id);
+    const pct = Math.min(100, Math.round(hrs / DLG_HOURS * 100));
     const done = dlgDone(d.id);
-    return '<div class="lesson-card' + (done?' done':'') + '" onclick="openDialog(' + i + ')">' +
-      '<div class="lesson-num">' + (done ? ic('check',16) : (i+1)) + '</div>' +
+    const open = dlgUnlocked(i);
+    return '<div class="lesson-card' + (done?' done':'') + (open?'':' locked') + '" onclick="' + (open ? 'openDialog(' + i + ')' : 'dlgLockHint(' + i + ')') + '">' +
+      '<div class="lesson-num">' + (done ? ic('check',16) : open ? (i+1) : ic('lock',16)) + '</div>' +
       '<div class="lesson-info">' +
         '<div class="lesson-title">' + d.title + '</div>' +
-        '<div class="lesson-sub">' + d.sub + (st.sec ? ' · прослушано ' + Math.round(st.sec/60) + ' мин' : '') + '</div>' +
+        (open
+          ? '<div class="lesson-sub">' + d.sub + '</div>'
+          : '<div class="lock-note">Дослушай предыдущий диалог до ' + DLG_HOURS + ' часов</div>') +
       '</div>' +
       '<div class="lesson-mini">' +
         '<div class="lesson-mini-bar"><div class="lesson-mini-fill" style="width:' + pct + '%"></div></div>' +
-        '<div class="lesson-mini-pct">' + pct + '%</div>' +
+        '<div class="lesson-mini-pct">' + (hrs >= 1 ? hrs.toFixed(1) : Math.round(st.sec/60) + 'м') + (hrs >= 1 ? ' ч' : '') + '</div>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -1896,7 +1910,7 @@ function renderDialogs(){
       '<div class="header-right"><div class="score-chip">' + ic('head',14) + ' ' + Math.round(totalSec/60) + ' мин</div></div>' +
     '</div>' +
     '<div class="lessons-title">Диалоги на слух</div>' +
-    '<div class="lessons-sub">Слушай, следи за текстом, повторяй вслух</div>' +
+    '<div class="lessons-sub">Слушай один диалог по ' + DLG_HOURS + ' часов — следующий откроется сам</div>' +
     '<div class="lesson-list">' + cards + '</div>';
 }
 
@@ -1922,7 +1936,7 @@ function renderDialog(){
   document.getElementById('app').innerHTML =
     '<div class="header">' +
       '<button class="back-btn" onclick="closeDialog()">← Диалоги</button>' +
-      '<div class="header-right"><div class="score-chip">' + mmss(st.sec) + '</div></div>' +
+      '<div class="header-right"><div class="score-chip" id="dlg-chip">' + dlgHrs(d.id).toFixed(1) + ' / ' + DLG_HOURS + ' ч</div></div>' +
     '</div>' +
     '<div class="detail-title">' + d.title + '</div>' +
     '<div class="detail-sub">' + d.sub + '</div>' +
@@ -1935,6 +1949,7 @@ function renderDialog(){
         '<button class="pl-play" id="pl-play" onclick="togglePlay()">' + ic('sound',22) + '</button>' +
         '<button class="pl-btn" onclick="skip(5)">+5</button>' +
         '<button class="pl-btn" id="pl-rate" onclick="cycleRate()">1×</button>' +
+        '<button class="pl-btn' + (meta.loop?' on':'') + '" id="pl-loop" onclick="toggleLoop()">' + ic('redo',16) + '</button>' +
       '</div>' +
     '</div>' +
     '<div class="mode-toggle" style="margin-bottom:1rem">' +
@@ -1950,6 +1965,7 @@ function bindAudio(){
   AU = document.getElementById('au');
   if(!AU) return;
   AU.playbackRate = meta.rate || 1;
+  AU.loop = !!meta.loop;
   const rb = document.getElementById('pl-rate');
   if(rb) rb.textContent = (meta.rate || 1) + '×';
   AU.addEventListener('loadedmetadata', function(){
@@ -1977,14 +1993,14 @@ function bindAudio(){
       addListen(add);
       const s = dlgStat(d.id);
       dlgSave(d.id, { sec: (s.sec||0) + add, max: Math.max(s.max||0, cur/dur) });
-      const chip = document.querySelector('.score-chip');
-      if(chip) chip.textContent = mmss((s.sec||0) + add);
+      const chip = document.getElementById('dlg-chip');
+      if(chip) chip.textContent = ((s.sec||0) + add)/3600 > 0 ? (((s.sec||0)+add)/3600).toFixed(1) + ' / ' + DLG_HOURS + ' ч' : '0 / ' + DLG_HOURS + ' ч';
     }
   });
   AU.addEventListener('ended', function(){
     const d = DIALOGS[curDlg];
     dlgSave(d.id, { max: 1 });
-    buzz('win');
+    if(dlgDone(d.id)) buzz('win');
     const p = document.getElementById('pl-play');
     if(p) p.innerHTML = ic('sound',22);
   });
@@ -2003,6 +2019,13 @@ function togglePlay(){
     AU.pause();
     if(p) p.innerHTML = ic('sound',22);
   }
+}
+function toggleLoop(){
+  meta.loop = meta.loop ? 0 : 1; saveMeta();
+  if(AU) AU.loop = !!meta.loop;
+  const b = document.getElementById('pl-loop');
+  if(b) b.className = 'pl-btn' + (meta.loop?' on':'');
+  buzz('ok');
 }
 function skip(n){ if(AU) AU.currentTime = Math.max(0, AU.currentTime + n); }
 function seekTo(t){ if(AU){ AU.currentTime = t; if(AU.paused) togglePlay(); } }
