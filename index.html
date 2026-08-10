@@ -573,11 +573,8 @@ function resumeLast(){
   ci = cIdx; LESSONS = COURSES[cIdx].L; WORDS = COURSES[cIdx].W;
   meta.course = cIdx; saveMeta();
   if(!lessonUnlocked(m.l)){ renderLessons(); return; }
-  if(partDone(m.l, m.p)){
-    let np = -1;
-    for(let p=0;p<PARTS;p++){ if(!partDone(m.l,p)){ np = p; break; } }
-    if(np < 0){ renderLesson(m.l); return; }
-    startPart(m.l, np); return;
+  if(partPassed(m.l, m.p) || !partUnlocked(m.l, m.p)){
+    startNextPart(m.l); return;
   }
   startPart(m.l, m.p);
 }
@@ -762,7 +759,13 @@ function partDone(l,p){ return partProgress(l,p) >= partSize(l,p); }
 function lessonSolved(l){ let s=0; for(let p=0;p<PARTS;p++) s += partProgress(l,p); return s; }
 function examScore(l){ return (progress[K(l)]||{}).e || 0; }
 function setExamScore(l,pct){ if(!progress[K(l)]) progress[K(l)]={}; if(pct > (progress[K(l)].e||0)){ progress[K(l)].e = pct; saveProgress(); } }
-const EXAM_N = 20, EXAM_PASS = 100;   // порог сдачи экзамена, %
+const PART_PASS = 95;   // % верных ответов в блоке для допуска к следующему
+const EXAM_N = 20, EXAM_PASS = 100;
+function partAcc(l,p){ return (progress[K(l)]||{})['a'+p] || 0; }
+function setPartAcc(l,p,pct){ if(!progress[K(l)]) progress[K(l)]={}; const k='a'+p; if(pct > (progress[K(l)][k]||0)){ progress[K(l)][k]=pct; saveProgress(); } }
+function partPassed(l,p){ return partAcc(l,p) >= PART_PASS; }
+function partUnlocked(l,p){ return p===0 || partPassed(l,p-1); }
+function examUnlocked(l){ for(let p=0;p<PARTS;p++){ if(!partPassed(l,p)) return false; } return true; }   // порог сдачи экзамена, %
 const EXPIRE_DAYS = 14;               // через сколько дней урок «остывает»
 function touchLesson(l){ if(!progress[K(l)]) progress[K(l)]={}; progress[K(l)].ts = dnum(); saveProgress(); }
 function lessonAge(l){ const ts=(progress[K(l)]||{}).ts; return ts===undefined ? null : dnum()-ts; }
@@ -1229,6 +1232,12 @@ function renderLessons(){
 }
 
 // ─── LESSON DETAIL PAGE ───
+function partLockHint(p){
+  alert('Блок ' + (p+1) + ' закрыт.\n\nСначала сдай предыдущий блок с точностью ' + PART_PASS + '% — это примерно одна ошибка на 25 фраз.');
+}
+function examLockHint(){
+  alert('Экзамен закрыт.\n\nСначала сдай все три блока урока с точностью ' + PART_PASS + '%.');
+}
 function lockedHint(i){
   alert('Урок ' + (i+1) + ' закрыт.\n\nЧтобы открыть его, сдай экзамен урока ' + i + ' на ' + EXAM_PASS + '% — без единой ошибки.');
 }
@@ -1258,10 +1267,12 @@ function renderLesson(i){
     const sz = p.q.length;
     const pd = partProgress(i,pi);
     const pct = Math.round(pd/sz*100);
-    const full = pd >= sz;
-    return '<div class="block-card' + (full?' full':'') + '" onclick="startPart(' + i + ',' + pi + ')">' +
-      '<div class="block-num">' + (full?ic('check',16):(pi+1)) + '</div>' +
-      '<div class="block-title">' + p.t + '</div>' +
+    const passed = partPassed(i,pi);
+    const full = passed;
+    const open = partUnlocked(i,pi);
+    return '<div class="block-card' + (full?' full':'') + (open?'':' locked') + '" onclick="' + (open ? 'startPart(' + i + ',' + pi + ')' : 'partLockHint(' + pi + ')') + '">' +
+      '<div class="block-num">' + (passed?ic('check',16):open?(pi+1):ic('lock',16)) + '</div>' +
+      '<div class="block-title">' + p.t + (passed ? ' · ' + partAcc(i,pi) + '%' : open ? '' : ' · закрыт') + '</div>' +
       '<div class="lesson-mini">' +
         '<div class="lesson-mini-bar"><div class="lesson-mini-fill" style="width:' + pct + '%"' + (full?' ':'') + '></div></div>' +
         '<div class="lesson-mini-pct"' + (full?' style="color:var(--green)"':'') + '>' + pct + '%</div>' +
@@ -1274,7 +1285,7 @@ function renderLesson(i){
     continueBtn = '<button class="continue-btn" onclick="startPart(' + i + ',0)">' + t('repeat_l') + '</button>';
   } else {
     let np = 0;
-    for(let p=0;p<PARTS;p++){ if(!partDone(i,p)){ np = p; break; } }
+    for(let p=0;p<PARTS;p++){ if(!partPassed(i,p) && partUnlocked(i,p)){ np = p; break; } }
     continueBtn = '<button class="continue-btn" onclick="startPart(' + i + ',' + np + ')">' + (solved>0?t('cont_b') + ' «' + l.parts[np].t + '»':t('start_l')) + '</button>';
   }
 
@@ -1291,15 +1302,16 @@ function renderLesson(i){
     (function(){
       const es = examScore(i);
       const passed = es >= EXAM_PASS;
+      const exOpen = examUnlocked(i);
       return '<div class="block-list">' +
         '<div class="section-label">' + t('sec1') + '</div>' +
         wordsCard +
         '<div class="section-label">' + t('sec2') + '</div>' +
         blocks +
         '<div class="section-label">' + t('sec3') + '</div>' +
-        '<div class="block-card exam-card' + (passed?' full':'') + '" onclick="startExam(' + i + ')">' +
-          '<div class="block-num">' + ic('cap',17) + '</div>' +
-          '<div class="block-title">' + t('exam') + (passed ? (isExpired(i) ? ' — остыл, пересдай' : t('exam_ok')) : ' · ' + EXAM_N + ' вопросов, нужно 100%') + '</div>' +
+        '<div class="block-card exam-card' + (passed?' full':'') + (exOpen?'':' locked') + '" onclick="' + (exOpen ? 'startExam(' + i + ')' : 'examLockHint()') + '">' +
+          '<div class="block-num">' + (exOpen?ic('cap',17):ic('lock',17)) + '</div>' +
+          '<div class="block-title">' + t('exam') + (!exOpen ? ' · сдай три блока на ' + PART_PASS + '%' : passed ? (isExpired(i) ? ' — остыл, пересдай' : t('exam_ok')) : ' · ' + EXAM_N + ' вопросов, нужно 100%') + '</div>' +
           (es > 0 ? '<div class="lesson-mini-pct"' + (passed?' style="color:var(--green)"':' style="color:var(--amber)"') + '>' + es + '%</div>' : '') +
         '</div>' +
       '</div>';
@@ -1308,12 +1320,13 @@ function renderLesson(i){
 
 function startNextPart(i){
   for(let p=0;p<PARTS;p++){
-    if(!partDone(i,p)){ startPart(i,p); return; }
+    if(!partPassed(i,p) && partUnlocked(i,p)){ startPart(i,p); return; }
   }
-  startPart(i,0);
+  renderLesson(i);
 }
 
 function startPart(i,p){
+  if(!partUnlocked(i,p)){ partLockHint(p); return; }
   currentLessonIdx = i;
   currentPartIdx = p;
   screen = "exercise";
@@ -1351,6 +1364,7 @@ function startMistakes(){
 }
 
 function startExam(i){
+  if(!examUnlocked(i)){ examLockHint(); return; }
   currentLessonIdx = i;
   screen = "exercise";
   state.exam = true;
@@ -1449,21 +1463,28 @@ function render(){
     setTimeout(launchFireworks, 60);
       return;
     }
+    const acc = Math.round(state.correctCount/total*100);
+    const passedPart = acc >= PART_PASS;
+    setPartAcc(currentLessonIdx, currentPartIdx, acc);
     setPartProgress(currentLessonIdx, currentPartIdx, total);
     const isLastPart = currentPartIdx === PARTS-1;
     const isLastLesson = currentLessonIdx === LESSONS.length-1;
     let nextBtn;
-    if(!isLastPart){
+    if(!passedPart){
+      nextBtn = '<button class="restart-btn" onclick="startPart(' + currentLessonIdx + ',' + currentPartIdx + ')">' + ic('redo',16) + ' Пройти блок заново</button>';
+    } else if(!isLastPart){
       nextBtn = '<button class="restart-btn" onclick="startPart(' + currentLessonIdx + ',' + (currentPartIdx+1) + ')">' + t('nxt_b') + ' «' + lesson.parts[currentPartIdx+1].t + '» →</button>';
     } else if(!isLastLesson && lessonUnlocked(currentLessonIdx+1)){
       nextBtn = '<button class="restart-btn" onclick="startPart(' + (currentLessonIdx+1) + ',0)">' + t('lesson') + ' ' + (currentLessonIdx+2) + ': ' + LESSONS[currentLessonIdx+1].title + ' →</button>';
     } else {
       nextBtn = '<button class="restart-btn" onclick="renderLesson(currentLessonIdx)">' + ic('cap',16) + ' Сдай экзамен, чтобы открыть дальше</button>';
     }
-    const title = isLastPart ? t('done_l') : '«' + lesson.parts[currentPartIdx].t + '» ' + t('done_p');
-    const sub = isLastPart
-      ? 'Ты одолел весь урок «' + lesson.title + '»!<br>Гребок за гребком — фьорды всё ближе.'
-      : 'Отличный ритм! Ещё ' + (PARTS-currentPartIdx-1) + ' ' + (PARTS-currentPartIdx-1===1?'блок':'блока') + ' — и урок «' + lesson.title + '» твой.';
+    const title = !passedPart ? 'Почти получилось' : isLastPart ? t('done_l') : '«' + lesson.parts[currentPartIdx].t + '» ' + t('done_p');
+    const sub = !passedPart
+      ? 'Точность ' + acc + '% — для допуска нужно ' + PART_PASS + '%.<br>Ещё один заход, и блок откроет следующий.'
+      : isLastPart
+        ? 'Все три блока сданы — открыт экзамен урока «' + lesson.title + '».'
+        : 'Точность ' + acc + '% — блок сдан. Ещё ' + (PARTS-currentPartIdx-1) + ' ' + (PARTS-currentPartIdx-1===1?'блок':'блока') + ' до экзамена.';
     document.getElementById("app").innerHTML =
       '<canvas id="fw"></canvas>' +
       '<div class="header">' +
