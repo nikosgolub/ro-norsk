@@ -274,6 +274,8 @@ button{touch-action:manipulation}
 
 /* ─── WELCOME SCREEN ─── */
 .welcome{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;text-align:center;overflow:hidden;background:var(--bg)}
+.welcome.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;justify-content:flex-start;overscroll-behavior:contain}
+.welcome.scroll .welcome-content{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 .welcome-content{margin-top:calc(12vh + env(safe-area-inset-top));padding:0 1.5rem;max-width:420px}
 .welcome-logo{font-size:44px;font-weight:600;letter-spacing:-1px;color:#fff;margin-bottom:14px}
 .welcome-tagline{font-size:15px;line-height:1.65;color:rgba(255,255,255,0.85);margin-bottom:26px}
@@ -303,10 +305,10 @@ button{touch-action:manipulation}
 .goal-time{font-size:15.5px;font-weight:700}
 .goal-desc{font-size:12.5px;opacity:.7}
 .goal-ph{font-size:11.5px;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.04em}
-.wn-list{display:flex;flex-direction:column;gap:12px;text-align:left;margin-top:8px}
-.wn-item{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.10);border-radius:14px;padding:12px 14px}
-.wn-t{font-size:14.5px;font-weight:700;color:#fff;margin-bottom:4px}
-.wn-d{font-size:13px;line-height:1.5;color:rgba(255,255,255,0.72)}
+.wn-list{display:flex;flex-direction:column;gap:10px;text-align:left}
+.wn-item{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);border-radius:16px;padding:13px 15px}
+.wn-t{font-size:15px;font-weight:700;color:var(--ink);margin-bottom:4px}
+.wn-d{font-size:13.5px;line-height:1.5;color:var(--ink2)}
 .lang-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .lang-btn{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);border-radius:16px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;padding:14px;cursor:pointer;min-height:52px;transition:all .2s}
 .lang-btn:hover,.lang-btn.on{background:rgba(255,255,255,0.92);color:#0a0a0a;border-color:#fff}
@@ -1076,7 +1078,7 @@ function renderGoals(back, step){
   }
 
   const w = document.createElement('div');
-  w.className = 'welcome';
+  w.className = 'welcome scroll';
   w.innerHTML = '<div class="welcome-content" style="margin-top:calc(11vh + env(safe-area-inset-top))">' + body + '</div>';
   document.body.appendChild(w);
 }
@@ -1100,7 +1102,7 @@ function renderOnboarding(step){
   const o = ONB[step];
   const last = step === ONB.length-1;
   const w = document.createElement("div");
-  w.className = "welcome";
+  w.className = "welcome scroll";
   w.innerHTML = '<div class="welcome-content" style="margin-top:calc(7vh + env(safe-area-inset-top))">' +
       '<div class="onb-illo">' + o.svg + '</div>' +
       '<div class="onb-dots">' + ONB.map((_,i)=>'<div class="onb-dot' + (i===step?' active':'') + '"></div>').join('') + '</div>' +
@@ -2429,24 +2431,24 @@ function renderWhatsNew(){
   screen = 'whatsnew';
   const old = document.querySelector('.welcome');
   if(old) old.remove();
-  const w = document.createElement('div');
-  w.className = 'welcome';
-  w.innerHTML = '<div class="welcome-content" style="margin-top:calc(8vh + env(safe-area-inset-top));max-width:440px">' +
-      '<div class="onb-title">Что нового в ' + APP_VER + '</div>' +
-      '<div class="onb-sub">Приложение заметно подросло с прошлого раза</div>' +
-      '<div class="wn-list">' +
-        WHATS_NEW.map(function(x){
-          return '<div class="wn-item"><div class="wn-t">' + x.t + '</div><div class="wn-d">' + x.d + '</div></div>';
-        }).join('') +
-      '</div>' +
-      '<button class="welcome-btn" style="margin-top:20px" onclick="closeWhatsNew()">Поехали</button>' +
-    '</div>';
-  document.body.appendChild(w);
+  document.getElementById('app').innerHTML =
+    '<div class="header">' +
+      '<div class="logo">Ro!</div>' +
+      '<div class="header-right"><div class="score-chip">' + APP_VER + '</div></div>' +
+    '</div>' +
+    '<div class="detail-title">Что нового</div>' +
+    '<div class="detail-sub">Приложение заметно подросло с прошлого раза</div>' +
+    '<div class="wn-list" style="margin-top:1.25rem">' +
+      WHATS_NEW.map(function(x){
+        return '<div class="wn-item"><div class="wn-t">' + x.t + '</div><div class="wn-d">' + x.d + '</div></div>';
+      }).join('') +
+    '</div>' +
+    '<button class="continue-btn" style="margin-top:1.25rem" onclick="closeWhatsNew()">Поехали</button>';
+  try{ window.scrollTo(0,0); }catch(e){}
 }
+
 function closeWhatsNew(){
   meta.seenVer = APP_VER; saveMeta();
-  const w = document.querySelector('.welcome');
-  if(w) w.remove();
   restoreCourse();
   renderCourses();
 }
