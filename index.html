@@ -2095,7 +2095,11 @@ async function aiAsk(prompt, json){
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt: prompt, json: !!json })
   });
-  if(!res.ok) throw new Error('HTTP ' + res.status);
+  if(!res.ok){
+    let detail = '';
+    try{ detail = (await res.text()).slice(0,200); }catch(e){}
+    throw new Error('HTTP ' + res.status + (detail ? ' · ' + detail : ''));
+  }
   const data = await res.json();
   const txt = (data.text || '').trim();
   if(!txt) throw new Error('empty');
@@ -2119,7 +2123,7 @@ async function aiFillWord(){
     if(b) b.value = (r.ru || '') + (r.ex ? ' · ' + r.ex : '');
   }catch(e){
     if(b && !b.value) b.value = '';
-    alert('Не удалось получить подсказку. Проверь интернет.');
+    alert('Ошибка ИИ:\n\n' + (e && e.message ? e.message : e));
   }
   if(btn){ btn.disabled = false; btn.innerHTML = ic('star',15) + ' Заполнить'; }
 }
@@ -2138,7 +2142,7 @@ async function aiExplain(){
       'Без приветствий и без списков, просто объяснение.');
     box.innerHTML = txt.replace(/</g,'&lt;').replace(/\n/g,'<br>');
   }catch(e){
-    box.innerHTML = 'Не удалось получить объяснение — проверь интернет.';
+    box.innerHTML = 'Ошибка: ' + ((e && e.message ? e.message : e) + '').replace(/</g,'&lt;');
   }
 }
 
@@ -2165,7 +2169,7 @@ async function aiPractice(){
     screen = 'exercise';
     render();
   }catch(e){
-    alert('Не удалось составить фразы — проверь интернет.');
+    alert('Ошибка ИИ:\n\n' + (e && e.message ? e.message : e));
     if(btn){ btn.disabled = false; btn.innerHTML = ic('star',16) + ' Тренировать фразами'; }
   }
 }
