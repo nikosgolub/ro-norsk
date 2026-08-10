@@ -147,6 +147,18 @@ button{touch-action:manipulation}
 .lesson-sub{font-size:12.5px;color:var(--ink3);margin-top:2px;line-height:1.4}
 .lesson-arrow{color:var(--ink3);font-size:16px;flex-shrink:0}
 
+.modal-back{position:fixed;inset:0;z-index:70;background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;padding:1.25rem}
+.modal-box{width:min(360px,100%);background:linear-gradient(160deg,rgba(38,38,38,0.98),rgba(22,22,22,0.98));border:1px solid rgba(255,255,255,0.12);border-radius:20px;padding:1.25rem;box-shadow:0 16px 48px rgba(0,0,0,0.55)}
+.modal-title{font-size:17px;font-weight:700;letter-spacing:-0.2px;margin-bottom:12px}
+.modal-text{font-size:13.5px;color:var(--ink2);line-height:1.5;margin-bottom:14px}
+.modal-row{display:flex;gap:10px;margin-top:12px}
+.modal-row .submit-btn{flex:1}
+.modal-list{display:flex;flex-direction:column;gap:8px;max-height:50vh;overflow-y:auto}
+.set-row{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 4px}
+.set-chip{background:var(--bg);border:1px solid var(--line);border-radius:20px;color:var(--ink2);font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 13px;cursor:pointer;min-height:36px;transition:all .15s}
+.set-chip:hover{border-color:var(--ink2)}
+.set-chip.on{background:#fff;color:#0a0a0a;border-color:#fff}
+.set-chip.add{color:var(--ink3);border-style:dashed}
 .my-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.06)}
 .my-row:last-child{border-bottom:none}
 .my-txt{flex:1;min-width:0}
@@ -695,12 +707,6 @@ function renderCourses(){
           '<div class="score-chip">' + dueN + '</div>' +
         '</div>';
       }
-      const myN = myList().length, myD = myDue().length;
-      out += '<div class="block-card" style="margin-bottom:10px" onclick="renderMyWords()">' +
-        '<div class="block-num">' + ic('pencil',17) + '</div>' +
-        '<div class="block-title">Мои слова</div>' +
-        '<div class="score-chip">' + (myN ? (myD ? myD + ' / ' + myN : String(myN)) : 'добавить') + '</div>' +
-      '</div>';
       if(meta.mistakes.length > 0){
         out += '<div class="block-card" style="margin-bottom:10px" onclick="startMistakes()">' +
           '<div class="block-num">' + ic('redo',17) + '</div>' +
@@ -713,6 +719,27 @@ function renderCourses(){
     '<div class="lessons-title">Курсы</div>' +
     '<div class="lessons-sub">Выбери направление — прогресс у каждого свой</div>' +
     '<div class="lesson-list">' + cards + '</div>' +
+    (function(){
+      const all = myList(), sets = mySets(), due = myDue(all).length;
+      const learned = all.filter(function(w){ return (w.s||0) >= 3; }).length;
+      const pct = all.length ? Math.round(learned/all.length*100) : 0;
+      return '<div class="section-label" style="margin-top:26px">' + ic('pencil',13) + ' Личный словарь</div>' +
+        '<div class="lesson-list" style="margin-top:10px">' +
+          '<div class="course-card" onclick="renderMyDecks()">' +
+            '<div class="course-top">' +
+              '<div class="course-title">Мои карточки</div>' +
+              (all.length ? '<div class="course-pct">' + pct + '%</div>' : '<div class="course-badge">создать</div>') +
+            '</div>' +
+            '<div class="course-sub">' + (all.length
+              ? sets.length + (sets.length===1?' раздел':' разделов') + ' · ' + all.length + ' слов' + (due ? ' · ' + due + ' к повтору' : '')
+              : 'Добавляй слова с курсов и раскладывай по разделам') + '</div>' +
+            (all.length
+              ? '<div class="lesson-mini-bar" style="width:100%;margin-top:12px"><div class="lesson-mini-fill" style="width:' + pct + '%"></div></div>' +
+                '<div class="course-meta">выучено ' + learned + ' из ' + all.length + '</div>'
+              : '') +
+          '</div>' +
+        '</div>';
+    })() +
     '<div class="footer"><a class="tour-link" onclick="startTour()">Как это работает</a><br>' + t('footer') + ' <a href="https://t.me/nikolaiholub" target="_blank" rel="noopener">@nikolaiholub</a></div>';
 }
 
@@ -924,6 +951,7 @@ let state = {
   retryMode: false,
   review: false,
   exam: false,
+  ai: false,
 };
 
 // ─── SCREENS ──────────────────────────────────────────
@@ -1187,6 +1215,7 @@ function renderLessons(){
     '<div class="lessons-title">' + COURSES[ci].title + '</div>' +
     '<div class="lessons-sub">' + COURSES[ci].sub + '</div>' +
     '<div class="lesson-list">' + cards + '</div>' +
+
     '<div class="footer"><a class="tour-link" onclick="startTour()">Как это работает</a><br>' + t('footer') + ' <a href="https://t.me/nikolaiholub" target="_blank" rel="noopener">@nikolaiholub</a></div>';
 }
 
@@ -1281,6 +1310,7 @@ function startPart(i,p){
   screen = "exercise";
   state.review = false;
   state.exam = false;
+  state.ai = false;
   meta.last = {c:ci, l:i, p:p}; saveMeta();
   state.questions = shuffle(LESSONS[i].parts[p].q);
   state.idx = 0;
@@ -1301,6 +1331,7 @@ function startMistakes(){
   screen = "exercise";
   state.review = true;
   state.exam = false;
+  state.ai = false;
   state.questions = shuffle(meta.mistakes.slice());
   state.idx = 0; state.phase = "answering"; state.feedback = null;
   state.selected = []; state.textVal = "";
@@ -1315,6 +1346,7 @@ function startExam(i){
   screen = "exercise";
   state.exam = true;
   state.review = false;
+  state.ai = false;
   let all = [];
   LESSONS[i].parts.forEach(p => all = all.concat(p.q));
   state.questions = shuffle(all).slice(0, EXAM_N);
@@ -1333,10 +1365,27 @@ function render(){
   const current = questions[idx];
   const pct = Math.round(state.correctCount/total*100);
   const lesson = LESSONS[currentLessonIdx];
-  const headSpan = state.exam ? (t('exam_h') + ' ' + (currentLessonIdx+1)) : state.review ? t('rev_h') : (t('lesson') + ' ' + (currentLessonIdx+1) + ' · ' + lesson.parts[currentPartIdx].t);
-  const backCall = state.review ? 'renderCourses()' : 'renderLesson(currentLessonIdx)';
+  const headSpan = state.ai ? (ic('star',13) + ' Тренировка своих слов') : state.exam ? (t('exam_h') + ' ' + (currentLessonIdx+1)) : state.review ? t('rev_h') : (t('lesson') + ' ' + (currentLessonIdx+1) + ' · ' + lesson.parts[currentPartIdx].t);
+  const backCall = state.ai ? 'renderMyWords()' : state.review ? 'renderCourses()' : 'renderLesson(currentLessonIdx)';
 
   if(phase==="done"){
+    if(state.ai){
+      document.getElementById("app").innerHTML =
+        '<canvas id="fw"></canvas>' +
+        '<div class="header">' +
+          '<div class="logo" onclick="renderCourses()">Ro!</div>' +
+          '<div class="header-right"><button class="back-btn" onclick="renderMyWords()">← Словарь</button></div>' +
+        '</div>' +
+        '<div class="card complete" style="margin-top:2rem">' +
+          '<div class="complete-icon">' + ic('star',44) + '</div>' +
+          '<div class="complete-title">Тренировка завершена!</div>' +
+          '<div class="complete-sub">' + state.correctCount + ' из ' + total + ' фраз с твоими словами.<br>Фразы каждый раз новые — заходи ещё.</div>' +
+          '<button class="restart-btn" onclick="aiPractice()">' + ic('star',16) + ' Ещё фразы</button>' +
+        '</div>';
+      buzz('win');
+      setTimeout(launchFireworks, 60);
+      return;
+    }
     if(state.exam){
       const pct = Math.round(state.correctCount/total*100);
       const passed = pct >= EXAM_PASS;
@@ -1448,12 +1497,14 @@ function render(){
         '<div class="diff-view"><span class="diff-label">' + t('corr') + '</span>' +
           feedback.diff.map(d=>'<span class="dw ' + d.status + '">' + d.word + '</span>').join(" ") + '</div>' +
         (state.exam ? '' : getRuleHTML(current.type)) +
+        (state.exam ? '' : '<button class="listen-btn" style="margin-top:10px" onclick="aiExplain()">' + ic('star',14) + ' Почему?</button><div class="pron-res" id="ai-exp"></div>') +
       '</div>';
     } else {
       feedbackHTML = '<div class="feedback err">' +
         '<div class="fb-title">' + t('err_t') + '</div>' +
         '<div class="diff-view">' + feedback.diff.map(d=>'<span class="dw ' + d.status + '">' + d.word + '</span>').join(" ") + '</div>' +
         (state.exam ? '' : getRuleHTML(current.type)) +
+        (state.exam ? '' : '<button class="listen-btn" style="margin-top:10px" onclick="aiExplain()">' + ic('star',14) + ' Почему?</button><div class="pron-res" id="ai-exp"></div>') +
       '</div>';
     }
   }
@@ -1494,7 +1545,7 @@ function render(){
       '<div class="logo" onclick="renderCourses()">Ro!</div>' +
       '<div class="header-right">' +
         '<div class="score-chip">' + ic('star',14) + ' ' + score + ' / ' + idx + '</div>' +
-        '<button class="back-btn" onclick="' + backCall + '">' + (state.review?t('back_h'):t('back_l')) + '</button>' +
+        '<button class="back-btn" onclick="' + backCall + '">' + (state.ai?'← Словарь':(state.review?t('back_h'):t('back_l'))) + '</button>' +
       '</div>' +
     '</div>' +
     '<div class="progress-section">' +
@@ -1555,6 +1606,7 @@ function doSubmit(){
     : state.selected.join(" ");
 
   if(!userAnswer) return;
+  state.lastAnswer = userAnswer;
   const correct = state.questions[state.idx].no;
 
   if(isCorrect(userAnswer,correct)){
@@ -1594,8 +1646,8 @@ function doRetry(){
 function advance(){
   const next=state.idx+1;
   bumpDaily();
-  if(!state.review && !state.exam) setPartProgress(currentLessonIdx, currentPartIdx, next);
-  if(!state.review) touchLesson(currentLessonIdx);
+  if(!state.review && !state.exam && !state.ai) setPartProgress(currentLessonIdx, currentPartIdx, next);
+  if(!state.review && !state.ai) touchLesson(currentLessonIdx);
   if(next>=state.questions.length){state.phase="done";render();return;}
   state.idx=next;state.phase="answering";state.feedback=null;
   state.selected=[];state.textVal="";
@@ -2034,54 +2086,316 @@ function seekPct(e){
 function setRu(v){ showRu = v; const b = document.querySelector('.dl-box'); renderDialog(); }
 function closeDialog(){ if(AU){ AU.pause(); AU = null; } renderDialogs(); }
 
+// ─── ИИ (через Cloudflare Worker — ключ хранится на сервере) ───
+const AI_URL = 'https://ro-ai.nikosgolub.workers.dev';
+
+async function aiAsk(prompt, json){
+  const res = await fetch(AI_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prompt: prompt, json: !!json })
+  });
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  const txt = (data.text || '').trim();
+  if(!txt) throw new Error('empty');
+  return json ? JSON.parse(txt.replace(/^```json|```$/g,'').trim()) : txt;
+}
+
+// 1. Автозаполнение карточки
+async function aiFillWord(){
+  const a = document.getElementById('my-no'), b = document.getElementById('my-ru');
+  const src = ((a && a.value ? a.value : '') || (b && b.value ? b.value : '')).trim();
+  if(!src) return;
+  const btn = document.getElementById('ai-fill');
+  if(btn){ btn.disabled = true; btn.innerHTML = '…'; }
+  try{
+    const r = await aiAsk('Ты помощник в приложении для изучения норвежского (bokmål), уровень A1–A2. ' +
+      'Дано слово или выражение: "' + src + '". Оно может быть на норвежском или на русском. ' +
+      'Верни JSON: {"no": "норвежское слово с артиклем для существительных (en/ei/et) или с å для глаголов", ' +
+      '"ru": "короткий перевод на русский", "ex": "простое предложение-пример на норвежском, 4-7 слов"}. ' +
+      'Без пояснений, только JSON.', true);
+    if(a) a.value = r.no || src;
+    if(b) b.value = (r.ru || '') + (r.ex ? ' · ' + r.ex : '');
+  }catch(e){
+    if(b && !b.value) b.value = '';
+    alert('Не удалось получить подсказку. Проверь интернет.');
+  }
+  if(btn){ btn.disabled = false; btn.innerHTML = ic('star',15) + ' Заполнить'; }
+}
+
+// 2. Объяснение ошибки
+async function aiExplain(){
+  const box = document.getElementById('ai-exp');
+  if(!box) return;
+  const q = state.questions[state.idx];
+  box.innerHTML = 'Разбираю…';
+  try{
+    const txt = await aiAsk('Ученик изучает норвежский (bokmål), уровень A1–A2, родной язык русский. ' +
+      'Задание: перевести «' + srcText(q) + '». Правильный ответ: «' + q.no + '». ' +
+      'Ученик ответил: «' + (state.lastAnswer || '') + '». ' +
+      'Объясни по-русски в 2-3 коротких предложениях, в чём именно его ошибка и как запомнить правило. ' +
+      'Без приветствий и без списков, просто объяснение.');
+    box.innerHTML = txt.replace(/</g,'&lt;').replace(/\n/g,'<br>');
+  }catch(e){
+    box.innerHTML = 'Не удалось получить объяснение — проверь интернет.';
+  }
+}
+
+// 3. Упражнения из своих слов
+async function aiPractice(){
+  const words = myFiltered().slice(0, 12);
+  if(words.length < 3){ alert('Нужно хотя бы 3 слова в разделе'); return; }
+  const btn = document.getElementById('ai-prac');
+  if(btn){ btn.disabled = true; btn.innerHTML = 'Готовлю фразы…'; }
+  try{
+    const list = words.map(function(w){ return w.n + ' (' + w.r.split(' · ')[0] + ')'; }).join(', ');
+    const arr = await aiAsk('Составь 8 простых предложений на норвежском (bokmål) уровня A1–A2, используя эти слова: ' + list + '. ' +
+      'Каждое предложение 3-7 слов, разные времена и типы (утверждение, вопрос, отрицание). ' +
+      'Верни JSON-массив вида [{"no":"норвежское предложение","ru":"перевод на русский"}]. Только JSON.', true);
+    const qs = (arr||[]).filter(function(x){ return x && x.no && x.ru; }).map(function(x){ return { no:x.no, ru:x.ru, type:'present' }; });
+    if(!qs.length) throw new Error('empty');
+    state.questions = shuffle(qs);
+    state.idx = 0; state.phase = 'answering'; state.feedback = null;
+    state.selected = []; state.textVal = '';
+    state.score = 0; state.correctCount = 0;
+    state.retryUsed = false; state.retryMode = false;
+    state.review = false; state.exam = false; state.ai = true;
+    state.pool = makePool(state.questions[0].no);
+    screen = 'exercise';
+    render();
+  }catch(e){
+    alert('Не удалось составить фразы — проверь интернет.');
+    if(btn){ btn.disabled = false; btn.innerHTML = ic('star',16) + ' Тренировать фразами'; }
+  }
+}
+
+// ─── МОДАЛЬНЫЕ ОКНА (prompt/confirm блокируются в Telegram) ───
+let modalCb = null;
+function closeModal(){ const m = document.getElementById('modal'); if(m) m.remove(); modalCb = null; }
+function openModal(html){
+  closeModal();
+  const m = document.createElement('div');
+  m.className = 'modal-back';
+  m.id = 'modal';
+  m.innerHTML = '<div class="modal-box">' + html + '</div>';
+  document.body.appendChild(m);
+  m.addEventListener('click', function(e){ if(e.target===m) closeModal(); });
+}
+function askText(title, ph, cb){
+  openModal(
+    '<div class="modal-title">' + title + '</div>' +
+    '<input class="text-input" id="modal-inp" type="text" placeholder="' + ph + '" onkeydown="if(event.key===\'Enter\')modalOk()">' +
+    '<div class="modal-row">' +
+      '<button class="submit-btn retry-btn" onclick="closeModal()">Отмена</button>' +
+      '<button class="submit-btn" onclick="modalOk()">Готово</button>' +
+    '</div>');
+  modalCb = cb;
+  const i = document.getElementById('modal-inp');
+  if(i && i.focus) setTimeout(function(){ i.focus(); }, 60);
+}
+function modalOk(){
+  const i = document.getElementById('modal-inp');
+  const v = (i && i.value ? i.value : '').trim();
+  const cb = modalCb;
+  closeModal();
+  if(cb) cb(v);
+}
+function askPick(title, options, cb){
+  openModal(
+    '<div class="modal-title">' + title + '</div>' +
+    '<div class="modal-list">' + options.map(function(o,i){
+      return '<button class="lang-btn" style="color:var(--ink);background:var(--bg);border-color:var(--line)" onclick="modalPick(' + i + ')">' + o.label + '</button>';
+    }).join('') + '</div>' +
+    '<button class="submit-btn retry-btn" style="margin-top:10px" onclick="closeModal()">Отмена</button>');
+  modalCb = cb;
+  window.__opts = options;
+}
+function modalPick(i){
+  const cb = modalCb, opts = window.__opts || [];
+  closeModal();
+  if(cb) cb(opts[i] ? opts[i].value : null);
+}
+function askConfirm(title, text, cb){
+  openModal(
+    '<div class="modal-title">' + title + '</div>' +
+    '<div class="modal-text">' + text + '</div>' +
+    '<div class="modal-row">' +
+      '<button class="submit-btn retry-btn" onclick="closeModal()">Отмена</button>' +
+      '<button class="submit-btn" onclick="modalYes()">Удалить</button>' +
+    '</div>');
+  modalCb = cb;
+}
+function modalYes(){ const cb = modalCb; closeModal(); if(cb) cb(true); }
+
 // ─── МОИ СЛОВА ───
+let myCur = 'all';
 function myList(){ if(!meta.my) meta.my = []; return meta.my; }
-function myDue(){ const t = dnum(); return myList().filter(function(w){ return (w.d===undefined ? true : w.d <= t); }); }
+function mySets(){ if(!meta.mysets) meta.mysets = []; return meta.mysets; }
+function setName(id){ const s = mySets().find(function(x){ return x.id===id; }); return s ? s.name : 'Без раздела'; }
+function myFiltered(){
+  const all = myList();
+  if(myCur==='all') return all;
+  if(myCur==='none') return all.filter(function(w){ return !w.set; });
+  return all.filter(function(w){ return w.set===myCur; });
+}
+function myDue(list){ const t = dnum(); return (list||myList()).filter(function(w){ return (w.d===undefined ? true : w.d <= t); }); }
+
+function myAddSet(){
+  askText('Новый раздел', 'Например: урок 5, еда, работа', function(n){
+    const name = (n||'').replace(/[<>&"]/g,'').trim().slice(0,30);
+    if(!name) return;
+    const id = 's' + Date.now();
+    mySets().push({ id:id, name:name });
+    saveMeta();
+    myCur = id;
+    renderMyWords();
+  });
+}
+function myDelSet(id){
+  askConfirm('Удалить раздел «' + setName(id) + '»?', 'Слова не пропадут — они станут без раздела.', function(){
+    meta.mysets = mySets().filter(function(s){ return s.id!==id; });
+    myList().forEach(function(w){ if(w.set===id) delete w.set; });
+    saveMeta();
+    renderMyDecks();
+  });
+}
+function myPick(id){ myCur = id; renderMyWords(); }
+
 function myAdd(){
   const a = document.getElementById('my-no'), b = document.getElementById('my-ru');
   const n = (a && a.value ? a.value : '').replace(/[<>&"]/g,'').trim().slice(0,60);
   const r = (b && b.value ? b.value : '').replace(/[<>&"]/g,'').trim().slice(0,60);
   if(!n || !r) return;
-  myList().unshift({ n:n, r:r, s:0, d:dnum() });
+  const w = { n:n, r:r, s:0, d:dnum() };
+  if(myCur!=='all' && myCur!=='none') w.set = myCur;
+  myList().unshift(w);
   saveMeta();
   renderMyWords();
 }
-function myDel(i){ myList().splice(i,1); saveMeta(); renderMyWords(); }
+function myDel(i){
+  const w = myFiltered()[i];
+  const ix = myList().indexOf(w);
+  if(ix>=0) myList().splice(ix,1);
+  saveMeta();
+  renderMyWords();
+}
+function myMove(i){
+  const w = myFiltered()[i];
+  const sets = mySets();
+  const opts = sets.map(function(s){ return { label:s.name, value:s.id }; });
+  opts.push({ label:'Без раздела', value:null });
+  askPick('Перенести «' + w.n + '»', opts, function(v){
+    if(v===undefined) return;
+    if(v===null) delete w.set; else w.set = v;
+    saveMeta();
+    renderMyWords();
+  });
+}
+
+function deckWords(id){
+  const all = myList();
+  if(id==='all') return all;
+  if(id==='none') return all.filter(function(w){ return !w.set; });
+  return all.filter(function(w){ return w.set===id; });
+}
+function deckLearned(id){ return deckWords(id).filter(function(w){ return (w.s||0) >= 3; }).length; }
+
+function renderMyDecks(){
+  screen = 'mydecks';
+  const all = myList();
+  const sets = mySets();
+  const noneN = deckWords('none').length;
+
+  const card = function(id, name){
+    const ws = deckWords(id);
+    const due = myDue(ws).length;
+    const learned = deckLearned(id);
+    const pct = ws.length ? Math.round(learned/ws.length*100) : 0;
+    return '<div class="lesson-card" onclick="openDeck(\'' + id + '\')">' +
+      '<div class="lesson-num">' + ic('cards',16) + '</div>' +
+      '<div class="lesson-info">' +
+        '<div class="lesson-title">' + name + '</div>' +
+        '<div class="lesson-sub">' + ws.length + ' слов' + (due ? ' · ' + due + ' к повтору' : ' · всё повторено') + '</div>' +
+      '</div>' +
+      '<div class="lesson-mini">' +
+        '<div class="lesson-mini-bar"><div class="lesson-mini-fill" style="width:' + pct + '%"></div></div>' +
+        '<div class="lesson-mini-pct">' + pct + '%</div>' +
+      '</div>' +
+    '</div>';
+  };
+
+  const decks = sets.map(function(s){ return card(s.id, s.name); }).join('') +
+    (noneN ? card('none', 'Без раздела') : '');
+  const dueAll = myDue(all).length;
+
+  document.getElementById('app').innerHTML =
+    '<div class="header">' +
+      '<button class="back-btn" onclick="renderCourses()">' + t('back_h') + '</button>' +
+      '<div class="header-right"><div class="score-chip">' + ic('cards',14) + ' ' + all.length + '</div></div>' +
+    '</div>' +
+    '<div class="lessons-title">Мои карточки</div>' +
+    '<div class="lessons-sub">Разделы со своими словами и повторениями</div>' +
+    (all.length ? '<button class="continue-btn" onclick="openDeck(\'all\')">' + ic('cards',16) + ' Учить всё' + (dueAll ? ' · ' + dueAll + ' к повтору' : '') + '</button>' : '') +
+    '<div class="lesson-list">' + decks +
+      '<div class="lesson-card" style="border-style:dashed;opacity:.75" onclick="myAddSet()">' +
+        '<div class="lesson-num">+</div>' +
+        '<div class="lesson-info"><div class="lesson-title">Новый раздел</div>' +
+        '<div class="lesson-sub">Например: урок 5, еда, работа</div></div>' +
+      '</div>' +
+    '</div>' +
+    (all.length ? '' : '<div class="deck-count" style="margin-top:1.25rem">Создай раздел и добавь первые слова</div>');
+}
+
+function openDeck(id){ myCur = id; renderMyWords(); }
 
 function renderMyWords(){
   screen = 'mywords';
-  const list = myList();
-  const due = myDue().length;
+  const list = myFiltered();
+  const due = myDue(list).length;
+  const isSet = myCur!=='all' && myCur!=='none';
+  const title = myCur==='all' ? 'Все слова' : myCur==='none' ? 'Без раздела' : setName(myCur);
+
   const rows = list.map(function(w,i){
     const left = w.d===undefined ? 0 : Math.max(0, w.d - dnum());
     return '<div class="my-row">' +
-      '<div class="my-txt"><div class="my-no">' + w.n + '</div><div class="my-ru">' + w.r + '</div></div>' +
+      '<div class="my-txt"><div class="my-no">' + w.n + '</div>' +
+        '<div class="my-ru">' + w.r + (myCur==='all' && w.set ? ' · ' + setName(w.set) : '') + '</div></div>' +
       '<div class="my-when">' + (left===0 ? 'к повтору' : 'через ' + left + ' д') + '</div>' +
+      '<button class="my-del" onclick="myMove(' + i + ')">' + ic('share',15) + '</button>' +
       '<button class="my-del" onclick="myDel(' + i + ')">' + ic('cross',15) + '</button>' +
     '</div>';
   }).join('');
 
   document.getElementById('app').innerHTML =
     '<div class="header">' +
-      '<button class="back-btn" onclick="renderCourses()">' + t('back_h') + '</button>' +
-      '<div class="header-right"><div class="score-chip">' + ic('cards',14) + ' ' + list.length + '</div></div>' +
+      '<button class="back-btn" onclick="renderMyDecks()">← Разделы</button>' +
+      '<div class="header-right">' +
+        (isSet ? '<button class="back-btn" onclick="myDelSet(\'' + myCur + '\')">' + ic('cross',15) + '</button>' : '') +
+        '<div class="score-chip">' + ic('cards',14) + ' ' + list.length + '</div>' +
+      '</div>' +
     '</div>' +
-    '<div class="detail-title">Мои слова</div>' +
-    '<div class="detail-sub">Добавляй слова с курсов — они попадут в карточки с повторениями</div>' +
+    '<div class="detail-title">' + title + '</div>' +
+    '<div class="detail-sub">' + (due ? due + ' слов ждут повторения' : 'Все слова повторены — добавь новые') + '</div>' +
     '<div class="card" style="margin-top:1rem">' +
       '<input class="text-input" id="my-no" type="text" placeholder="Слово по-норвежски" style="margin-bottom:8px">' +
       '<input class="text-input" id="my-ru" type="text" placeholder="Перевод" style="margin-bottom:12px" onkeydown="if(event.key===\'Enter\')myAdd()">' +
-      '<button class="submit-btn" onclick="myAdd()">Добавить слово</button>' +
+      '<div class="btn-row">' +
+        '<button class="submit-btn retry-btn" id="ai-fill" onclick="aiFillWord()">' + ic('star',15) + ' Заполнить</button>' +
+        '<button class="submit-btn" onclick="myAdd()">Добавить</button>' +
+      '</div>' +
     '</div>' +
     (list.length ?
-      '<button class="continue-btn" onclick="startMyWords()">' + ic('cards',16) + ' Учить карточки' + (due ? ' · ' + due + ' к повтору' : '') + '</button>' +
+      '<button class="continue-btn" onclick="startMyWords()">' + ic('cards',16) + ' Учить карточки' + (due ? ' · ' + due : '') + '</button>' +
+      (list.length >= 3 ? '<button class="continue-btn" style="background:var(--paper);color:var(--ink);border:1px solid var(--line)" id="ai-prac" onclick="aiPractice()">' + ic('star',16) + ' Тренировать фразами</button>' : '') +
       '<div class="card" style="padding:.6rem .8rem">' + rows + '</div>'
-      : '<div class="deck-count" style="margin-top:1.5rem">Пока пусто. Добавь первое слово выше.</div>');
+      : '<div class="deck-count" style="margin-top:1.5rem">Здесь пока пусто. Добавь слово выше.</div>');
 }
 
 function startMyWords(){
-  const due = myDue();
-  const deck = (due.length ? due : myList()).map(function(w){ return { my:true, w:w }; });
+  const list = myFiltered();
+  const due = myDue(list);
+  const deck = (due.length ? due : list).map(function(w){ return { my:true, w:w }; });
   if(!deck.length){ renderMyWords(); return; }
   screen = 'words';
   wordsState.deck = shuffle(deck);
