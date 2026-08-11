@@ -324,6 +324,62 @@ button{touch-action:manipulation}
 .name-input::placeholder{color:rgba(255,255,255,0.4)}
 .name-input:focus{border-color:rgba(255,255,255,0.6)}
 .hero-title .edit-hint{font-size:12px;opacity:.45;margin-left:6px}
+
+/* ─── СВЕТЛАЯ ТЕМА ─── */
+body.light{
+  --bg:#f4f5f7;--paper:#ffffff;--ink:#15161a;--ink2:#5b6068;--ink3:#8c919a;--line:#e3e5ea;
+  --blue:#2f5fd0;--blue-light:#e7eeff;--green:#15803d;--green-light:#e4f7ea;
+  --red:#c92a2a;--red-light:#fdeaea;--amber:#a16207;--amber-light:#fdf4d9;
+  color:var(--ink);
+}
+body.light .ambient{background:var(--bg)}
+body.light .amb.a1{background:radial-gradient(circle,rgba(47,95,208,0.13),transparent 70%)}
+body.light .amb.a2{background:radial-gradient(circle,rgba(201,42,42,0.09),transparent 70%)}
+body.light .card,body.light .hero,body.light .lesson-card,body.light .block-card,
+body.light .course-card,body.light .mode-toggle,body.light .word-stage,body.light .wn-item{
+  background:linear-gradient(160deg,rgba(255,255,255,0.96),rgba(255,255,255,0.86));
+  border-color:rgba(15,22,40,0.08);
+  box-shadow:0 1px 0 rgba(255,255,255,0.9) inset,0 6px 20px rgba(15,22,40,0.06);
+}
+body.light .submit-btn,body.light .continue-btn,body.light .restart-btn,
+body.light .welcome-btn,body.light .tour-next,body.light .score-chip{
+  background:#15161a;color:#fff;border-color:#15161a;
+}
+body.light .mode-btn.active,body.light .word-chip.selected,body.light .set-chip.on,
+body.light .goal-btn.on,body.light .lang-btn.on,body.light .pl-btn.on{
+  background:#15161a;color:#fff;border-color:#15161a;
+}
+body.light .pl-play{background:#15161a;color:#fff}
+body.light .pl-pause{border-color:#fff}
+body.light .submit-btn.retry-btn{background:var(--paper);color:var(--ink);border:1px solid var(--line)}
+body.light .submit-btn.next{background:var(--green);color:#fff}
+body.light .progress-fill,body.light .daily-fill,body.light .lesson-mini-fill,body.light .pl-fill{background:#15161a}
+body.light .daily-fill.hit,body.light .lesson-card.done .lesson-mini-fill{background:var(--green)}
+body.light .progress-track,body.light .daily-bar,body.light .lesson-mini-bar,body.light .pl-track{background:rgba(15,22,40,0.10)}
+body.light .word-chip.pool{background:var(--paper);border-color:var(--line);color:var(--ink)}
+body.light .builder-answer,body.light .text-input{background:#fff;border-color:var(--line)}
+body.light .dl-line.active{background:rgba(15,22,40,0.06)}
+body.light .lesson-card.done{border-color:rgba(21,128,61,0.35)}
+body.light .lesson-card.expired,body.light .exam-card{border-color:rgba(161,98,7,0.35)}
+body.light .plan-banner{background:var(--amber-light);border-color:rgba(161,98,7,0.3)}
+body.light .modal-box,body.light .tour-tip{
+  background:linear-gradient(160deg,#ffffff,#f6f7f9);
+  border-color:rgba(15,22,40,0.10);
+  box-shadow:0 16px 48px rgba(15,22,40,0.18);
+}
+body.light .tour-hole{box-shadow:0 0 0 9999px rgba(15,22,40,0.55);border-color:rgba(15,22,40,0.5)}
+body.light .modal-back{background:rgba(15,22,40,0.45)}
+/* полноэкранные оверлеи */
+body.light .welcome{background:var(--bg)}
+body.light .welcome-logo,body.light .onb-title{color:var(--ink)}
+body.light .welcome-tagline,body.light .onb-sub{color:var(--ink2)}
+body.light .name-input{background:#fff;border-color:var(--line);color:var(--ink)}
+body.light .name-input::placeholder{color:var(--ink3)}
+body.light .lang-btn,body.light .goal-btn{background:#fff;border-color:var(--line);color:var(--ink)}
+body.light .skip-link{color:var(--ink3)}
+body.light .onb-dot{background:rgba(15,22,40,0.2)}
+body.light .onb-dot.active{background:#15161a}
+
 @media (max-width:480px){
   .amb{filter:blur(90px)}
   .card{padding:1.2rem;border-radius:18px}
@@ -560,6 +616,23 @@ const COURSES = [
 ];
 let ci = 0;
 
+function applyTheme(){
+  const light = meta.theme === 'light';
+  try{
+    document.body.className = light ? 'light' : '';
+    const m = document.querySelector('meta[name="theme-color"]');
+    if(m) m.setAttribute('content', light ? '#f4f5f7' : '#0a0a0a');
+  }catch(e){}
+}
+function toggleTheme(){
+  meta.theme = meta.theme === 'light' ? 'dark' : 'light';
+  saveMeta();
+  applyTheme();
+  buzz('ok');
+  if(screen==='courses') renderCourses();
+  else if(screen==='lessons') renderLessons();
+}
+
 function restoreCourse(){
   const i = meta.course || 0;
   if(COURSES[i] && !COURSES[i].soon){ ci = i; LESSONS = COURSES[i].L; WORDS = COURSES[i].W; }
@@ -658,6 +731,7 @@ function renderCourses(){
     '<div class="header">' +
       '<div class="head-greet" onclick="renderName()">' + (meta.name ? 'Hei, ' + meta.name + '!' : 'Hei!') + '<span class="edit-hint">' + ic('pencil',13) + '</span></div>' +
       '<div class="header-right">' +
+        '<button class="back-btn" onclick="toggleTheme()">' + ic(meta.theme==='light'?'moon':'sun',17) + '</button>' +
         '<button class="back-btn" id="sched-btn" onclick="renderSchedule()">' + ic('cal',17) + '</button>' +
       '</div>' +
     '</div>' +
@@ -834,6 +908,8 @@ function ic(n,sz){
     pencil:'<path d="M4 20h4L20 8l-4-4L4 16z"/>',
     star:'<path d="m12 3 2.6 5.6 6 .8-4.4 4.2 1.1 6-5.3-2.9L6.7 19.6l1.1-6L3.4 9.4l6-.8z"/>',
     party:'<path d="M4 20l5-13 8 8z"/><path d="M15 4v2M19 7h2M17.5 10.5l1.5 1.5"/>',
+    sun:'<circle cx="12" cy="12" r="4.5"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+    moon:'<path d="M20 14.5A8.5 8.5 0 0 1 9.5 4a8.5 8.5 0 1 0 10.5 10.5z"/>',
     boat:'<path d="M3 17h18l-3 4H6z"/><path d="M12 3v10"/><path d="M12 5l6 3-6 3z"/>'
   };
   return '<svg class="ic" width="' + s + '" height="' + s + '" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">' + (P[n]||'') + '</svg>';
@@ -939,7 +1015,7 @@ function ringSVG(pct,size,stroke,color){
   const off = c*(1-Math.min(pct,100)/100);
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
     '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '"/>' +
-    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + (color||'#fff') + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>' +
+    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + (color||'var(--ink)') + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>' +
   '</svg>';
 }
 function wordsAllTotal(){ let s=0; for(let i=0;i<WORDS.length;i++) s += WORDS[i].length; return s; }
@@ -1219,6 +1295,7 @@ function renderLessons(){
     '<div class="header">' +
       '<button class="back-btn" onclick="renderCourses()">' + t('back_h') + '</button>' +
       '<div class="header-right">' +
+        '<button class="back-btn" onclick="toggleTheme()">' + ic(meta.theme==='light'?'moon':'sun',17) + '</button>' +
         '<button class="back-btn" id="sched-btn" onclick="renderSchedule()">' + ic('cal',17) + '</button>' +
       '</div>' +
     '</div>' +
@@ -2611,6 +2688,7 @@ if(TG && TG.CloudStorage){
   }catch(e){}
 }
 
+applyTheme();
 goToLessons();
 </script>
 </body>
