@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="theme-color" content="#0c0c0c">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Ro! — Норвежский тренажёр</title>
@@ -14,10 +14,16 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html{-webkit-text-size-adjust:100%}
 :root{
-  --bg:#0a0a0a;--paper:#161616;--ink:#f5f5f5;--ink2:#a3a3a3;--ink3:#666;
-  --line:#262626;--blue:#7aa2f7;--blue-light:#16213a;--green:#4ade80;
+  --bg:#0c0c0c;--paper:#131313;--ink:#f5f5f5;--ink2:#a3a3a3;--ink3:#666;
+  --line:#232325;--blue:#7aa2f7;--blue-light:#16213a;--green:#4ade80;
   --green-light:#0d2818;--red:#f87171;--red-light:#2d1414;
   --amber:#fbbf24;--amber-light:#2b2210;
+  
+  --grad:#ffffff;
+  --grad-soft:rgba(255,255,255,0.06);
+  --acc1:#ffffff;--acc2:#ffffff;--acc3:#FFFFFF;
+  --grad:#ffffff;
+  --grad-soft:rgba(255,255,255,0.06);
 }
 body{font-family:'Manrope',-apple-system,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
 button{touch-action:manipulation}
@@ -33,7 +39,7 @@ button{touch-action:manipulation}
 .tour-title{font-size:16.5px;font-weight:700;letter-spacing:-0.2px;margin-bottom:5px}
 .tour-text{font-size:13.5px;line-height:1.55;color:var(--ink2)}
 .tour-nav{display:flex;align-items:center;gap:10px;margin-top:14px}
-.tour-next{flex:1;background:#fff;color:#0a0a0a;border:none;border-radius:13px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;min-height:44px}
+.tour-next{flex:1;background:#fff;color:#000001;border:none;border-radius:13px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;min-height:44px}
 .tour-skip{background:none;border:none;color:var(--ink3);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;padding:11px 4px}
 .ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg);pointer-events:none}
 .amb{position:absolute;border-radius:50%;filter:blur(120px)}
@@ -54,7 +60,7 @@ button{touch-action:manipulation}
 .logo{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-0.5px;cursor:pointer}
 .head-greet{font-size:17px;font-weight:700;letter-spacing:-0.3px;color:var(--ink);cursor:pointer;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .header-right{margin-left:auto;display:flex;align-items:center;gap:10px}
-.score-chip{background:#fff;color:#0a0a0a;font-size:13px;font-weight:600;padding:4px 12px;border-radius:20px}
+.score-chip{background:#fff;color:#000001;font-size:13px;font-weight:600;padding:4px 12px;border-radius:20px}
 .back-btn{background:none;border:1px solid var(--line);color:var(--ink2);font-size:13px;font-weight:500;font-family:inherit;padding:6px 14px;border-radius:12px;cursor:pointer;transition:all .2s}
 .back-btn:hover{border-color:var(--ink2);color:var(--ink)}
 
@@ -65,7 +71,7 @@ button{touch-action:manipulation}
 
 .mode-toggle{display:flex;background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:16px;padding:3px;margin-bottom:1.25rem;width:fit-content}
 .mode-btn{padding:9px 18px;font-size:13px;font-weight:500;border:none;background:none;color:var(--ink2);border-radius:12px;cursor:pointer;transition:all .2s;font-family:inherit;min-height:38px}
-.mode-btn.active{background:#fff;color:#0a0a0a}
+.mode-btn.active{background:#fff;color:#000001}
 
 .card{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:20px;padding:1.75rem;margin-bottom:1rem}
 .type-badge{display:inline-block;font-size:11px;font-weight:500;letter-spacing:.05em;text-transform:uppercase;padding:3px 10px;border-radius:20px;background:var(--blue-light);color:var(--blue);margin-bottom:1rem}
@@ -79,13 +85,13 @@ button{touch-action:manipulation}
 .word-chip{padding:10px 14px;border-radius:10px;font-size:14px;cursor:pointer;transition:all .15s;user-select:none;-webkit-user-select:none;border:1px solid transparent;min-height:42px;display:inline-flex;align-items:center}
 .word-chip.pool{background:var(--paper);border-color:var(--line);color:var(--ink)}
 .word-chip.pool:hover{border-color:var(--ink2)}
-.word-chip.selected{background:#fff;color:#0a0a0a}
+.word-chip.selected{background:#fff;color:#000001}
 .word-pool{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem}
 .text-input{width:100%;padding:14px 16px;font-size:16px;font-family:inherit;background:var(--bg);border:2px solid var(--line);border-radius:14px;color:var(--ink);outline:none;transition:border-color .2s;margin-bottom:1rem;min-height:50px}
 .text-input:focus{border-color:var(--ink2)}
 .text-input.correct-state{border-color:var(--green);background:var(--green-light)}
 .text-input.wrong-state{border-color:var(--red);background:var(--red-light)}
-.submit-btn{width:100%;padding:15px;font-size:15px;font-weight:600;font-family:inherit;background:#fff;color:#0a0a0a;border:none;border-radius:16px;cursor:pointer;transition:opacity .2s,transform .1s;letter-spacing:.01em;min-height:50px}
+.submit-btn{width:100%;padding:15px;font-size:15px;font-weight:600;font-family:inherit;background:#fff;color:#000001;border:none;border-radius:16px;cursor:pointer;transition:opacity .2s,transform .1s;letter-spacing:.01em;min-height:50px}
 .submit-btn:hover{opacity:.88}
 .submit-btn:active{transform:scale(.98)}
 .submit-btn:disabled{opacity:.35;cursor:not-allowed}
@@ -113,7 +119,7 @@ button{touch-action:manipulation}
 .rule-box{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);font-size:13px;color:var(--ink2);line-height:1.65}
 .rule-box b{color:var(--ink)}
 .rule-box code{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-family:inherit;font-size:12.5px;color:var(--blue)}
-.play-big{display:block;margin:6px auto 10px;background:#fff;color:#0a0a0a;font-size:16px;font-weight:600;font-family:inherit;border:none;border-radius:16px;padding:16px 30px;cursor:pointer;min-height:54px;transition:transform .1s,opacity .2s}
+.play-big{display:block;margin:6px auto 10px;background:#fff;color:#000001;font-size:16px;font-weight:600;font-family:inherit;border:none;border-radius:16px;padding:16px 30px;cursor:pointer;min-height:54px;transition:transform .1s,opacity .2s}
 .play-big:hover{opacity:.9}
 .play-big:active{transform:scale(.97)}
 .listen-hint{text-align:center;font-size:13px;color:var(--ink3);margin-bottom:1.25rem}
@@ -130,7 +136,7 @@ button{touch-action:manipulation}
 .stat{background:var(--bg);border:1px solid var(--line);border-radius:16px;padding:1rem 1.5rem;text-align:center}
 .stat-num{font-size:28px;font-weight:700;color:var(--ink)}
 .stat-label{font-size:12px;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
-.restart-btn{padding:14px 32px;font-size:15px;font-weight:600;font-family:inherit;background:#fff;color:#0a0a0a;border:none;border-radius:16px;cursor:pointer;min-height:50px}
+.restart-btn{padding:14px 32px;font-size:15px;font-weight:600;font-family:inherit;background:#fff;color:#000001;border:none;border-radius:16px;cursor:pointer;min-height:50px}
 
 /* ─── LESSON SELECTOR ─── */
 .lessons-title{font-size:26px;font-weight:700;letter-spacing:-0.5px;margin:0.5rem 0 0.25rem}
@@ -157,7 +163,7 @@ button{touch-action:manipulation}
 .set-row{display:flex;flex-wrap:wrap;gap:7px;margin:14px 0 4px}
 .set-chip{background:var(--bg);border:1px solid var(--line);border-radius:20px;color:var(--ink2);font-family:inherit;font-size:12.5px;font-weight:600;padding:8px 13px;cursor:pointer;min-height:36px;transition:all .15s}
 .set-chip:hover{border-color:var(--ink2)}
-.set-chip.on{background:#fff;color:#0a0a0a;border-color:#fff}
+.set-chip.on{background:#fff;color:#000001;border-color:#fff}
 .set-chip.add{color:var(--ink3);border-style:dashed}
 .my-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.06)}
 .my-row:last-child{border-bottom:none}
@@ -172,17 +178,20 @@ button{touch-action:manipulation}
 .pl-row{display:flex;align-items:center;justify-content:center;gap:12px}
 .pl-btn{min-width:52px;min-height:44px;background:var(--bg);border:1px solid var(--line);border-radius:13px;color:var(--ink);font-family:inherit;font-size:13.5px;font-weight:600;cursor:pointer}
 .pl-btn:hover{border-color:var(--ink2)}
-.pl-btn.on{background:#fff;color:#0a0a0a;border-color:#fff}
-.pl-btn.on svg{color:#0a0a0a}
-.pl-play{width:60px;height:60px;border-radius:50%;background:#fff;color:#0a0a0a;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pl-btn.on{background:#fff;color:#000001;border-color:#fff}
+.pl-btn.on svg{color:#000001}
+.pl-play{width:60px;height:60px;border-radius:50%;background:#fff;color:#000001;border:none;display:flex;align-items:center;justify-content:center;cursor:pointer}
 .pl-play:active{transform:scale(.96)}
-.pl-pause{display:inline-block;width:16px;height:18px;border-left:5px solid #0a0a0a;border-right:5px solid #0a0a0a}
+.pl-pause{display:inline-block;width:16px;height:18px;border-left:5px solid #000001;border-right:5px solid #000001}
 .dl-box{display:flex;flex-direction:column;gap:2px;padding:1rem .9rem}
 .dl-line{padding:9px 11px;border-radius:12px;cursor:pointer;transition:background .2s}
 .dl-line.active{background:rgba(255,255,255,0.10)}
 .dl-no{font-size:15.5px;font-weight:600;line-height:1.45}
 .dl-ru{font-size:13.5px;color:var(--ink3);margin-top:3px;line-height:1.4;display:none}
 .dl-box.ru .dl-ru{display:block}
+.cover{width:calc(100% + 2.5rem);margin:-1.15rem -1.25rem 14px;border-radius:18px 18px 0 0;overflow:hidden;line-height:0;background:var(--bg)}
+.cover img{width:100%;height:auto;display:block;opacity:.92}
+body.light .cover img{opacity:1;filter:invert(1) hue-rotate(180deg) brightness(1.05)}
 .course-card{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:18px;padding:1.15rem 1.25rem;cursor:pointer;transition:border-color .2s,transform .1s}
 .course-card:hover{border-color:rgba(255,255,255,0.22)}
 .course-card:active{transform:scale(.99)}
@@ -221,6 +230,94 @@ button{touch-action:manipulation}
 .daily-bar{height:4px;background:rgba(255,255,255,0.10);border-radius:2px;overflow:hidden}
 .daily-fill{height:100%;background:#fff;border-radius:2px;transition:width .45s cubic-bezier(.4,0,.2,1)}
 .daily-fill.hit{background:var(--green)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.sg{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));border:1px solid rgba(255,255,255,0.10);border-radius:14px;padding:12px 8px;text-align:center}
+.sg-v{font-size:20px;font-weight:700;letter-spacing:-0.5px;font-variant-numeric:tabular-nums}
+.sg-l{font-size:11px;color:var(--ink3);margin-top:3px;line-height:1.3}
+.heat{display:grid;grid-template-columns:repeat(10,1fr);gap:5px}
+.ht{aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,0.06)}
+.ht.l1{background:rgba(74,222,128,0.25)}
+.ht.l2{background:rgba(74,222,128,0.45)}
+.ht.l3{background:rgba(74,222,128,0.7)}
+.ht.l4{background:var(--green)}
+.heat-legend{display:flex;align-items:center;gap:5px;justify-content:flex-end;margin-top:12px;font-size:10.5px;color:var(--ink3)}
+.heat-legend .ht{width:12px;aspect-ratio:1}
+.year-row{display:flex;gap:5px;align-items:flex-end}
+.yr-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.yr-bar-bg{width:100%;height:90px;display:flex;align-items:flex-end;background:rgba(255,255,255,0.05);border-radius:5px;overflow:hidden}
+.yr-bar{width:100%;background:var(--ink2);border-radius:5px}
+body.light .sg{background:linear-gradient(160deg,rgba(255,255,255,0.96),rgba(255,255,255,0.86));border-color:rgba(15,22,40,0.08)}
+body.light .ht{background:rgba(15,22,40,0.07)}
+body.light .yr-bar-bg{background:rgba(15,22,40,0.07)}
+
+/* ─── градиент только как редкий акцент ─── */
+/* главная кнопка экрана — единственное градиентное пятно в интерфейсе */
+.submit-btn,.continue-btn,.restart-btn,.welcome-btn,.tour-next{
+  background:var(--grad)!important;color:#fff!important;border:none!important;
+  box-shadow:0 6px 22px rgba(114,60,235,0.28);
+}
+.submit-btn.retry-btn{background:var(--paper)!important;color:var(--ink)!important;border:1px solid var(--line)!important;box-shadow:none}
+.submit-btn.next{background:var(--grad)!important}
+.submit-btn:disabled{opacity:.35;box-shadow:none}
+/* активные состояния — ровный фиолетовый */
+.mode-btn.active{background:rgba(255,255,255,0.12)!important;color:var(--ink)!important;border-color:transparent!important}
+.wd-chip.on,.set-chip.on,.goal-btn.on,.lang-btn.on,.pl-btn.on,.word-chip.selected{
+  background:#ffffff!important;color:#fff!important;border-color:#ffffff!important;
+}
+.pl-play{background:#ffffff!important;color:#fff!important}
+.score-chip{background:rgba(255,255,255,0.07)!important;color:var(--ink2)!important;border:1px solid var(--line)!important;font-weight:600}
+/* плитки иконок — всегда нейтральные */
+.lesson-num,.block-num{border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid var(--line);color:var(--ink2)}
+.lesson-card.done .lesson-num,.block-card.full .block-num{background:var(--green-light);border-color:#1d5c34;color:var(--green)}
+.lesson-card.locked .lesson-num,.block-card.locked .block-num{background:rgba(255,255,255,0.03);border-color:var(--line);color:var(--ink3)}
+.exam-card .block-num{background:rgba(255,239,99,0.12);border-color:rgba(255,239,99,0.3);color:var(--ink2)}
+/* полосы — ровный фиолетовый, зелёный при выполнении */
+.progress-fill,.daily-fill,.lesson-mini-fill,.pl-fill,.part-bar-fill{background:#ffffff}
+.daily-fill.hit,.lesson-card.done .lesson-mini-fill{background:var(--green)}
+.wk-bar{background:rgba(255,255,255,0.14)}
+.wk-bar.today{background:#ffffff}
+.wk-bar.hit{background:var(--green)}
+.yr-bar{background:#ffffff;opacity:.8}
+/* тепловая карта — одна фиолетовая шкала */
+.ht.l1{background:rgba(114,60,235,0.25)}
+.ht.l2{background:rgba(114,60,235,0.45)}
+.ht.l3{background:rgba(114,60,235,0.7)}
+.ht.l4{background:#ffffff}
+/* жёлтый — внимание */
+.daily-streak.lit{color:var(--ink2)}
+.plan-banner{background:rgba(255,239,99,0.10);border-color:rgba(255,239,99,0.28);color:var(--ink2)}
+.lesson-card.expired{border-color:rgba(255,239,99,0.35)}
+.expire-note{color:var(--ink2)}
+.exam-card{border-color:rgba(255,239,99,0.22)}
+body.light .score-chip{background:rgba(15,22,40,0.06);color:var(--ink)}
+body.light .lesson-num,body.light .block-num{background:rgba(15,22,40,0.05);border-color:rgba(15,22,40,0.10)}
+body.light .wk-bar{background:rgba(15,22,40,0.14)}
+/* ─── дневные кольца ─── */
+.rings-hero{display:flex;align-items:center;gap:18px}
+.rings-wrap{position:relative;width:168px;height:168px;flex-shrink:0}
+.rings-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.rings-big{font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1}
+.rings-small{font-size:11.5px;color:var(--ink3);margin-top:3px}
+.rings-legend{display:flex;flex-direction:column;gap:11px;min-width:0}
+.lg{display:flex;align-items:center;gap:8px;font-size:13px}
+.lg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.lg-t{color:var(--ink2);min-width:44px}
+.lg-v{font-weight:600;font-variant-numeric:tabular-nums}
+/* полоса недели */
+.week-strip{display:flex;gap:6px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08)}
+.wk-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
+.wk-bar-bg{width:100%;height:52px;display:flex;align-items:flex-end;background:rgba(255,255,255,0.05);border-radius:6px;overflow:hidden}
+.wk-bar{width:100%;background:var(--ink3);border-radius:6px;transition:height .4s ease}
+.wk-bar.hit{background:var(--green)}
+.wk-bar.today{background:var(--ink)}
+.wk-bar.today.hit{background:var(--green)}
+.wk-lbl{font-size:10.5px;color:var(--ink3)}
+.wk-lbl.today{color:var(--ink);font-weight:700}
+.hero-foot{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);font-size:12.5px;color:var(--ink2)}
+.hf-item{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.hf-sep{flex:1}
+body.light .wk-bar-bg{background:rgba(15,22,40,0.07)}
+body.light .wk-bar.today{background:#15161a}
 /* hero ring on main screen */
 .hero{display:flex;flex-direction:column;gap:14px;background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:20px;padding:1.15rem 1.35rem;margin-bottom:1.25rem}
 .hero-rings{display:flex;gap:12px;align-items:stretch;padding-top:14px;border-top:1px solid rgba(255,255,255,0.08)}
@@ -240,7 +337,7 @@ button{touch-action:manipulation}
 .detail-title{font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:4px}
 .detail-sub{font-size:14px;color:var(--ink2);margin-bottom:6px}
 .detail-count{font-size:13px;color:var(--ink3);margin-bottom:1.25rem}
-.continue-btn{width:100%;padding:15px;font-size:15px;font-weight:600;font-family:inherit;background:#fff;color:#0a0a0a;border:none;border-radius:16px;cursor:pointer;min-height:50px;margin-bottom:1rem;transition:opacity .2s,transform .1s}
+.continue-btn{width:100%;padding:15px;font-size:15px;font-weight:600;font-family:inherit;background:#fff;color:#000001;border:none;border-radius:16px;cursor:pointer;min-height:50px;margin-bottom:1rem;transition:opacity .2s,transform .1s}
 .continue-btn:hover{opacity:.9}
 .continue-btn:active{transform:scale(.98)}
 .block-list{display:flex;flex-direction:column;gap:10px}
@@ -279,7 +376,7 @@ button{touch-action:manipulation}
 .welcome-content{margin-top:calc(12vh + env(safe-area-inset-top));padding:0 1.5rem;max-width:420px}
 .welcome-logo{font-size:44px;font-weight:600;letter-spacing:-1px;color:#fff;margin-bottom:14px}
 .welcome-tagline{font-size:15px;line-height:1.65;color:rgba(255,255,255,0.85);margin-bottom:26px}
-.welcome-btn{background:rgba(255,255,255,0.92);color:#0a0a0a;font-size:15px;font-weight:600;font-family:inherit;border:none;border-radius:16px;padding:14px 36px;cursor:pointer;transition:transform .15s,background .2s;min-height:50px}
+.welcome-btn{background:rgba(255,255,255,0.92);color:#000001;font-size:15px;font-weight:600;font-family:inherit;border:none;border-radius:16px;padding:14px 36px;cursor:pointer;transition:transform .15s,background .2s;min-height:50px}
 .welcome-btn:hover{background:#fff}
 .welcome-btn:active{transform:scale(.97)}
 
@@ -293,7 +390,7 @@ button{touch-action:manipulation}
 .cal-d.hit{background:var(--green-light);border-color:#1d5c34;color:var(--green);font-weight:600}
 .wd-row{display:flex;gap:6px;margin:8px 0 14px}
 .wd-chip{flex:1;padding:10px 0;border-radius:12px;background:var(--bg);border:1px solid var(--line);color:var(--ink2);font-size:13px;font-weight:600;text-align:center;cursor:pointer;transition:all .15s;min-height:42px;display:flex;align-items:center;justify-content:center}
-.wd-chip.on{background:#fff;color:#0a0a0a;border-color:#fff}
+.wd-chip.on{background:#fff;color:#000001;border-color:#fff}
 .time-input{width:110px;padding:11px 14px;font-size:16px;font-family:inherit;background:var(--bg);border:2px solid var(--line);border-radius:14px;color:var(--ink);outline:none;text-align:center}
 .time-input:focus{border-color:var(--ink2)}
 .sched-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
@@ -301,7 +398,7 @@ button{touch-action:manipulation}
 .plan-banner{background:var(--amber-light);border:1px solid #6b5a10;color:var(--amber);border-radius:14px;padding:11px 14px;font-size:13.5px;font-weight:600;text-align:center;margin-bottom:12px;cursor:pointer}
 .goal-list{display:flex;flex-direction:column;gap:9px;margin-top:4px}
 .goal-btn{display:flex;flex-direction:column;align-items:flex-start;gap:3px;background:rgba(255,255,255,0.07);border:1.5px solid rgba(255,255,255,0.18);border-radius:16px;color:#fff;font-family:inherit;padding:13px 16px;cursor:pointer;text-align:left;transition:all .2s}
-.goal-btn.on{background:rgba(255,255,255,0.92);border-color:#fff;color:#0a0a0a}
+.goal-btn.on{background:rgba(255,255,255,0.92);border-color:#fff;color:#000001}
 .goal-time{font-size:15.5px;font-weight:700}
 .goal-desc{font-size:12.5px;opacity:.7}
 .goal-ph{font-size:11.5px;font-weight:600;opacity:.6;text-transform:uppercase;letter-spacing:.04em}
@@ -311,7 +408,7 @@ button{touch-action:manipulation}
 .wn-d{font-size:13.5px;line-height:1.5;color:var(--ink2)}
 .lang-list{display:flex;flex-direction:column;gap:10px;margin-top:6px}
 .lang-btn{background:rgba(255,255,255,0.08);border:1.5px solid rgba(255,255,255,0.22);border-radius:16px;color:#fff;font-size:16px;font-weight:600;font-family:inherit;padding:14px;cursor:pointer;min-height:52px;transition:all .2s}
-.lang-btn:hover,.lang-btn.on{background:rgba(255,255,255,0.92);color:#0a0a0a;border-color:#fff}
+.lang-btn:hover,.lang-btn.on{background:rgba(255,255,255,0.92);color:#000001;border-color:#fff}
 .onb-illo{height:190px;display:flex;align-items:center;justify-content:center;margin-bottom:8px}
 .onb-dots{display:flex;gap:6px;justify-content:center;margin:18px 0 22px}
 .onb-dot{width:6px;height:6px;border-radius:3px;background:rgba(255,255,255,0.22);transition:all .25s}
@@ -380,12 +477,94 @@ body.light .skip-link{color:var(--ink3)}
 body.light .onb-dot{background:rgba(15,22,40,0.2)}
 body.light .onb-dot.active{background:#15161a}
 
+
+/* ─── акцентный градиент ─── */
+.submit-btn:not(.retry-btn):not(.next),.continue-btn,.restart-btn,.welcome-btn,.tour-next{
+  background:var(--grad);color:#fff;border:none;
+  box-shadow:0 4px 16px rgba(83,0,208,0.28);
+}
+.submit-btn:disabled{opacity:.32;box-shadow:none}
+
+.goal-btn.on .goal-desc,.goal-btn.on .goal-ph{opacity:.85}
+.pl-pause{border-color:#fff}
+/* плашки иконок */
+.lesson-num,.block-num{background:var(--grad-soft);border-color:rgba(255,255,255,0.14);color:var(--ink)}
+.lesson-card.done .lesson-num,.block-card.full .block-num{background:var(--green-light);border-color:#1d5c34;color:var(--green)}
+.lesson-card.locked .lesson-num,.block-card.locked .block-num{background:var(--paper);border-color:var(--line);color:var(--ink3)}
+.exam-card .block-num{background:linear-gradient(120deg,rgba(239,136,44,0.28),rgba(255,255,255,0.12));border-color:rgba(239,136,44,0.35);color:var(--amber)}
+/* полосы прогресса */
+.daily-fill.hit,.lesson-card.done .lesson-mini-fill,.wk-bar.hit{background:var(--green)}
+/* акценты интерфейса */
+.type-badge{background:var(--grad-soft);color:var(--ink);border:1px solid rgba(255,255,255,0.12)}
+body.light .submit-btn:not(.retry-btn):not(.next),body.light .continue-btn,body.light .restart-btn,
+body.light .welcome-btn,body.light .tour-next{background:var(--grad);color:#fff}
+body.light .pl-play{background:#ffffff;color:#fff}
+body.light .mode-btn.active,body.light .word-chip.selected,body.light .set-chip.on,
+body.light .goal-btn.on,body.light .lang-btn.on,body.light .pl-btn.on{background:#ffffff!important;color:#fff!important}
+body.light .lesson-num,body.light .block-num{background:linear-gradient(120deg,rgba(83,0,208,0.12),rgba(239,136,44,0.12));border-color:rgba(15,22,40,0.10)}
+body.light .type-badge{background:linear-gradient(120deg,rgba(83,0,208,0.10),rgba(239,136,44,0.10));color:var(--ink);border-color:rgba(15,22,40,0.10)}
+
 @media (max-width:480px){
   .amb{filter:blur(90px)}
   .card{padding:1.2rem;border-radius:18px}
   .q-ru{font-size:21px}
   .welcome-logo{font-size:38px}
 }
+
+/* ═══ МОНОХРОМ ═══ */
+.submit-btn:not(.retry-btn),.continue-btn,.restart-btn,.welcome-btn,.tour-next{
+  background:#fff!important;color:#0c0c0c!important;border:none!important;box-shadow:none!important;
+}
+.submit-btn.retry-btn{background:var(--paper)!important;color:var(--ink)!important;border:1px solid var(--line)!important;box-shadow:none!important}
+.submit-btn:disabled{opacity:.32!important;box-shadow:none!important}
+.score-chip{background:rgba(255,255,255,0.07)!important;color:var(--ink2)!important;border:1px solid var(--line)!important;box-shadow:none!important}
+.mode-btn.active{background:#fff!important;color:#0c0c0c!important;border-color:transparent!important}
+.word-chip.selected,.wd-chip.on,.set-chip.on,.goal-btn.on,.lang-btn.on,.pl-btn.on{background:#fff!important;color:#0c0c0c!important;border-color:#fff!important}
+.pl-play{background:#fff!important;color:#0c0c0c!important;box-shadow:none!important}
+.pl-pause{border-color:#0c0c0c!important}
+.progress-fill,.daily-fill,.lesson-mini-fill,.pl-fill,.part-bar-fill,.wk-bar.today,.yr-bar{background:#fff!important}
+.daily-fill.hit,.lesson-card.done .lesson-mini-fill,.wk-bar.hit{background:#fff!important}
+.rings-big{color:var(--ink)!important;-webkit-text-fill-color:var(--ink)!important;background:none!important}
+.complete-title{background:none!important;-webkit-text-fill-color:var(--ink)!important;color:var(--ink)!important}
+/* иконки и плитки */
+.lesson-num,.block-num{border-radius:12px;background:rgba(255,255,255,0.06)!important;border:1px solid var(--line)!important;color:var(--ink2)!important}
+.lesson-card.done .lesson-num,.block-card.full .block-num{background:rgba(255,255,255,0.14)!important;border-color:rgba(255,255,255,0.3)!important;color:var(--ink)!important}
+.lesson-card.locked .lesson-num,.block-card.locked .block-num,.exam-card .block-num{background:rgba(255,255,255,0.03)!important;border-color:var(--line)!important;color:var(--ink3)!important}
+/* состояния — оттенками серого */
+.lesson-card.done,.block-card.full{border-color:rgba(255,255,255,0.28)!important}
+.lesson-card.expired,.exam-card{border-color:var(--line)!important}
+.expire-note,.daily-streak.lit,.daily-goal.hit{color:var(--ink)!important}
+.plan-banner{background:rgba(255,255,255,0.06)!important;border-color:var(--line)!important;color:var(--ink2)!important}
+.lesson-mini-pct[style],.block-title{color:var(--ink)!important}
+/* тепловая карта — градации белого */
+.ht.l1{background:rgba(255,255,255,0.14)!important}
+.ht.l2{background:rgba(255,255,255,0.3)!important}
+.ht.l3{background:rgba(255,255,255,0.55)!important}
+.ht.l4{background:#fff!important}
+/* фидбек — рамками, без цветной заливки */
+.feedback.ok,.feedback.err,.feedback.v2{background:rgba(255,255,255,0.05)!important;color:var(--ink)!important}
+.feedback.ok{border-color:rgba(255,255,255,0.35)!important}
+.feedback.err{border-color:rgba(255,255,255,0.18)!important}
+.feedback.v2{border-color:rgba(255,255,255,0.25)!important}
+.dw.correct{color:var(--ink)!important}
+.dw.missing{background:rgba(255,255,255,0.14)!important;color:var(--ink)!important}
+.dw.extra{background:transparent!important;color:var(--ink3)!important}
+.builder-answer.correct-state,.text-input.correct-state{border-color:rgba(255,255,255,0.5)!important;background:rgba(255,255,255,0.05)!important}
+.builder-answer.wrong-state,.text-input.wrong-state{border-color:rgba(255,255,255,0.2)!important;background:transparent!important}
+.rule-box code{color:var(--ink)!important}
+.type-badge{background:rgba(255,255,255,0.07)!important;color:var(--ink2)!important}
+/* фоновые пятна убираем */
+.amb{display:none!important}
+/* светлая тема */
+body.light .submit-btn:not(.retry-btn),body.light .continue-btn,body.light .restart-btn,body.light .welcome-btn,body.light .tour-next{background:#15161a!important;color:#fff!important}
+body.light .mode-btn.active,body.light .word-chip.selected,body.light .wd-chip.on,body.light .set-chip.on,body.light .goal-btn.on,body.light .lang-btn.on,body.light .pl-btn.on,body.light .pl-play{background:#15161a!important;color:#fff!important;border-color:#15161a!important}
+body.light .progress-fill,body.light .daily-fill,body.light .lesson-mini-fill,body.light .pl-fill,body.light .wk-bar.today,body.light .yr-bar,body.light .ht.l4{background:#15161a!important}
+body.light .score-chip{background:rgba(15,22,40,0.06)!important;color:var(--ink)!important}
+body.light .lesson-num,body.light .block-num{background:rgba(15,22,40,0.05)!important;border-color:rgba(15,22,40,0.10)!important}
+body.light .ht.l1{background:rgba(15,22,40,0.14)!important}
+body.light .ht.l2{background:rgba(15,22,40,0.32)!important}
+body.light .ht.l3{background:rgba(15,22,40,0.58)!important}
+body.light .feedback.ok,body.light .feedback.err,body.light .feedback.v2{background:rgba(15,22,40,0.04)!important;color:var(--ink)!important}
 </style>
 <script data-goatcounter="https://nikosgolub.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
@@ -610,9 +789,11 @@ function saveProgress(){ persist('ro_progress', JSON.stringify(progress)); }
 const AUDIO_BASE = 'audio/';
 const DIALOGS = [{"id":"01nor","file":"01nor.mp3","title":"Vekkerklokka ringte ikke","sub":"Будильник не зазвонил · Ny i Norge","lines":[{"t":0,"no":"Sandro: Mamma, jeg er våken!","ru":"Сандро: Мама, я проснулся!"},{"t":2,"no":"Carlos: Hysj! Vær stille! Mamma sover.","ru":"Карлос: Тссс! Тише! Мама спит."},{"t":5,"no":"Kom, så skal jeg hjelpe deg.","ru":"Пойдем, я тебе помогу."},{"t":8,"no":"Jeg tapper i vann, så kan du vaske deg selv.","ru":"Я включу воду, чтобы ты умылся."},{"t":12,"no":"Jeg må kle på meg og lage frokost.","ru":"Мне нужно одеться и сделать завтрак."},{"t":15,"no":"Vi vekker mamma når jeg er ferdig.","ru":"Мы разбудим маму, когда я закончу."},{"t":18,"no":"Sandro: Jeg kan ikke vaske meg selv.","ru":"Сандро: Я не умею умываться."},{"t":21,"no":"Mamma pleier jo alltid å hjelpe meg.","ru":"Мне всегда помогает мама."},{"t":24,"no":"Carlos: Jeg synes at du skal lære å vaske deg selv.","ru":"Карлос: Я думаю, тебе надо учиться умываться самому."},{"t":28,"no":"Ellers må du vente. Jeg har ikke tid til å hjelpe deg nå.","ru":"Иначе придется подождать. Мне сейчас некогда."}]},{"id":"02nor","file":"02nor.mp3","title":"På supermarked - 1","sub":"В супермаркете - 1 · En-To-Tre","lines":[{"t":0,"no":"Franco: Hei, Indira. Hyggelig å se deg!","ru":"Франко: Привет, Индира. Рад тебя видеть!"},{"t":3,"no":"Indira: Hei, Franco! Skal du kjøpe mat?","ru":"Индира: Привет, Франко! Ты за продуктами?"},{"t":6,"no":"Franco: Ja, jeg må ha ris og olivenolje.","ru":"Франко: Да, нужно купить рис и оливковое масло."},{"t":10,"no":"Og noen gode tomater og en salat.","ru":"А еще хороших помидоров и салат."},{"t":13,"no":"Indira: Lager du mat hjemme?","ru":"Индира: Ты сам готовишь?"},{"t":15,"no":"Franco: Ja, ofte. Jeg har ikke råd til å spise ute.","ru":"Франко: Да, и часто. Я не могу позволить себе питаться вне дома."},{"t":20,"no":"Her er grønnsakene.","ru":"Вот овощи."},{"t":22,"no":"Oi! Tomatene er veldig dyre.","ru":"Ого! Какие дорогие помидоры."},{"t":25,"no":"De koster trettini kroner per kilo!","ru":"Они стоят 39 крон за килограмм!"},{"t":28,"no":"Men salaten er billig. Den koster bare ni nitti.","ru":"Но салат дешевый. Всего 9,90."}]},{"id":"03nor","file":"03nor.mp3","title":"På supermarked - 2","sub":"В супермаркете - 2 · En-To-Tre","lines":[{"t":0,"no":"Indira: Mmm! De har store og fine epler.","ru":"Индира: М-м-м... Такие большие и красивые яблоки."},{"t":4,"no":"Jeg har lyst på et eple. Jeg er litt sulten.","ru":"Прямо захотелось яблока. Что-то я проголодалась."},{"t":8,"no":"Franco: Vil du bli med hjem og spise?","ru":"Франко: Хочешь пообедать у меня?"},{"t":11,"no":"Indira: Nei takk, i dag skal jeg spise middag hos noen venner.","ru":"Индира: Нет, спасибо. Сегодня я обедаю у друзей."},{"t":16,"no":"De er norske. Jeg gleder meg til å smake norsk mat.","ru":"Они норвежцы. Мне не терпится попробовать норвежскую кухню."},{"t":21,"no":"Franco: Hva er norsk mat? Fisk? Laks kanskje?","ru":"Франко: А что представляет из себя норвежская кухня? Рыба? Может быть, лосось?"},{"t":26,"no":"Indira: Jeg vet ikke. Men jeg gleder meg til å smake.","ru":"Индира: Я не знаю. Самой не терпится узнать."},{"t":30,"no":"Hjemme spiser vi bare indisk mat.","ru":"Дома мы едим только индийские блюда."},{"t":33,"no":"Her har de blomster. Jeg kan ta med meg noen blomster.","ru":"Вот цветы. Можно захватить с собой букет."}]},{"id":"04nor","file":"04nor.mp3","title":"Indira besøker Svein og Grete","sub":"Индира гостит у Свайна и Греты · En-To-Tre","lines":[{"t":0,"no":"Svein: Hei, Indira. Velkommen. Lenge siden sist!","ru":"Свайн: Привет, Индира. Добро пожаловать. Давно не виделись!"},{"t":4,"no":"Grete: Så hyggelig å se deg.","ru":"Грета: Рада тебя видеть."},{"t":6,"no":"Indira: I like måte. Takk for invitasjonen.","ru":"Индира: И я. Спасибо за приглашение."},{"t":10,"no":"Vær så god. Her er noen blomster til dere.","ru":"Вот, вам цветы."},{"t":13,"no":"Grete: Å tusen takk. Så nydelige de er!","ru":"Грета: Спасибо. Какие красивые!"},{"t":16,"no":"Svein: Vil du ha et glass sherry?","ru":"Свайн: Выпьешь хереса?"},{"t":18,"no":"Indira: Ja, takk, gjerne.","ru":"Индира: Да, спасибо, с удовольствием."},{"t":20,"no":"Svein: Her! Vær så god.","ru":"Свайн: Вот, пожалуйста."},{"t":22,"no":"Grete: Er dere sultne? Maten er klar.","ru":"Грета: Проголодались? Еда уже готова."},{"t":25,"no":"Vi har indisk mat til deg, Indira, tikka masala.","ru":"У нас есть индийское блюдо для тебя, Индира, - тикка масала."},{"t":29,"no":"Indira: Å, - å så hyggelig!","ru":"Индира: О, как это мило!"}]},{"id":"05nor","file":"05nor.mp3","title":"Hvordan går det?","sub":"Как дела? · En-To-Tre","lines":[{"t":0,"no":"Panos: Hei, Sara. Hvordan går det?","ru":"Панос: Привет, Сара. Как дела?"},{"t":3,"no":"Sara: Bare bra. Hvordan har du det?","ru":"Сара: Отлично. У тебя как?"},{"t":6,"no":"Panos: Bra, men jeg har mye å gjøre.","ru":"Панос: Хорошо, но я сейчас много занимаюсь."},{"t":9,"no":"Sara: Hva gjør du?","ru":"Сара: Чем занимаешься?"},{"t":11,"no":"Panos: Jeg studerer norsk og matematikk.","ru":"Панос: Я изучаю норвежский и математику."},{"t":14,"no":"Sara: Er det vanskelig?","ru":"Сара: Сложно?"},{"t":16,"no":"Panos: Ja, norsk er ganske vanskelig. Hva gjør du, Sara? Studerer du?","ru":"Панос: Да, норвежский довольно сложный. Чем занимаешься ты, Сара? Ты учишься?"},{"t":22,"no":"Sara: Nei, nå jobber jeg, men jeg vil gjerne studere.","ru":"Сара: Нет, сейчас работаю, но я хотела бы учиться."},{"t":26,"no":"Panos: Hvor bor du?","ru":"Панос: Где ты живешь?"},{"t":28,"no":"Sara: I Åsveien, men jeg skal snart flytte.","ru":"Сара: В Освайен, но я скоро перееду."},{"t":31,"no":"Panos: Skal du flytte?","ru":"Панос: Ты переезжаешь?"},{"t":33,"no":"Sara: Ja, jeg flytter snart til sentrum.","ru":"Сара: Да, в ближайшее время, поближе к центру."},{"t":36,"no":"Men nå må jeg gå. Ha det bra, Panos.","ru":"Мне пора. До свидания, Панос."},{"t":39,"no":"Panos: Ha det!","ru":"Панос: Пока!"}]},{"id":"06nor","file":"06nor.mp3","title":"Foran TV","sub":"У телевизора · En-To-Tre","lines":[{"t":0,"no":"Rolf: Huff, for et kjedelig program! Jeg skjønte nesten ikke hva han sa!","ru":"Рольф: Ух, ну и скучная программа! Я почти ничего не понял."},{"t":6,"no":"Jorunn: Han snakket jo bare dialekten sin!","ru":"Йорунн: Он говорил только на своем диалекте!"},{"t":9,"no":"Rolf: Jeg hadde lyst til å høre hva han sa om politikk, og da er det irriterende når jeg ikke skjønner hva han sier.","ru":"Рольф: Я хотел послушать его выступление о политике, и эта непонятная речь меня раздражает."},{"t":17,"no":"Jorunn: Folk må da snakke sånn som det er naturlig for dem.","ru":"Йорунн: Люди должны говорить так, как для них наиболее естественно."},{"t":21,"no":"Jeg synes det er fint at man kan høre hvor folk kommer fra.","ru":"Не так уж плохо, что ты можешь понять по их говору, откуда они."},{"t":26,"no":"Rolf: Ikke når de er på tv eller snakker til folk fra andre steder.","ru":"Рольф: Но не тогда, когда они выступают по телевизору или общаются с людьми из другой местности."},{"t":31,"no":"Da skal de snakke tydelig. De bør ta hensyn til om folk forstår dem.","ru":"Надо говорить отчетливо. Они должны помнить о том, что их могут просто не понять."},{"t":37,"no":"Jorunn: Du skjønner hvis du vil skjønne.","ru":"Йорунн: Если захочешь понять, поймешь."},{"t":40,"no":"Rolf: Kanskje, men tenk på utlendingene da. Det er veldig vanskelig for dem.","ru":"Рольф: Допустим, но подумай об иностранцах! Для них это еще сложнее."},{"t":46,"no":"Jorunn: Og hvordan synes du folk skulle snakke da?","ru":"Йорунн: И как же, по-твоему, нужно разговаривать?"},{"t":49,"no":"Rolf: De skulle snakke sånn som meg, selvfølgelig.","ru":"Рольф: Так же, как я, разумеется."}]},{"id":"07nor","file":"07nor.mp3","title":"Indira får vondt i ryggen","sub":"У Индиры болит спина · Ny i Norge","lines":[{"t":0,"no":"– Nei, Indira, dette går ikke. Jeg synes at du skal gå hjem.","ru":"Нет, Индира, так не пойдет. Тебе нужно ехать домой."},{"t":5,"no":"– Hvis jeg klarer å gå, da.","ru":"Если получится, тогда…"},{"t":7,"no":"– Jeg kan ringe til faren din. Kanskje han kan hente deg?","ru":"Я могу позвонить твоему отцу. Может быть, он сможет тебя забрать?"},{"t":12,"no":"– Nei, faren min er ikke hjemme akkurat nå.","ru":"Нет, папы сейчас нет дома."},{"t":15,"no":"– Det var leit. Han er jo fysioterapeut …","ru":"Жаль. Он ведь физиотерапевт..."},{"t":18,"no":"– Ja, jeg må nok bestille time hos legen.","ru":"Да, мне, наверное, надо будет записаться к врачу."},{"t":22,"no":"– Har du fastlege?","ru":"У тебя есть постоянный врач?"},{"t":24,"no":"– Ja, vi har en fastlege. Hele familien går til henne.","ru":"Да, у нас есть семейный врач. Вся семья лечится у него."},{"t":28,"no":"– Det er bra. Vil du bruke telefonen på kontoret?","ru":"Это хорошо. Хочешь воспользоваться телефоном в кабинете?"},{"t":32,"no":"– Gjerne. Tusen takk.","ru":"Да, спасибо большое."},{"t":34,"no":"– Jeg skal hjelpe deg inn dit.","ru":"Сейчас я тебе помогу."}]},{"id":"08nor","file":"08nor.mp3","title":"Smakte maten?","sub":"Ну как, вкусно? · Ny i Norge","lines":[{"t":0,"no":"Anne: God dag. Jeg har bestilt et bord til Anne Lien.","ru":"Анна: Добрый день. Я забронировала столик на Анну Лиен."},{"t":4,"no":"Kelneren: Det stemmer. Det er det bordet der borte ved vinduet. Vær så god.","ru":"Официант: Да, верно. Ваш столик там у окна. Прошу вас."},{"t":9,"no":"Anne: Takk.","ru":"Анна: Спасибо."},{"t":10,"no":"Kelneren: Her er menyen, vær så god.","ru":"Официант: Вот меню."},{"t":12,"no":"Anne: Ja, men vi vet hva vi skal ha. Har dere ribbe, med medisterpølse og alt som hører med?","ru":"Анна: Спасибо, но мы уже знаем, что хотим заказать. У вас есть ребрышки со свиной колбасой и всем, что полагается?"},{"t":19,"no":"Kelneren: Ja, selvsagt. To porsjoner?","ru":"Официант: Да, конечно. Две порции?"},{"t":22,"no":"Anne: Ja takk.","ru":"Анна: Да."},{"t":23,"no":"Kelneren: Og hva vil dere ha å drikke?","ru":"Официант: А что будете пить?"},{"t":25,"no":"Anne: En øl til meg.","ru":"Анна: Я буду пиво."},{"t":27,"no":"John: Jeg kjører, så jeg tar en alkoholfri øl.","ru":"Джон: Я за рулем, поэтому я возьму безалкогольное пиво."},{"t":30,"no":"Anne: Smakte det godt, synes du?","ru":"Анна: Ну как, тебе понравилось?"},{"t":33,"no":"John: Ja, det var ikke så verst. Det likner kanskje litt på «spare-ribs»?","ru":"Джон: Да, неплохо. Похоже на свиную грудинку, да?"},{"t":38,"no":"Anne: Kanskje det, men dette er jo ikke grillet.","ru":"Анна: Возможно. Это все-таки не на гриле."},{"t":42,"no":"John: Nei, det er sant. Men likevel …","ru":"Джон: Да, это верно. Но все-таки…"}]},{"id":"09nor","file":"09nor.mp3","title":"Hvordan går det med studiene? – 1","sub":"Как твоя учеба? - 1 · En-To-Tre","lines":[{"t":0,"no":"Jon: Hei, Laura. Hvordan går det med økonomistudiene?","ru":"Джон: Привет, Лаура. Как твои занятия по экономике?"},{"t":4,"no":"Laura: Jeg har sluttet å studere økonomi. Nå tar jeg kunsthistorie.","ru":"Лаура: Я бросила экономику. Теперь я изучаю историю искусств."},{"t":9,"no":"Jon: Kunsthistorie! Hvorfor det? Er det ikke lettere å få en god jobb med økonomi enn med kunsthistorie?","ru":"Джон: Историю искусств? Почему? Разве экономисту не легче найти хорошую работу, чем искусствоведу?"},{"t":17,"no":"Laura: Jo, det er det sikkert. Men det er viktigst for meg å gjøre noe jeg er interessert i.","ru":"Лаура: Да, пожалуй. Но для меня самое важное - заниматься тем, что мне интересно."},{"t":24,"no":"Jeg forsto at jeg ikke likte økonomi. For meg er det mye mer interessant med kunsthistorie.","ru":"Я поняла, что мне не нравится экономика. Для меня гораздо интереснее история искусств."},{"t":31,"no":"Jon: Men hva slags jobb kan du få? Hva vil du gjøre hvis du ikke får jobb etter studiene?","ru":"Джон: А какую работу ты можешь найти? Что ты будешь делать, если не устроишься на работу после окончания вуза?"},{"t":38,"no":"Laura: Jeg vil helst jobbe i mediene, men det er nok ikke lett å få jobb der.","ru":"Лаура: Я бы хотела работать в СМИ, но там не так просто устроиться на работу."},{"t":44,"no":"Hvis jeg ikke finner noe annet, kan jeg ta en vaskejobb eller sitte i kassa på supermarkedet.","ru":"Если не найду ничего другого, я могу быть уборщицей или сидеть на кассе в супермаркете."},{"t":52,"no":"Det er ikke så viktig. Jeg er sikker på at jeg får en jobb.","ru":"Это не так уж важно. Я уверена, что без работы не останусь."}]},{"id":"10nor","file":"10nor.mp3","title":"Hvordan går det med studiene? – 2","sub":"Как твоя учеба? - 2 · En-To-Tre","lines":[{"t":0,"no":"Jon: Er ikke lønna viktig for deg?","ru":"Джон: Для тебя не важна зарплата?"},{"t":2,"no":"Laura: Jo, litt, kanskje. Jeg må tjene nok til å betale studielånet.","ru":"Лаура: Да, немного, может быть. Нужно накопить на оплату студенческого кредита."},{"t":8,"no":"Men først vil jeg ha en morsom studietid.","ru":"Но прежде меня ждет увлекательная учеба."},{"t":11,"no":"Men du, da - valgte du å studere medisin fordi det er lett å få en god jobb?","ru":"А ты как – ты решил изучать медицину, потому что легко будет найти хорошую работу?"},{"t":17,"no":"Jon: Nei, jeg er interessert i mennesker, og jeg synes det er interessant med medisin.","ru":"Джон: Нет, мне интересны люди, и медицина для меня – интересное направление."},{"t":23,"no":"Men jeg tenkte også på at det er lettere å få seg en god jobb for en lege enn for mange andre.","ru":"Но я также думал и о том, что врачу проще найти хорошую работу, чем представителям многих других профессий."},{"t":31,"no":"Laura: Du får sikkert bedre lønn enn meg. Men kanskje jeg har det morsommere enn deg mens vi studerer.","ru":"Лаура: Тебе, конечно, будут платить больше. Но зато, наверное, у меня учеба интереснее."},{"t":39,"no":"Nå skal jeg ha en forelesning om italiensk kunst. Jeg gleder meg.","ru":"Сейчас будет лекция по итальянскому искусству. Надо идти."},{"t":44,"no":"Jon: Jeg må også skynde meg. Jeg skal på et seminar om psykologi. Det er mer interessant!","ru":"Джон: Мне тоже пора. Я собираюсь на семинар по психологии. Это еще интереснее!"},{"t":50,"no":"Laura: God fornøyelse.","ru":"Лаура: Удачи."},{"t":51,"no":"Jon: I like måte.","ru":"Джон: И тебе."}]},{"id":"11nor","file":"11nor.mp3","title":"På bussen","sub":"В автобусе · En-To-Tre","lines":[{"t":0,"no":"Per: Hei, Kari.","ru":"Пер: Привет, Кари!"},{"t":1,"no":"Kari: Hei, Per. Hyggelig å se deg.","ru":"Кари: Привет, Пер. Рада тебя видеть."},{"t":4,"no":"Per: I like måte. Kan jeg sitte her?","ru":"Пер: Я тоже. Можно присесть?"},{"t":6,"no":"Kari: Selvfølgelig. Hvor skal du?","ru":"Кари: Конечно. Куда едешь?"},{"t":8,"no":"Per: Jeg skal til sentrum, på kino. Vil du bli med meg?","ru":"Пер: Я еду в центр, в кино. Хочешь со мной?"},{"t":12,"no":"Kari: Dessverre. Jeg kan ikke. Jeg skal på jobb.","ru":"Кари: К сожалению, не могу. Мне надо на работу."},{"t":16,"no":"Per: Hvor jobber du nå?","ru":"Пер: Где ты сейчас работаешь?"},{"t":18,"no":"Kari: Jeg er kokk på en restaurant i Fjellgata.","ru":"Кари: Я повар в ресторане на улице Фьелльгата."},{"t":21,"no":"Per: Hva med søndag? Har du fri på søndag?","ru":"Пер: А как насчет воскресенья? В воскресенье ты свободна?"},{"t":24,"no":"Kari: Ja, jeg jobber ikke på søndag, men da har jeg en avtale med Grete.","ru":"Кари: Да, я не работаю в воскресенье, но на этот раз мы уже договорились с Гретой."},{"t":29,"no":"Vi skal på lang tur i fjellet. Vil du bli med oss?","ru":"Мы собираемся в длинный поход в горы. Пойдешь с нами?"},{"t":33,"no":"Per: Lang tur? Hm, nei, dessverre. Jeg kan ikke på søndag.","ru":"Пер: Длинный поход? Хм, нет, к сожалению. Я не могу в воскресенье."},{"t":38,"no":"Jeg skal ..., jeg må ... . Jeg har ikke tid på søndag.","ru":"Я должен... Мне надо... Мне некогда в воскресенье."},{"t":42,"no":"Kari: Jeg forstår. Oi! Her må jeg gå av. Ser deg senere.","ru":"Кари: Понимаю. О! Моя остановка. Увидимся позже."},{"t":46,"no":"Per: Men når kan vi gå på kino? Jeg ringer deg tirsdag eller onsdag. OK?","ru":"Пер: Но когда же мы сходим в кино? Я позвоню тебе во вторник или в среду. ОК?"},{"t":52,"no":"Kari: Fint! Ha det. Vi ses.","ru":"Кари: Хорошо! Пока. До встречи."}]},{"id":"12nor","file":"12nor.mp3","title":"På kafé","sub":"В кафе · En-To-Tre","lines":[{"t":0,"no":"Lasse: Skal vi gå på kafé?","ru":"Лассе: Пойдем в кафе?"},{"t":2,"no":"Marit: Ja, gjerne. Her er en kafé.","ru":"Марит: Да, я бы не отказалась. Вот кафе."},{"t":5,"no":"Lasse: Fint. Vi går inn her.","ru":"Лассе: Хорошо. Зайдем сюда."},{"t":7,"no":"Lasse: Er du sulten?","ru":"Лассе: Проголодалась?"},{"t":8,"no":"Marit: Ja, litt.","ru":"Марит: Да, немного."},{"t":9,"no":"Lasse: Hva vil du ha?","ru":"Лассе: Что будешь есть?"},{"t":11,"no":"Marit: Jeg vet ikke. Kanskje et rundstykke med ost.","ru":"Марит: Я не знаю. Может быть, булочку с сыром."},{"t":14,"no":"Lasse: Vil du ha noe å drikke?","ru":"Лассе: А пить?"},{"t":16,"no":"Marit: Bare en kopp kaffe. Og du?","ru":"Марит: Только кофе. А ты?"},{"t":18,"no":"Lasse: Jeg er tørst. Jeg tar et glass øl. Unnskyld, er det lov å røyke her?","ru":"Лассе: Я хочу пить. Я возьму стакан пива. Извините, здесь можно курить?"},{"t":24,"no":"Servitør: Nei, dessverre.","ru":"Официант: Нет, к сожалению."},{"t":26,"no":"Marit: Du må gå ut og røyke.","ru":"Марит: Придется тебе покурить на улице."},{"t":28,"no":"Lasse: Ut? Er du gal? Det er jo vinter.","ru":"Лассе: На улице? Ты с ума сошла? Сейчас же зима."},{"t":31,"no":"Servitør: Vil dere bestille?","ru":"Официант: Будете что-то заказывать?"},{"t":33,"no":"Lasse: Ja takk. Et glass øl, en kopp kaffe og et rundstykke med ost.","ru":"Лассе: Да. Стакан пива, чашку кофе и булочку с сыром."},{"t":37,"no":"Nei forresten, jeg vil også ha kaffe. To kopper kaffe, et rundstykke og en is.","ru":"Впрочем, погодите, я тоже возьму кофе. Два кофе, булочку и мороженое."},{"t":43,"no":"Servitør: Sjokoladeis eller vaniljeis?","ru":"Официант: Шоколадное или ванильное?"},{"t":45,"no":"Lasse: Sjokoladeis. Har dere sjokoladesaus?","ru":"Лассе: Шоколадное. У вас есть шоколадный соус?"},{"t":48,"no":"Servitør: Ja, det har vi.","ru":"Официант: Да, есть."},{"t":50,"no":"Marit: Skal du spise sjokoladeis med sjokoladesaus?","ru":"Марит: Ты будешь шоколадное мороженое с шоколадным соусом?"},{"t":53,"no":"Lasse: Ja, det er kjempegodt.","ru":"Лассе: Ну да, это же просто супер."}]},{"id":"13nor","file":"13nor.mp3","title":"Hva gjorde du i helga?","sub":"Как прошли выходные? · En-To-Tre","lines":[{"t":0,"no":"Kirsten: Hei John. Hvordan går det? Hadde du det hyggelig i helga?","ru":"Кирстен: Привет, Джон. Как дела? Как выходные?"},{"t":5,"no":"John: Ikke spesielt!","ru":"Джон: Ничего особенного."},{"t":7,"no":"Kirsten: Å, var ikke du ute sammen med Anita i går?","ru":"Кирстен: О, разве ты не гулял с Анитой вчера?"},{"t":10,"no":"John: Hun kom ikke!","ru":"Джон: Она не пришла."},{"t":12,"no":"Kirsten: Kom hun ikke? Kanskje hun var syk.","ru":"Кирстен: Да? Может быть, заболела."},{"t":15,"no":"John: Nei, vi snakket sammen i telefonen etter frokost.","ru":"Джон: Нет, мы говорили по телефону после завтрака."},{"t":19,"no":"Kirsten: Kan det være en misforståelse?","ru":"Кирстен: Может, произошло недоразумение?"},{"t":21,"no":"John: Jeg tror ikke det. Avtalen var klokka halv to utenfor kinoen.","ru":"Джон: Не думаю. Мы договорились встретиться в полвторого, рядом с кинотеатром."},{"t":27,"no":"Jeg kom kvart over to og ventet i over en time. Jeg følte meg helt dum!","ru":"Я пришел в 2:15 и ждал целый час. Я чувствовал себя так глупо!"},{"t":34,"no":"Kirsten: Jeg trodde hun likte deg godt.","ru":"Кирстен: Я думала, что ты ей понравился."},{"t":36,"no":"John: Det trodde jeg også. Men man kan ikke stole på norske jenter!","ru":"Джон: Я тоже так думал. Но нельзя положиться на норвежских девушек!"},{"t":41,"no":"Kirsten: Et øyeblikk! Sa du at du kom klokka kvart over to?","ru":"Кирстен: Минутку! Так ты говоришь, что пришел в 15 минут третьего?"},{"t":46,"no":"John: Ja.","ru":"Джон: Да."},{"t":47,"no":"Kirsten: Og avtalen var klokka halv to?","ru":"Кирстен: И встреча была назначена на половину второго?"},{"t":50,"no":"John: Det sa jeg jo!","ru":"Джон: Да, все правильно."},{"t":52,"no":"Kirsten: Ha! Da må du skynde deg å ringe henne og be om unnskyldning.","ru":"Кирстен: Ага! Тогда ты должен немедленно ей позвонить и извиниться."},{"t":56,"no":"John: Hva? Hvorfor det?","ru":"Джон: Что? Почему?"},{"t":58,"no":"Kirsten: Fordi du kom for sent! Og så må du lese kapittel sju i norskboka en gang til!","ru":"Кирстен: Потому что ты опоздал! И перечитай главу 7 в учебнике норвежского!"}]},{"id":"14nor","file":"14nor.mp3","title":"Utenfor treningsstudioet","sub":"У спортзала · Ny i Norge","lines":[{"t":0,"no":"Hassan: Hei, Larissa, hyggelig å se deg! Hvordan går det?","ru":"Хасан: Привет, Лариса, рад тебя видеть! Как дела?"},{"t":4,"no":"Larissa: Det går bra. Og med deg?","ru":"Лариса: Все в порядке. А у тебя?"},{"t":7,"no":"Hassan: Jeg er litt forkjølet. Ellers går det bra.","ru":"Хасан: Немного простыл. В остальном все хорошо."},{"t":10,"no":"Larissa: Sier du det? Ja, det er viktig å holde seg i form. Da blir du ikke syk så lett.","ru":"Лариса: Да ты что? Держи себя в форме, это важно. Тогда так легко не заболеешь."},{"t":17,"no":"Hassan: Ja, kanskje det?","ru":"Хасан: Да, может быть."},{"t":19,"no":"Larissa: Og så er det gøy å trene også. Jeg pleier å trene to ganger i uka.","ru":"Лариса: К тому же физкультура дарит радость. Я обычно тренируюсь два раза в неделю."},{"t":25,"no":"Hassan: Jeg har aldri vært på sånn trening. Men jeg har spilt fotball i mange år.","ru":"Хасан: Я никогда не был на такой тренировке. Но я много лет играл в футбол."},{"t":32,"no":"Kanskje jeg kan prøve når jeg blir frisk?","ru":"Может быть, когда мне станет лучше, попробовать сходить?"},{"t":35,"no":"Larissa: Hvorfor ikke? Du kan jo ha en prøvetime.","ru":"Лариса: Почему бы нет? Ты можете просто посетить пробное занятие."},{"t":39,"no":"Hassan: Det er sant. Er du også på vei til norskkurset, forresten?","ru":"Хасан: Это верно. Кстати, ты тоже идешь на курсы норвежского?"},{"t":43,"no":"Larissa: Nei, jeg kan ikke komme i kveld. Jeg må være barnevakt.","ru":"Лариса: Нет, я не могу. Сегодня вечером я работаю няней."},{"t":48,"no":"Randi har reist til England, og Ståle skal på fotballkamp.","ru":"Ранди побывала в Англии, а Столе собирается на футбольный матч."},{"t":53,"no":"Hassan: Javel. Vil du at jeg skal gi beskjed til Tor?","ru":"Хасан: Хорошо. Хочешь, чтобы я передал Тору?"},{"t":56,"no":"Larissa: Nei, det trenger du ikke. Jeg har snakket med Tor.","ru":"Лариса: Нет, не нужно. Я уже поговорила с Тором."},{"t":59,"no":"Hassan: Ja vel. Men nå må jeg gå. Jeg vil ikke komme for seint.","ru":"Хасан: Ладно. Мне пора. Лучше не опаздывать."},{"t":64,"no":"Larissa: Nei, det er sant. Vi ses - og god bedring!","ru":"Лариса: Правильно. До встречи, и выздоравливай!"}]},{"id":"15nor","file":"15nor.mp3","title":"Ikke kjør så fort!","sub":"Не гони так сильно! · Ny i Norge","lines":[{"t":0,"no":"Carlos: Ikke kjør så fort, Hassan! Det er jo bare seksti kilometer her.","ru":"Карлос: Не гони так, Хасан! Ограничение 60 километров в час."},{"t":5,"no":"Hassan: Men det er ingen trafikk her ute på landet. Er du redd?","ru":"Хасан: Но в этой местности совсем слабое движение. Ты боишься?"},{"t":10,"no":"Carlos: Nei, men jeg synes du skal kjøre forsiktig. Veien er fryktelig smal.","ru":"Карлос: Нет, но я думаю, ездить надо осторожно. Дорога ужасно узкая."},{"t":15,"no":"Se der! To gutter med en ball.","ru":"Смотри! Там два мальчика с мячом."},{"t":18,"no":"Hassan: Ja, jeg ser dem. Jeg kjører bare i femti. Sett på radioen, er du snill!","ru":"Хасан: Да, вижу. Я еду не быстрее 50. Будь добр, включи радио."},{"t":24,"no":"Carlos: Hør så stilig musikk.","ru":"Карлос: Хорошая музыка."},{"t":26,"no":"Se hvordan du kjører! Du kjører altfor fort!","ru":"Не увлекайся! Ты едешь слишком быстро!"},{"t":29,"no":"Hassan: Ikke mas sånn! Jeg kjører forsiktig.","ru":"Хасан: Да не переживай ты так! Я аккуратно езжу."},{"t":32,"no":"Carlos: Nei, jeg synes ikke at du gjør det. Har du ikke kjørt i Norge før? Det er ikke lov å kjøre så fort!","ru":"Карлос: Что-то не заметно. Ты никогда раньше не был в Норвегии? Нельзя здесь так гонять!"},{"t":39,"no":"Hassan: Men jeg må jo teste bilen din litt. Vi må se hva den kan.","ru":"Хасан: Но надо немного проверить машину. Мы должны узнать ее возможности."},{"t":44,"no":"Carlos: Nei, det er ikke nødvendig. Og forresten, tenk om det er fartskontroll?","ru":"Карлос: Без этого вполне можно обойтись. И, кстати, ты про дорожную инспекцию подумал?"},{"t":50,"no":"Hassan: Det er vel ikke fartskontroll her, langt ute på landet!","ru":"Хасан: Откуда здесь в глубинке дорожная инспекция?"}]},{"id":"16nor","file":"16nor.mp3","title":"Fartskontroll","sub":"Дорожная инспекция · Ny i Norge","lines":[{"t":0,"no":"Carlos: Hassan, nå kjører du for fort. Bilen er helt ny, og jeg har ikke lyst til å ødelegge den den første dagen!","ru":"Карлос: Хасан, сейчас ты точно превышаешь. Машина совсем новая, и я не хочу испортить ее в первый же день!"},{"t":8,"no":"Se der!","ru":"Смотри!"},{"t":9,"no":"Hassan: Hva var det?","ru":"Хасан: Что это было?"},{"t":10,"no":"Carlos: Jeg tror at det var en radar.","ru":"Карлос: Кажется, это был радар."},{"t":12,"no":"Hassan: Å nei, tror du jeg ble tatt?","ru":"Хасан: Только не это! Думаешь, меня засекли?"},{"t":14,"no":"Carlos: Sannsynligvis. Der står politiet! De vinker på oss.","ru":"Карлос: Наверное. Вон стоит полиция! Они машут нам."},{"t":18,"no":"Konstabelen: God dag.","ru":"Полицейский: Добрый день."},{"t":19,"no":"Hassan: God dag.","ru":"Хасан: Добрый день."},{"t":20,"no":"Konstabelen: Du har det visst travelt i dag! Kan jeg få se førerkortet?","ru":"Полицейский: Ну вы и разогнались! Могу я увидеть ваши права?"},{"t":25,"no":"Hassan: Dessverre, jeg har glemt det hjemme.","ru":"Хасан: К сожалению, я забыл их дома."},{"t":28,"no":"Konstabelen: Det var verre. Er dette din bil?","ru":"Полицейский: Это уже хуже. Это ваш автомобиль?"},{"t":31,"no":"Hassan: Nei, det er bilen til kameraten min.","ru":"Хасан: Нет, это машина моего друга."},{"t":33,"no":"Konstabelen: Er det riktig?","ru":"Полицейский: Это правда?"},{"t":35,"no":"Carlos: Ja, det er det.","ru":"Карлос: Да, это так."},{"t":36,"no":"Konstabelen: Vel, da må jeg få se vognkortet. Og så må jeg ha navnet ditt.","ru":"Полицейский: Ну, тогда я посмотрю технический талон. Ваше имя?"},{"t":41,"no":"Hassan: Det er Hassan Darani.","ru":"Хасан: Хасан Дарани."},{"t":43,"no":"Konstabelen: Vel, Hassan Darani, da får du en fartsbot på femten hundre kroner.","ru":"Полицейский: Что ж, Хасан Дарани, вы получаете штрафной талон на 1500 крон за превышение скорости."},{"t":50,"no":"Du får også en bot på fem hundre kroner for å kjøre uten å ha førerkortet med deg.","ru":"Также вы должны будете заплатить 500 крон штрафа за вождение без водительских прав."},{"t":56,"no":"Hassan: Så mye?","ru":"Хасан: Так много?"},{"t":57,"no":"Konstabelen: Ja, sånn er det. Vedtar du bøtene?","ru":"Полицейский: Да, так и есть. Или вы не согласны?"},{"t":61,"no":"Hassan: Ja, jeg må vel det ...","ru":"Хасан: Я полагаю, согласен…"}]},{"id":"17nor","file":"17nor.mp3","title":"Kjære mor og far! – 1","sub":"Дорогие мама и папа! – 1 · Ny i Norge","lines":[{"t":0,"no":"Kjære mor og far!","ru":"Дорогие мама и папа!"},{"t":2,"no":"Her kommer en hilsen fra Norge.","ru":"Привет вам из Норвегии."},{"t":5,"no":"Først vil jeg takke for at dere er så flinke til å ringe til oss.","ru":"Прежде всего хочу сказать спасибо, что успеваете нам звонить."},{"t":10,"no":"Det er vi veldig glade for, for vi vet at det er dyrt!","ru":"Нам очень приятно, ведь мы знаем, что это дорого."},{"t":15,"no":"Vi trives her i Norge, men vi savner dere jo.","ru":"Мы живем здесь как в сказке, только скучаем по вам."},{"t":19,"no":"Tom trives også. Han går i barnehage og har fått mange venner.","ru":"У Тома тоже все замечательно. Он ходит в детский сад и у него много друзей."},{"t":25,"no":"Han vokser og er blid og glad.","ru":"Он растет счастливым и веселым."},{"t":28,"no":"I barnehagen er de forresten veldig flinke til å hjelpe ham med språket, så han snakker ganske godt norsk allerede.","ru":"Садик очень помогает ему учить язык, так что он уже хорошо говорит по-норвежски."},{"t":36,"no":"Da jeg skrev sist, fortalte jeg at det var vanskelig å forstå nyhetene på TV.","ru":"Когда я писал вам в прошлый раз, я говорил, что мне трудно понимать новости по телевизору."},{"t":42,"no":"Nå går det bra. Anne hjelper meg, og jeg forstår nesten alt når folk snakker norsk.","ru":"Теперь все наладилось. Анна помогает мне, и я понимаю почти все, что говорят норвежцы."},{"t":49,"no":"I går spilte bandet vårt i en sekstiårsdag.","ru":"Вчера мы с группой играли на юбилее 60 лет."},{"t":52,"no":"Mora til en av de andre i bandet fylte år.","ru":"Именинницей была мать одного из музыкантов."},{"t":55,"no":"Det var litt av en fest, kan dere tro!","ru":"Вот это вечеринка была!"},{"t":58,"no":"Vi fikk være til stede på middagen, og jeg skal si det var stil over det.","ru":"Мы остались на банкет, который был довольно своеобразен."},{"t":64,"no":"Mye mer formelt enn hjemme hos oss i USA!","ru":"Гораздо более торжественное мероприятие, чем у нас в Америке."},{"t":68,"no":"Det var bordplassering, og jeg kjente ingen av dem jeg satt ved siden av.","ru":"Места были распределены, и я не знал никого из своих соседей по столу."}]},{"id":"18nor","file":"18nor.mp3","title":"Kjære mor og far! – 2","sub":"Дорогие мама и папа! - 2 · Ny i Norge","lines":[{"t":0,"no":"Men den ene var bonde, og vi snakket om norsk jordbruk og om USA.","ru":"Один из них был фермером, и мы говорили о норвежском сельском хозяйстве и о США."},{"t":6,"no":"Den andre var litt sjenert. Han sa ikke så mye.","ru":"Другой был немного застенчивым и больше помалкивал."},{"t":10,"no":"Han svarte bare ja eller nei når jeg spurte om noe.","ru":"Только отвечал «да» или «нет», когда я о чем-то спрашивал."},{"t":14,"no":"Men det er klart det kan være litt vanskelig å vite hva en skal snakke med fremmede mennesker om ...","ru":"Но, конечно, немного трудно находить темы для разговора, когда общаешься с незнакомыми людьми..."},{"t":21,"no":"Maten var imidlertid god: Laks og jordbær med fløte.","ru":"Однако еда была хорошая: лосось и клубника со сливками."},{"t":26,"no":"Det var mange taler ved bordet.","ru":"Было много застольных речей."},{"t":28,"no":"Først hilste hovedpersonens mann alle velkommen.","ru":"Сначала всех приветствовал муж виновницы торжества."},{"t":32,"no":"Deretter var det lange taler. Maten ble kald mens de snakket.","ru":"Потом были еще длинные речи. Еда успела остыть, пока они разглагольствовали."},{"t":38,"no":"På festen spiste jeg med kniv og gaffel på den måten som de gjør her i Europa.","ru":"На вечеринке я ел ножом и вилкой, как делают здесь, в Европе."},{"t":44,"no":"Jeg er ofte usikker på hva jeg skal gjøre når amerikanske og norske tradisjoner er forskjellige.","ru":"Я часто затрудняюсь с тем, как поступить, когда сталкиваюсь с культурными различиями."},{"t":51,"no":"Som oftest har jeg Anne i nærheten til å hjelpe meg, men ...","ru":"Конечно, я всегда могу спросить жену, и все же..."},{"t":55,"no":"Siden dette er den første julen vår i Norge, tenkte vi å invitere dere hit.","ru":"Так как это наше первое Рождество в Норвегии, мы думаем пригласить вас сюда."},{"t":61,"no":"Vi er jo ikke så mange. Annes foreldre og broren hennes med familie kommer også.","ru":"Нас не так много. Придут родители Анны и ее брат с семьей."},{"t":67,"no":"Med dere blir vi ti personer, to små og åtte store.","ru":"С вами нас будет десять человек - два малыша и восемь взрослых."},{"t":72,"no":"Vi håper dere kan komme, og ser fram til å være samlet alle sammen.","ru":"Мы надеемся, что вы сможете приехать, и с нетерпением ждем того дня, когда мы соберемся всей семьей."},{"t":78,"no":"Kjærlige hilsener fra John","ru":"С любовью, Джон"}]},{"id":"19nor","file":"19nor.mp3","title":"Et julebesøk","sub":"Рождественский вечер · Ny i Norge","lines":[{"t":0,"no":"Anne: Hvor mange personer blir vi egentlig?","ru":"Анна: Сколько нас будет точно?"},{"t":3,"no":"John: Tja, alt i alt blir vi, la meg se, åtte voksne og to barn.","ru":"Джон: Так, давай посмотрим - восемь взрослых и двое детей."},{"t":8,"no":"Anne: Men de fleste er norske. Og de vil sikkert ha norsk mat på julaften.","ru":"Анна: Причем большинство - норвежцы. И они, безусловно, захотят чего-нибудь норвежского в канун Рождества."},{"t":15,"no":"John: Ja, men den norske julematen er jo så spesiell.","ru":"Джон: Да, но норвежская рождественская кухня так специфична..."},{"t":19,"no":"Anne: Vi pleier å ha ribbe. Har du smakt det?","ru":"Анна: Обычно у нас бывают ребрышки. Ты пробовал?"},{"t":22,"no":"John: Nei, men jeg har smakt pinnekjøtt.","ru":"Джон: Нет, но я уже пробовал ребрышки ягненка."},{"t":25,"no":"Da vi spilte på den nye restauranten med bandet forrige lørdag, fikk vi det.","ru":"Когда мы с группой играли в новом ресторане в прошлую субботу, там и попробовал."},{"t":31,"no":"Det smakte ikke så verst. Men - familien din har kanskje ikke spist kalkun.","ru":"На вкус не так уж плохо. Но... у вас в семье, наверное, никогда не ели индейку."},{"t":37,"no":"Det kan jo være spennende å prøve nye ting!","ru":"А ведь так интересно пробовать новые блюда!"},{"t":40,"no":"Anne: Ikke på julaften. Da er nordmenn veldig konservative.","ru":"Анна: Только не в канун Рождества. В этом отношении норвежцы очень консервативны."},{"t":45,"no":"John: Kan vi ikke lage en blandingsmeny?","ru":"Джон: А как насчет устроить смешанное меню?"},{"t":48,"no":"Anne: Jo, det var en god idé. Så kan vi ha ribbe til hovedrett og pai til dessert.","ru":"Анна: Хорошая идея. Тогда можно на первое приготовить ребрышки, а на десерт - пирог."},{"t":55,"no":"John: Ja, eller kanskje kalkun til hovedrett og multekrem til dessert.","ru":"Джон: Или, может, на первое будет индейка, а на десерт - морошковый крем."},{"t":61,"no":"Anne: Det høres godt ut! Det tar vi.","ru":"Анна: Звучит отлично! Так и сделаем."}]},{"id":"20nor","file":"20nor.mp3","title":"Hva driver du med? – 1","sub":"Stein på stein - Leksjon 1","lines":[{"no":"Sonia, 32 år","ru":"Соня, 32 года"},{"no":"– Hva gjør du nå, Sonia?","ru":"Чем вы сейчас занимаетесь, Соня?"},{"no":"– Jeg er hjemmeværende.","ru":"Я домохозяйка."},{"no":"Vi har to barn som skal begynne på skolen nå, og da vil jeg gjerne være hjemme og passe på dem.","ru":"У нас двое детей пошли в школу, и я бы хотела быть дома и присматривать за ними."},{"no":"Jeg synes det er viktig at de har noen å komme hjem til når de er ferdige på skolen.","ru":"Я считаю, для ребенка важно, чтобы кто-то встречал его дома, когда он приходит из школы."},{"no":"– Har du jobbet utenfor hjemmet før?","ru":"А раньше вы где-то работали?"},{"no":"– Jeg jobbet litt i en barnehage før jeg giftet meg, og før jeg kom hit til landet.","ru":"Я работала немного в детском саду до того, как вышла замуж и до того, как переехала в эту страну."},{"no":"– Har du lyst til å ta utdanning eller gå ut i jobb senere?","ru":"Хотели бы вы в будущем пойти работать или учиться?"},{"no":"– Jeg vet ikke. Kanskje. Jeg liker å jobbe hjemme.","ru":"Не знаю. Может быть. Мне нравится следить за домом."},{"no":"Men når barna blir større, får jeg kanskje lyst til å komme ut litt.","ru":"Но, как дети подрастут, возможно, я захочу немного развеяться."},{"no":"Jeg kan få en vaskejobb på kjøpesenteret nå, hvis jeg vil.","ru":"Сейчас я могла бы работать уборщицей в торговом центре."},{"no":"Men jeg foretrekker å være hjemme i noen år til.","ru":"Но я хочу посидеть дома еще несколько лет."}]},{"id":"21nor","file":"21nor.mp3","title":"Hva driver du med? – 2","sub":"Stein på stein - Leksjon 1","lines":[{"no":"Jan, 45 år","ru":"Ян, 45 лет"},{"no":"– Hva driver du med, Jan?","ru":"Чем вы занимаетесь, Ян?"},{"no":"– Jeg har vært arbeidsledig i noen måneder, men i neste uke begynner jeg som sjåfør i et stort firma.","ru":"Я несколько месяцев был безработным, но на следующей неделе начинаю работать водителем в крупной компании."},{"no":"Det gleder jeg meg til.","ru":"Не терпится приступить."},{"no":"– Hva slags jobber har du hatt før?","ru":"Кем вы работали раньше?"},{"no":"– Før jeg kom hit til landet, jobbet jeg som ingeniør.","ru":"До того как приехал в страну, я был инженером."},{"no":"– Har du hatt jobb her i landet?","ru":"А у нас в стране вы работали?"},{"no":"– Ja, jeg har hatt forskjellige jobber. Først jobbet jeg på et fiskemottak, senere på et lager.","ru":"Да, я работал в разных местах. Сначала на рыбозаводе, потом на складе."},{"no":"– Hva slags jobb vil du helst ha?","ru":"Кем бы вы хотели работать?"},{"no":"– Jeg håper at jeg får godkjent ingeniørutdanningen min.","ru":"Я надеюсь, что смогу подтвердить свой диплом инженера."},{"no":"Men foreløpig er jeg fornøyd med å være sjåfør.","ru":"Но пока я доволен и должностью водителя."},{"no":"Det er en ganske selvstendig jobb – den gir frihet.","ru":"Работаешь сам по себе, никто над душой не стоит."},{"no":"Lønna er heller ikke så verst.","ru":"И зарплата неплохая."}]},{"id":"22nor","file":"22nor.mp3","title":"Hva driver du med? – 3","sub":"Stein på stein - Leksjon 1","lines":[{"no":"Ella, 21 år","ru":"Элла, 21 год"},{"no":"– Hva gjør du, Ella?","ru":"Чем вы занимаетесь, Элла?"},{"no":"– Jeg går på norskkurs, og så jobber jeg i butikk tre kvelder i uka.","ru":"Я хожу на курсы норвежского и работаю в магазине три вечера в неделю."},{"no":"Jeg har tenkt å begynne å studere her, men først må jeg lære mer norsk.","ru":"Я планирую начать учиться, но сначала нужно выучить норвежский как следует."},{"no":"– Hva har du tenkt å studere?","ru":"Что вы собираетесь изучать?"},{"no":"– Hjemme studerte jeg matematikk og kjemi. Nå har jeg lyst til å studere oljeteknologi.","ru":"На родине я изучала математику и химию. Теперь я хочу изучать нефтяные технологии."},{"no":"Jeg ønsker meg en jobb i oljeindustrien. Det er drømmejobben.","ru":"Я хочу работать в нефтяной промышленности. Это работа моей мечты."},{"no":"– Hvorfor det?","ru":"Почему?"},{"no":"– Det virker spennende. Jeg kan få jobb i mange land, og jeg tror jeg kan tjene ganske bra i en slik jobb.","ru":"Мне кажется, это здорово. Я могу найти работу во многих странах, и я думаю, что могу неплохо преуспеть на такой работе."},{"no":"– Lykke til!","ru":"Удачи."},{"no":"– Takk!","ru":"Спасибо!"}]},{"id":"23nor","file":"23nor.mp3","title":"Hva driver du med? – 5","sub":"Stein på stein - Leksjon 1","lines":[{"no":"Linn, 27 år","ru":"Линн, 27 лет"},{"no":"– Hva slags planer har du, Linn?","ru":"Какие у вас планы, Линн?"},{"no":"– Drømmen min er å starte et spisested.","ru":"Моя мечта - открыть свой ресторан."},{"no":"Jeg har jobbet på mange restauranter og kafeer, så jeg har lang erfaring.","ru":"Я работала во многих ресторанах и кафе, и у меня большой опыт."},{"no":"– Hvorfor vil du starte for deg selv?","ru":"Почему вы хотите открыть свое дело?"},{"no":"– Jeg har lyst på nye utfordringer.","ru":"Я люблю стремиться к новым вершинам."},{"no":"Jeg har mange gode ideer som jeg gjerne vil prøve å gjøre noe med.","ru":"У меня много хороших идей, которые я хотела бы попробовать реализовать."},{"no":"Og det er morsommere å jobbe for seg selv enn for andre.","ru":"И на себя работать интереснее, чем на других."},{"no":"– Hva slags spisested har du tenkt deg?","ru":"Каким вы видите свой ресторан?"},{"no":"– Jeg har tenkt meg et typisk lunsjsted.","ru":"Я думаю, типичное место, где можно пообедать."},{"no":"Folk her i byen går mer og mer ut på kafé i lunsjpausen, og jeg vil gi dem noe nytt.","ru":"Местные жители все чаще ходят обедать в кафе, и я хочу предложить им что-то новенькое."},{"no":"– Hva da?","ru":"Что именно?"},{"no":"– Jeg vil spesialisere meg på teservering.","ru":"Моей «изюминкой» будет чайное обслуживание."},{"no":"Tenk deg: Te fra mange kanter av verden – og så smørbrød og kaker som passer til.","ru":"Представьте себе: чай со всех концов света, а к нему соответствующие бутерброды и пирожные."},{"no":"– Det virker spennende.","ru":"Звучит заманчиво."},{"no":"– Ja, jeg håper jeg klarer det.","ru":"Да, я надеюсь, что у меня получится."},{"no":"Jeg går på AMO-kurs nå for å lære hva jeg må gjøre hvis jeg vil starte for meg selv.","ru":"Сейчас я иду на курсы АМО, чтобы научиться тому, как открыть свое дело."},{"no":"– Det er vel ikke lett?","ru":"Наверно, это не легко?"},{"no":"– Nei, det ser nokså komplisert ut. Det er så mange lover og regler man må kjenne til.","ru":"Да, выглядит непросто. Надо знать столько законов и постановлений."},{"no":"Men jeg skal klare det! Jeg har bare meg selv å tenke på, så jeg kan jobbe hardt.","ru":"Но я справлюсь! У меня нет других забот, так что я могу с головой уйти в работу."},{"no":"– Lykke til!","ru":"Удачи!"},{"no":"– Takk skal du ha.","ru":"Спасибо."}]},{"id":"24nor","file":"24nor.mp3","title":"Hva driver du med? – 5","sub":"Stein på stein - Leksjon 1","lines":[{"no":"Linn, 27 år","ru":"Линн, 27 лет"},{"no":"– Hva slags planer har du, Linn?","ru":"Какие у вас планы, Линн?"},{"no":"– Drømmen min er å starte et spisested.","ru":"Моя мечта - открыть свой ресторан."},{"no":"Jeg har jobbet på mange restauranter og kafeer, så jeg har lang erfaring.","ru":"Я работала во многих ресторанах и кафе, и у меня большой опыт."},{"no":"– Hvorfor vil du starte for deg selv?","ru":"Почему вы хотите открыть свое дело?"},{"no":"– Jeg har lyst på nye utfordringer.","ru":"Я люблю стремиться к новым вершинам."},{"no":"Jeg har mange gode ideer som jeg gjerne vil prøve å gjøre noe med.","ru":"У меня много хороших идей, которые я хотела бы попробовать реализовать."},{"no":"Og det er morsommere å jobbe for seg selv enn for andre.","ru":"И на себя работать интереснее, чем на других."},{"no":"– Hva slags spisested har du tenkt deg?","ru":"Каким вы видите свой ресторан?"},{"no":"– Jeg har tenkt meg et typisk lunsjsted.","ru":"Я думаю, типичное место, где можно пообедать."},{"no":"Folk her i byen går mer og mer ut på kafé i lunsjpausen, og jeg vil gi dem noe nytt.","ru":"Местные жители все чаще ходят обедать в кафе, и я хочу предложить им что-то новенькое."},{"no":"– Hva da?","ru":"Что именно?"},{"no":"– Jeg vil spesialisere meg på teservering.","ru":"Моей «изюминкой» будет чайное обслуживание."},{"no":"Tenk deg: Te fra mange kanter av verden – og så smørbrød og kaker som passer til.","ru":"Представьте себе: чай со всех концов света, а к нему соответствующие бутерброды и пирожные."},{"no":"– Det virker spennende.","ru":"Звучит заманчиво."},{"no":"– Ja, jeg håper jeg klarer det.","ru":"Да, я надеюсь, что у меня получится."},{"no":"Jeg går på AMO-kurs nå for å lære hva jeg må gjøre hvis jeg vil starte for meg selv.","ru":"Сейчас я иду на курсы АМО*, чтобы научиться тому, как открыть свое дело."},{"no":"– Det er vel ikke lett?","ru":"Наверно, это не легко?"},{"no":"– Nei, det ser nokså komplisert ut. Det er så mange lover og regler man må kjenne til.","ru":"Да, выглядит непросто. Надо знать столько законов и постановлений."},{"no":"Men jeg skal klare det! Jeg har bare meg selv å tenke på, så jeg kan jobbe hardt.","ru":"Но я справлюсь! У меня нет других забот, так что я могу с головой уйти в работу."},{"no":"– Lykke til!","ru":"Удачи!"},{"no":"– Takk skal du ha.","ru":"Спасибо."}]},{"id":"25nor","file":"25nor.mp3","title":"I lunsjpausen","sub":"Stein på stein - Leksjon 4","lines":[{"no":"Finn: Nå må jeg slanke meg!","ru":"Финн: Пора бы мне похудеть!"},{"no":"Ove: Å? Har kona begynt å klage?","ru":"Уве: Да? Жена начала жаловаться?"},{"no":"Finn: Litt, og så var jeg hos legen i går.","ru":"Финн: Немного, и еще вчера я был у врача."},{"no":"Ove: Dårlige nyheter?","ru":"Уве: Плохие новости?"},{"no":"Finn: Jeg veier for mye, og blodtrykket er for høyt.","ru":"Финн: Лишний вес и повышенное давление."},{"no":"Ove: Da bør du kanskje spise litt salat til lunsj?","ru":"Уве: Тогда, может, тебе съесть на обед немного салата?"},{"no":"Finn: Jeg har ikke tenkt å bli vegetarianer. Jeg er ikke noen kanin!","ru":"Финн: Я не собираюсь становиться вегетарианцем. Я не кролик!"},{"no":"Ove: Nei, men litt grønnsaker skader ikke. Du bør i det minste kutte ut colaen.","ru":"Уве: Как хочешь, но немного овощей не помешает. По меньшей мере нужно отказаться от кока-колы."},{"no":"Vet du at det er over femti sukkerbiter i ei slik flaske?","ru":"Знаешь, что в одной бутылке колы более 50 кубиков сахара?"},{"no":"Finn: Nå tuller du! Men hva gjør du for å holde deg i form? Går du på helsestudio?","ru":"Финн: Ничего себе! Но как же ты остаешься в форме? Ходишь в спортзал?"},{"no":"Ove: Nei, men jeg går en tur hver dag etter jobben.","ru":"Уве: Нет, но я хожу на прогулку каждый день после работы."},{"no":"Finn: Hjelper det?","ru":"Финн: Помогает?"},{"no":"Ove: Absolutt. En time hver dag hjelper godt.","ru":"Уве: Еще как. Всего час в день - и ты другой человек."},{"no":"Kan du ikke bli med meg? Vi bor jo ikke så langt fra hverandre.","ru":"Не хочешь присоединиться? Мы живем не так далеко друг от друга."},{"no":"Finn: Kanskje det. Da blir i alle fall kona fornøyd.","ru":"Финн: Пожалуй. По крайней мере, жена будет довольна."}]},{"id":"26nor","file":"26nor.mp3","title":"Et møte","sub":"Stein på stein - Leksjon 5","lines":[{"no":"Randi: Har du ikke fått deg pc ennå?","ru":"Ранди: Ты еще не купил себе компьютер?"},{"no":"Stein: Nei, hvorfor det? Jeg klarer meg godt uten.","ru":"Стайн: Нет, зачем? Я прекрасно обхожусь без него."},{"no":"Randi: Jeg er helt avhengig av datamaskinen og av Internett.","ru":"Ранди: А я не могу жить без компьютера и Интернета."},{"no":"Stein: Hva bruker du den til?","ru":"Стайн: Для чего ты его используешь?"},{"no":"Randi: Jeg skriver e-post og betaler regninger. Dessuten finner jeg informasjon om alt som skjer.","ru":"Ранди: Я пишу письма по электронной почте и оплачиваю счета онлайн. К тому же узнаю новости обо всем, что происходит в мире."},{"no":"Stein: Jeg foretrekker å skrive gammeldagse brev på papir. Og jeg synes jeg får vite det jeg trenger på andre måter.","ru":"Стайн: Мне больше по душе старомодные письма на бумаге. И я могу узнать все, что мне нужно, из других источников."},{"no":"Randi: Men på nettet kommer det nyheter hele tida. Og jeg kan slå opp på nettsidene til de fleste store avisene i verden.","ru":"Ранди: Но в интернете новости все время обновляются. Я могу зайти на сайт большинства крупных газет мира."},{"no":"På den måten får jeg mye mer informasjon.","ru":"Так я могу получить намного больше информации."},{"no":"Stein: Det er jo mest dårlige nyheter likevel, og jeg synes jeg får mer enn nok av dem i aviser og på tv.","ru":"Стайн: В любом случае это самые плохие новости. И мне этого с лихвой хватает в газетах и на ТВ."},{"no":"Randi: Jeg kan til og med høre musikk og se film på pc-en min. Det er veldig praktisk.","ru":"Ранди: Я могу и музыку слушать, и фильмы смотреть на компьютере. Это очень удобно."},{"no":"Stein: Nei takk! Det høres ikke noe koselig ut.","ru":"Стайн: Нет уж, спасибо! Ничего удобного тут не вижу."},{"no":"Når jeg hører musikk eller ser på film, vil jeg sitte godt i sofaen og ikke sitte og stirre på en liten datamaskin.","ru":"Когда я слушаю музыку или смотрю фильм, я хочу расслабиться на диване, а не сидеть и пялиться на маленький экран."},{"no":"Jeg klarer meg godt uten.","ru":"Мне и без компьютера неплохо живется."},{"no":"Randi: Det spørs hvor lenge det er mulig. Snart foregår det meste på nettet.","ru":"Ранди: Вопрос в том, как долго это возможно. Скоро все на свете будет в онлайне..."}]},{"id":"27nor","file":"27nor.mp3","title":"Hva slags skole vil vi ha? – 1","sub":"Stein på stein - Leksjon 6","lines":[{"no":"Martin: Jeg synes at den norske skolen er altfor slapp. Elevene kan jo gjøre akkurat hva de vil!","ru":"Мартин: По-моему, в норвежских школах совсем распустили учеников. Они занимаются, чем в голову взбредет!"},{"no":"Anita: Nå overdriver du! De lærer å arbeide selvstendig, og det er viktig.","ru":"Анита: Это уж ты загнул! Просто они учится работать самостоятельно, а это имеет большое значение."},{"no":"Det nytter ikke med gammeldags pugging i våre dager.","ru":"В наши дни старомодная зубрежка уже неактуальна."},{"no":"Martin: Litt mer pugging kan det godt være. Jeg vil at barna mine skal lære så mye som mulig.","ru":"Мартин: Могло бы быть и немного больше зубрежки. Я хочу, чтобы мои дети знали как можно больше."},{"no":"Da må læreren bestemme. Nå har de ikke noen respekt for lærerne.","ru":"И решать должен учитель. Нынче никакого уважения к учителям."},{"no":"Elevene bruker til og med fornavn på læreren!","ru":"Ученики даже обращаются к учителям просто по имени!"},{"no":"Anita: Lærerne synes kanskje at det ikke skal være for mye avstand mellom lærer og elev.","ru":"Анита: Может быть, учителя не хотят держать детей на слишком длинной дистанции."},{"no":"Samarbeid og trygghet er viktig.","ru":"Главное - сотрудничество и безопасность."},{"no":"Martin: Samarbeid og samarbeid! De kaster bort så mye tid!","ru":"Мартин: Сотрудничество, сотрудничество... Только время впустую тратят!"},{"no":"Jeg tror at mange elever vil ha mer disiplin.","ru":"Многих учеников надо бы поучить дисциплине."},{"no":"Det er så mye bråk i klassen at det er vanskelig å lære noe som helst.","ru":"В классе стоит такой гам, что невозможно заниматься."}]},{"id":"28nor","file":"28nor.mp3","title":"Hva slags skole vil vi ha? – 2","sub":"Stein på stein - Leksjon 6","lines":[{"no":"Anita: Synes du ikke at selvstendighet og samarbeid er viktig?","ru":"Анита: Что же плохого в независимости и сотрудничестве?"},{"no":"Jeg tror man lærer mye av å arbeide sammen og diskutere med hverandre.","ru":"Я думаю, поработать вместе и обсудить результаты - это довольно познавательно."},{"no":"Martin: Men hvis man skal lære matematikk og språk, nytter det ikke å diskutere med hverandre.","ru":"Мартин: Но когда учишь математику или язык, тут нечего обсуждать."},{"no":"Da må læreren hjelpe elevene, og elevene må få ro til å arbeide ordentlig med fagene.","ru":"Учитель должен помогать ученикам, а ученики - заниматься в спокойной обстановке."},{"no":"Dessuten må de få karakterer mye tidligere.","ru":"Кроме того, нужно ввести оценки и в более раннем возрасте."},{"no":"Anita: Det er jeg helt uenig i. Karakterer vil bare føre til mer press for elevene.","ru":"Анита: В корне не согласна. Оценки - только лишний стресс для учеников."},{"no":"Martin: Hvis de ikke får karakterer, trenger de jo ikke å arbeide så mye på skolen.","ru":"Мартин: Если им не ставить оценок, у них не будет мотивации учиться усерднее."},{"no":"Det er viktig å vite hvordan det går.","ru":"Важно отслеживать свой прогресс."},{"no":"Hvis de får dårlige karakterer, skjønner elevene at de må begynne å arbeide mer.","ru":"Если ученик получит плохую оценку, он поймет, что ему нужно больше трудиться."},{"no":"Dessuten er det sunt med konkurranse.","ru":"К тому же это здоровая конкуренция."},{"no":"Anita: Jeg tror at karakterer ødelegger. Det er viktig at barna kan gå sammen på skolen uten at de får høre at noen er bedre enn andre.","ru":"Анита: А я считаю, что от оценок дети только пострадают. Важно, чтобы они могли учиться вместе и не слышать, что кто-то лучше других."}]},{"id":"29nor","file":"29nor.mp3","title":"Hvordan var det da du var liten?","sub":"Stein på stein - Leksjon 8","lines":[{"no":"Silje: Bestefar, hadde dere pizza da du var liten?","ru":"Силье: Дедушка, у вас была пицца, когда ты был маленьким?"},{"no":"Bestefar: Nei, og ikke tv heller.","ru":"Дедушка: Нет, и телевизора не было."},{"no":"Silje: Hva gjorde dere da?","ru":"Силье: Чем вы занимались?"},{"no":"Bestefar: Vi hørte på radio, og så lekte vi mye ute i gata.","ru":"Дедушка: Мы слушали радио и много играли на улице."},{"no":"Det var ikke så mange biler den gangen.","ru":"В то время машин на улицах было немного."},{"no":"Silje: Var det ikke litt kjedelig?","ru":"Силье: Разве это не скучно?"},{"no":"Bestefar: Nei, det var ikke kjedelig, men det var ei mye roligere tid.","ru":"Дедушка: Нет, нам было не скучно, но тогда жизнь была гораздо спокойнее."},{"no":"Folk hadde tid til å stoppe og prate sammen, og til å stikke innom på en kopp kaffe om kvelden.","ru":"Люди успевали остановиться и поговорить, и пригласить друг друга на чашку кофе вечерком."},{"no":"Alle har det så travelt i dag.","ru":"А нынче все такие занятые."},{"no":"Silje: Det samme sier oldemor, enda hun hadde fem barn og verken vaskemaskin eller ferdigmat i fryseren.","ru":"Силье: Бабушка тоже так говорит. А ведь у нее было пятеро детей и не было ни стиральной машины, ни мороженых полуфабрикатов."},{"no":"Er ikke det litt - litt ulogisk?","ru":"Тебе не кажется, что это немного... нелогично?"},{"no":"Bestefar: Jo, og kanskje er jeg romantisk når jeg snakker om barndommen. Men det er slik jeg husker den.","ru":"Дедушка: Ну, может быть, я слишком романтичен, когда говорю о детстве. Но я помню свое детство именно таким."},{"no":"Silje: Jeg har lyst til å snakke mer med oldemor om dette.","ru":"Силье: Я хочу еще поговорить об этом с бабушкой."},{"no":"Bestefar: Gjør det, men da bør du ha god tid. Oldemor elsker å snakke om gamle dager.","ru":"Дедушка: Поговори, только сначала убедись, что ты никуда не торопишься. Бабушка любит поговорить о былых временах."}]},{"id":"30nor","file":"30nor.mp3","title":"På norskkurs","sub":"Stein på stein - Leksjon 9","lines":[{"no":"Maryam: Å, du er så flink i norsk! Hvordan klarer du det?","ru":"Марьям: О, ты так хорошо успеваешь по норвежскому! Как тебе это удается?"},{"no":"Usman: Kona mi hjelper meg. Hun har gått på skolen her i landet og kan mye norsk.","ru":"Усман: Жена мне помогает. Она училась в норвежской школе и очень хорошо знает язык."},{"no":"Maryam: Du er heldig som kan få hjelp. Hvor lenge har du vært her nå?","ru":"Марьям: Повезло тебе, что есть такой помощник. Как давно ты здесь?"},{"no":"Usman: Snart ett år. Jeg håper at jeg kan lære nok norsk til at jeg kan begynne å arbeide til neste år.","ru":"Усман: Скоро год. Я надеюсь, что смогу достаточно освоить норвежский, чтобы начать работать в следующем году."},{"no":"Hvor lenge har du bodd her?","ru":"Как долго ты живешь здесь?"},{"no":"Maryam: Nesten to år. Først bodde jeg litt over et år på asylmottak med barna mine.","ru":"Марьям: Почти два года. Чуть больше года мы с детьми жили в приюте для беженцев."},{"no":"Så flyttet vi hit. Nå har vi bodd her i åtte måneder.","ru":"Потом переехали сюда и живем здесь уже восемь месяцев."},{"no":"Men jeg lærte ikke mye norsk før jeg kom på dette kurset.","ru":"Но я не очень преуспела в норвежском, пока не пошла на эти курсы."},{"no":"Usman: Trives du?","ru":"Усман: Тебе хорошо живется?"},{"no":"Maryam: Jeg er veldig glad for å være i trygghet. Barna mine har det godt og trives på skolen.","ru":"Марьям: Я очень рада, что нахожусь в безопасности. Моим детям тут нравится, и они любят ходить в школу."},{"no":"Men jeg synes ikke det er så lett å finne seg til rette. Det er så mye som er annerledes enn hjemme.","ru":"Но не так просто адаптироваться к здешней жизни. Дома все было совсем по-другому."},{"no":"Usman: Lengter du hjem?","ru":"Усман: Ты скучаешь по дому?"},{"no":"Maryam: Nå er situasjonen hjemme så vanskelig at det er umulig for meg å bo der.","ru":"Марьям: Сейчас обстановка на родине так накалилась, что оставаться там невозможно."},{"no":"Men hvis det blir fred, vil jeg helst reise tilbake. Hva med deg? Lengter du hjem?","ru":"Но если настанет мир, я хотела бы вернуться. А как ты? Скучаешь по дому?"},{"no":"Usman: Ja, jeg lengter ofte etter familie og venner. Men kona mi har stor familie her, og jeg har fått noen nye venner.","ru":"Усман: Да, я часто скучаю по семье и друзьям. Но у моей жены здесь большая семья, и у меня появились новые друзья."},{"no":"Søndag var jeg til og med på skitur! Jeg klarte å holde meg på beina.","ru":"В воскресенье я даже ходил с ними на лыжную прогулку. Мне удалось удержаться на ногах."},{"no":"Maryam: Jeg er glad hvis jeg klarer å uttale «skitur»!","ru":"Марьям: А мне бы только суметь выговорить \"лыжная прогулка\"!"}]}];
 
+const COVERS = {a1:'data:image/webp;base64,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',dlg:'data:image/webp;base64,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',my:'data:image/webp;base64,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'};
+
 const COURSES = [
-  { id:'a1',  title:'Норвежский A1–A2', sub:'Грамматика, лексика, числа', L:null, W:null },
-  { id:'dlg', title:'Диалоги на слух',  sub:'Аудио с расшифровкой',       audio:true }
+  { id:'a1',  title:'Норвежский A1–A2', sub:'Грамматика, лексика, числа', L:null, W:null, cover:'a1' },
+  { id:'dlg', title:'Диалоги на слух',  sub:'Аудио с расшифровкой',       audio:true, cover:'dlg' }
 ];
 let ci = 0;
 
@@ -621,7 +802,7 @@ function applyTheme(){
   try{
     document.body.className = light ? 'light' : '';
     const m = document.querySelector('meta[name="theme-color"]');
-    if(m) m.setAttribute('content', light ? '#f4f5f7' : '#0a0a0a');
+    if(m) m.setAttribute('content', light ? '#f4f5f7' : '#000001');
   }catch(e){}
 }
 function toggleTheme(){
@@ -706,6 +887,7 @@ function renderCourses(){
   const cards = COURSES.map((c,i) => {
     const st = courseStats(i);
     return '<div class="course-card' + (c.soon?' soon':'') + '" onclick="openCourse(' + i + ')">' +
+      (c.cover ? '<div class="cover"><img src="' + COVERS[c.cover] + '" alt=""></div>' : '') +
       '<div class="course-top">' +
         '<div class="course-title">' + c.title + '</div>' +
         (c.soon ? '<div class="course-badge">скоро</div>' : '<div class="course-pct">' + st.pct + '%</div>') +
@@ -719,7 +901,6 @@ function renderCourses(){
 
   const tc = todayCount(), sc = streakCount(), goalHit = tc >= DAILY_GOAL;
   const lm = listenToday(), listenHit = lm >= LISTEN_GOAL;
-  const st0 = courseStats(0);
   const sL = LESSONS, sW = WORDS, sci = ci;
   ci = 0; LESSONS = COURSES[0].L; WORDS = COURSES[0].W;
   let ph = 0, phT = 0, wk = 0, wT = 0;
@@ -739,40 +920,41 @@ function renderCourses(){
       ? '<div class="plan-banner" onclick="renderSchedule()">' + t('plan') + ' ' + sched().time + '</div>'
       : '') +
     '<div class="hero">' +
-      '<div class="daily">' +
-        '<div class="daily-top">' +
-          '<span class="daily-streak' + (sc>0?' lit':'') + '">' + ic('fire',14) + ' ' + sc + ' ' + dayWord(sc) + '</span>' +
-          '<span class="daily-goal' + (goalHit?' hit':'') + '">' + Math.min(tc,DAILY_GOAL) + ' / ' + DAILY_GOAL + ' фраз' + (goalHit?' ' + ic('check',13):'') + '</span>' +
+      '<div class="rings-hero">' +
+        '<div class="rings-wrap">' + trioRings(168) +
+          '<div class="rings-center">' +
+            '<div class="rings-big">' + Math.min(tc,DAILY_GOAL) + '</div>' +
+            '<div class="rings-small">из ' + DAILY_GOAL + ' фраз</div>' +
+          '</div>' +
         '</div>' +
-        '<div class="daily-bar"><div class="daily-fill' + (goalHit?' hit':'') + '" style="width:' + Math.round(Math.min(tc,DAILY_GOAL)/DAILY_GOAL*100) + '%"></div></div>' +
-        '<div class="daily-top" style="margin-top:4px">' +
-          '<span class="daily-streak">' + ic('head',14) + ' диалоги</span>' +
-          '<span class="daily-goal' + (listenHit?' hit':'') + '">' + Math.min(lm,LISTEN_GOAL) + ' / ' + LISTEN_GOAL + ' мин' + (listenHit?' ' + ic('check',13):'') + '</span>' +
+        '<div class="rings-legend">' +
+          '<div class="lg"><span class="lg-dot" style="background:#fff"></span><span class="lg-t">Фразы</span><span class="lg-v">' + Math.min(tc,DAILY_GOAL) + ' / ' + DAILY_GOAL + '</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:rgba(255,255,255,0.55)"></span><span class="lg-t">Аудио</span><span class="lg-v">' + lm + ' / ' + LISTEN_GOAL + ' мин</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:rgba(255,255,255,0.3)"></span><span class="lg-t">Слова</span><span class="lg-v">' + (dayLog().w||0) + ' / 10</span></div>' +
         '</div>' +
-        '<div class="daily-bar"><div class="daily-fill' + (listenHit?' hit':'') + '" style="width:' + Math.round(Math.min(lm,LISTEN_GOAL)/LISTEN_GOAL*100) + '%"></div></div>' +
       '</div>' +
-      '<div class="hero-rings">' +
-        '<div class="ring-cell">' +
-          '<div class="ring-wrap">' + ringSVG(phPct, 84, 8) + '<div class="ring-pct">' + phPct + '%</div></div>' +
-          '<div class="ring-caption"><b>' + t('cap_ph') + '</b><br>' + ph + ' ' + t('of') + ' ' + phT + '</div>' +
-        '</div>' +
-        '<div class="ring-divider"></div>' +
-        '<div class="ring-cell">' +
-          '<div class="ring-wrap" style="width:84px;height:84px">' + ringSVG(wPct, 84, 8, 'var(--green)') + '<div class="ring-pct" style="color:var(--green)">' + wPct + '%</div></div>' +
-          '<div class="ring-caption"><b>' + t('cap_w') + '</b><br>' + wk + ' ' + t('of') + ' ' + wT + '</div>' +
-        '</div>' +
+      (function(){
+        const days = daysBack(7);
+        const vals = days.map(function(d){ return logOf(d).p||0; });
+        const mx = Math.max(DAILY_GOAL, Math.max.apply(null, vals));
+        const wd = t('wd');
+        return '<div class="week-strip">' + days.map(function(d,i){
+          const v = vals[i];
+          const h = Math.max(4, Math.round(v/mx*52));
+          const today = i===6;
+          const hit = v >= DAILY_GOAL;
+          return '<div class="wk-col">' +
+            '<div class="wk-bar-bg"><div class="wk-bar' + (hit?' hit':'') + (today?' today':'') + '" style="height:' + h + 'px"></div></div>' +
+            '<div class="wk-lbl' + (today?' today':'') + '">' + wd[(d.getDay()+6)%7] + '</div>' +
+          '</div>';
+        }).join('') + '</div>';
+      })() +
+      '<div class="hero-foot">' +
+        '<span class="hf-item">' + ic('fire',13) + ' ' + sc + ' ' + dayWord(sc) + '</span>' +
+        '<span class="hf-sep"></span>' +
+        '<span class="hf-item" onclick="renderStats()">Вся статистика ›</span>' +
       '</div>' +
     '</div>' +
-    (function(){
-      const m = meta.last;
-      if(!m) return '';
-      const c = COURSES[m.c || 0];
-      if(!c || c.soon || !c.L || !c.L[m.l]) return '';
-      const part = c.L[m.l].parts[m.p];
-      return '<button class="continue-btn" onclick="resumeLast()">' +
-        ic('redo',16) + ' Продолжить: урок ' + (m.l+1) + ' · ' + (part ? part.t : c.L[m.l].title) +
-      '</button>';
-    })() +
     (function(){
       let out = '';
       const dueAll = srsDueAll();
@@ -803,6 +985,7 @@ function renderCourses(){
       return '<div class="section-label" style="margin-top:26px">' + ic('pencil',13) + ' Личный словарь</div>' +
         '<div class="lesson-list" style="margin-top:10px">' +
           '<div class="course-card" onclick="renderMyDecks()">' +
+            '<div class="cover"><img src="' + COVERS.my + '" alt=""></div>' +
             '<div class="course-top">' +
               '<div class="course-title">Мои карточки</div>' +
               (all.length ? '<div class="course-pct">' + pct + '%</div>' : '<div class="course-badge">создать</div>') +
@@ -835,7 +1018,11 @@ function examScore(l){ return (progress[K(l)]||{}).e || 0; }
 function setExamScore(l,pct){ if(!progress[K(l)]) progress[K(l)]={}; if(pct > (progress[K(l)].e||0)){ progress[K(l)].e = pct; saveProgress(); } }
 const PART_PASS = 95;   // % верных ответов в блоке для допуска к следующему
 const EXAM_N = 20, EXAM_PASS = 100;
-function partAcc(l,p){ return (progress[K(l)]||{})['a'+p] || 0; }
+function partAcc(l,p){
+  const rec = progress[K(l)] || {};
+  if(rec['a'+p] !== undefined) return rec['a'+p];
+  return partDone(l,p) ? PART_PASS : 0;   // пройден до введения точности — зачёт
+}
 function setPartAcc(l,p,pct){ if(!progress[K(l)]) progress[K(l)]={}; const k='a'+p; if(pct > (progress[K(l)][k]||0)){ progress[K(l)][k]=pct; saveProgress(); } }
 function partPassed(l,p){ return partAcc(l,p) >= PART_PASS; }
 function partUnlocked(l,p){ return p===0 || partPassed(l,p-1); }
@@ -951,10 +1138,27 @@ const LISTEN_OPTS = [0, 15, 30, 60];
 Object.defineProperty(globalThis, 'DAILY_GOAL', { get: function(){ return meta.goal || 75; } });
 Object.defineProperty(globalThis, 'LISTEN_GOAL', { get: function(){ return meta.lgoal===undefined ? 60 : meta.lgoal; } });
 function listenToday(){ return meta.lday===dstr(0) ? Math.round((meta.lsec||0)/60) : 0; }
+function dayLog(d){
+  if(!meta.log) meta.log = {};
+  const k = d || dstr(0);
+  if(!meta.log[k]) meta.log[k] = {p:0, a:0, w:0};
+  return meta.log[k];
+}
+function logAdd(field, n){
+  const l = dayLog();
+  l[field] = (l[field]||0) + n;
+  const keys = Object.keys(meta.log);
+  if(keys.length > 400){ keys.sort(); delete meta.log[keys[0]]; }
+  saveMeta();
+}
+function dstrOf(d){ return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate(); }
+function logOf(d){ return (meta.log||{})[dstrOf(d)] || {p:0,a:0,w:0}; }
+
 function addListen(sec){
   const t = dstr(0);
   if(meta.lday!==t){ meta.lday = t; meta.lsec = 0; }
   meta.lsec = (meta.lsec||0) + sec;
+  logAdd('a', sec);
   saveMeta();
 }
 function todayCount(){ return meta.day===dstr(0) ? (meta.dayCount||0) : 0; }
@@ -966,6 +1170,7 @@ function bumpDaily(){
     meta.day = t; meta.dayCount = 0;
   }
   meta.dayCount = (meta.dayCount||0)+1;
+  logAdd('p', 1);
   if(!meta.hist) meta.hist = [];
   if(meta.hist.indexOf(t)<0){ meta.hist.push(t); if(meta.hist.length>400) meta.hist.shift(); }
   saveMeta();
@@ -1004,10 +1209,45 @@ function dayWord(n){ if(meta.lang==='ru'||meta.lang===undefined||meta.lang==='uk
 
 function wordsTotal(l){ return WORDS[l].length; }
 function wordsKnown(l){ return (progress[K(l)]||{}).w || []; }
+function logWord(){ logAdd('w', 1); }
 function addKnownWord(l,wi){
   if(!progress[K(l)]) progress[K(l)] = {};
   if(!progress[K(l)].w) progress[K(l)].w = [];
-  if(progress[K(l)].w.indexOf(wi)===-1){ progress[K(l)].w.push(wi); saveProgress(); }
+  if(progress[K(l)].w.indexOf(wi)===-1){ progress[K(l)].w.push(wi); saveProgress(); logWord(); }
+}
+function daysBack(n){
+  const out = [];
+  for(let i=n-1;i>=0;i--){ const d = new Date(); d.setDate(d.getDate()-i); out.push(d); }
+  return out;
+}
+function sumRange(days, field){ let s=0; for(const d of days) s += logOf(d)[field]||0; return s; }
+function activeDays(days){ let c=0; for(const d of days){ const l=logOf(d); if(l.p||l.a||l.w) c++; } return c; }
+function bestWeek(){
+  let best = 0;
+  for(let w=0; w<26; w++){
+    let s = 0;
+    for(let i=0;i<7;i++){ const d=new Date(); d.setDate(d.getDate()-(w*7+i)); s += logOf(d).p||0; }
+    if(s>best) best = s;
+  }
+  return best;
+}
+function ringArc(pct,size,stroke,color,offsetR){
+  const r = (size-stroke)/2 - (offsetR||0);
+  const c = 2*Math.PI*r;
+  const off = c*(1-Math.min(pct,100)/100);
+  return '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '" opacity="0.55"/>' +
+    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>';
+}
+function trioRings(size){
+  const pPct = Math.round(Math.min(todayCount(),DAILY_GOAL)/DAILY_GOAL*100);
+  const aPct = LISTEN_GOAL ? Math.round(Math.min(listenToday(),LISTEN_GOAL)/LISTEN_GOAL*100) : 0;
+  const wGoal = 10;
+  const wPct = Math.round(Math.min(dayLog().w||0, wGoal)/wGoal*100);
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="transform:rotate(-90deg)">' +
+    ringArc(pPct,size,11,'#ffffff',0) +
+    ringArc(aPct,size,11,'rgba(255,255,255,0.55)',15) +
+    ringArc(wPct,size,11,'rgba(255,255,255,0.3)',30) +
+  '</svg>';
 }
 function ringSVG(pct,size,stroke,color){
   const r = (size-stroke)/2;
@@ -1015,7 +1255,7 @@ function ringSVG(pct,size,stroke,color){
   const off = c*(1-Math.min(pct,100)/100);
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
     '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '"/>' +
-    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + (color||'var(--ink)') + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>' +
+    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + (color||'#ffffff') + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>' +
   '</svg>';
 }
 function wordsAllTotal(){ let s=0; for(let i=0;i<WORDS.length;i++) s += WORDS[i].length; return s; }
@@ -1045,12 +1285,12 @@ const ONB = [
     t: "1200 фраз — с нуля до A2",
     s: "16 уроков — от базовых глаголов до фразовых. Собирай предложения из слов, а правило V2 станет рефлексом.",
     svg: '<svg width="230" height="170" viewBox="0 0 230 170" fill="none">' +
-      '<rect x="18" y="18" width="86" height="40" rx="14" fill="#7aa2f7"/><text x="61" y="44" text-anchor="middle" font-family="Manrope,sans-serif" font-size="17" font-weight="700" fill="#0a0a0a">Hei!</text>' +
+      '<rect x="18" y="18" width="86" height="40" rx="14" fill="#7aa2f7"/><text x="61" y="44" text-anchor="middle" font-family="Manrope,sans-serif" font-size="17" font-weight="700" fill="#000001">Hei!</text>' +
       '<path d="M40 58 l8 12 l6 -12 z" fill="#7aa2f7"/>' +
-      '<rect x="118" y="40" width="96" height="40" rx="14" fill="#f87171"/><text x="166" y="66" text-anchor="middle" font-family="Manrope,sans-serif" font-size="17" font-weight="700" fill="#0a0a0a">Hallo!</text>' +
+      '<rect x="118" y="40" width="96" height="40" rx="14" fill="#f87171"/><text x="166" y="66" text-anchor="middle" font-family="Manrope,sans-serif" font-size="17" font-weight="700" fill="#000001">Hallo!</text>' +
       '<path d="M188 80 l6 12 l8 -12 z" fill="#f87171"/>' +
       '<rect x="24" y="112" width="52" height="30" rx="9" fill="#161616" stroke="#3a3a3a"/><text x="50" y="132" text-anchor="middle" font-family="Manrope,sans-serif" font-size="13" fill="#f5f5f5">Jeg</text>' +
-      '<rect x="84" y="112" width="66" height="30" rx="9" fill="#fff"/><text x="117" y="132" text-anchor="middle" font-family="Manrope,sans-serif" font-size="13" font-weight="600" fill="#0a0a0a">lærer</text>' +
+      '<rect x="84" y="112" width="66" height="30" rx="9" fill="#fff"/><text x="117" y="132" text-anchor="middle" font-family="Manrope,sans-serif" font-size="13" font-weight="600" fill="#000001">lærer</text>' +
       '<rect x="158" y="112" width="56" height="30" rx="9" fill="#161616" stroke="#3a3a3a"/><text x="186" y="132" text-anchor="middle" font-family="Manrope,sans-serif" font-size="13" fill="#f5f5f5">norsk</text>' +
     '</svg>'
   },
@@ -1061,7 +1301,7 @@ const ONB = [
       '<rect x="52" y="38" width="126" height="84" rx="16" fill="#1c1c1c" stroke="#3a3a3a" transform="rotate(-6 115 80)"/>' +
       '<rect x="52" y="30" width="126" height="84" rx="16" fill="#232323" stroke="#3a3a3a" transform="rotate(4 115 72)"/>' +
       '<rect x="52" y="26" width="126" height="88" rx="16" fill="#fff"/>' +
-      '<text x="115" y="62" text-anchor="middle" font-family="Manrope,sans-serif" font-size="20" font-weight="700" fill="#0a0a0a">ei bok</text>' +
+      '<text x="115" y="62" text-anchor="middle" font-family="Manrope,sans-serif" font-size="20" font-weight="700" fill="#000001">ei bok</text>' +
       '<rect x="88" y="72" width="54" height="2" rx="1" fill="#d4d4d4"/>' +
       '<text x="115" y="98" text-anchor="middle" font-family="Manrope,sans-serif" font-size="14" fill="#666">книга</text>' +
       '<circle cx="60" cy="140" r="13" fill="#0d2818" stroke="#1d5c34"/><text x="60" y="145" text-anchor="middle" font-size="12" fill="#4ade80"><CK></text>' +
@@ -1336,23 +1576,24 @@ function renderLesson(i){
       '<div class="block-title">' + t('w_card') + (wfull?t('w_learned'):'') + '</div>' +
       '<div class="lesson-mini">' +
         '<div class="lesson-mini-bar"><div class="lesson-mini-fill" style="width:' + wpct + '%"></div></div>' +
-        '<div class="lesson-mini-pct"' + (wfull?' style="color:var(--green)"':'') + '>' + wpct + '%</div>' +
+        '<div class="lesson-mini-pct"' + '' + '>' + wpct + '%</div>' +
       '</div>' +
     '</div>';
 
   const blocks = l.parts.map((p,pi) => {
     const sz = p.q.length;
     const pd = partProgress(i,pi);
-    const pct = Math.round(pd/sz*100);
+    const acc = partAcc(i,pi);
+    const pct = acc;
     const passed = partPassed(i,pi);
     const full = passed;
     const open = partUnlocked(i,pi);
     return '<div class="block-card' + (full?' full':'') + (open?'':' locked') + '" onclick="' + (open ? 'startPart(' + i + ',' + pi + ')' : 'partLockHint(' + pi + ')') + '">' +
       '<div class="block-num">' + (passed?ic('check',16):open?(pi+1):ic('lock',16)) + '</div>' +
-      '<div class="block-title">' + p.t + (passed ? ' · ' + partAcc(i,pi) + '%' : open ? '' : ' · закрыт') + '</div>' +
+      '<div class="block-title">' + p.t + (open ? '' : ' · закрыт') + '</div>' +
       '<div class="lesson-mini">' +
         '<div class="lesson-mini-bar"><div class="lesson-mini-fill" style="width:' + pct + '%"' + (full?' ':'') + '></div></div>' +
-        '<div class="lesson-mini-pct"' + (full?' style="color:var(--green)"':'') + '>' + pct + '%</div>' +
+        '<div class="lesson-mini-pct"' + '' + '>' + pct + '%</div>' +
       '</div>' +
     '</div>';
   }).join("");
@@ -1389,7 +1630,7 @@ function renderLesson(i){
         '<div class="block-card exam-card' + (passed?' full':'') + (exOpen?'':' locked') + '" onclick="' + (exOpen ? 'startExam(' + i + ')' : 'examLockHint()') + '">' +
           '<div class="block-num">' + (exOpen?ic('cap',17):ic('lock',17)) + '</div>' +
           '<div class="block-title">' + t('exam') + (!exOpen ? ' · сдай три блока на ' + PART_PASS + '%' : passed ? (isExpired(i) ? ' — остыл, пересдай' : t('exam_ok')) : ' · ' + EXAM_N + ' вопросов, нужно 100%') + '</div>' +
-          (es > 0 ? '<div class="lesson-mini-pct"' + (passed?' style="color:var(--green)"':' style="color:var(--amber)"') + '>' + es + '%</div>' : '') +
+          (es > 0 ? '<div class="lesson-mini-pct"' + '' + '>' + es + '%</div>' : '') +
         '</div>' +
       '</div>';
     })();
@@ -1883,6 +2124,7 @@ function switchWordsMode(m){ wordsState.mode = m; wordsState.flipped = false; re
 function wordKnow(){
   const cur = wordsState.deck.shift();
   if(cur.my){
+    logWord();
     const s = Math.min((cur.w.s||0)+1, SRS_INT.length);
     cur.w.s = s; cur.w.d = dnum() + SRS_INT[s-1];
     saveMeta(); wordsState.flipped = false; renderWords(); return;
@@ -2550,6 +2792,91 @@ function closeWhatsNew(){
   restoreCourse();
   renderCourses();
 }
+
+// ─── СТАТИСТИКА ───
+let statPeriod = 'week';
+
+function renderStats(){
+  screen = 'stats';
+  const P = statPeriod;
+  const days = daysBack(P==='week'?7:P==='month'?30:365);
+  const ph = sumRange(days,'p'), au = sumRange(days,'a'), wd = sumRange(days,'w');
+  const act = activeDays(days);
+  const avg = act ? Math.round(ph/act) : 0;
+
+  let chart = '';
+  if(P==='week'){
+    const vals = days.map(function(d){ return logOf(d).p||0; });
+    const mx = Math.max(DAILY_GOAL, Math.max.apply(null, vals));
+    const wl = t('wd');
+    chart = '<div class="week-strip" style="border:none;padding:0;margin:0;gap:8px">' + days.map(function(d,i){
+      const h = Math.max(4, Math.round(vals[i]/mx*100));
+      return '<div class="wk-col"><div class="wk-bar-bg" style="height:100px"><div class="wk-bar' + (vals[i]>=DAILY_GOAL?' hit':'') + '" style="height:' + h + 'px"></div></div>' +
+        '<div class="wk-lbl">' + wl[(d.getDay()+6)%7] + '</div>' +
+        '<div class="wk-lbl" style="color:var(--ink2);font-weight:600">' + (vals[i]||'') + '</div></div>';
+    }).join('') + '</div>';
+  } else if(P==='month'){
+    chart = '<div class="heat">' + days.map(function(d){
+      const v = logOf(d).p||0;
+      const lvl = v===0?0 : v<DAILY_GOAL*0.34?1 : v<DAILY_GOAL*0.67?2 : v<DAILY_GOAL?3 : 4;
+      return '<div class="ht l' + lvl + '" title="' + d.getDate() + '"></div>';
+    }).join('') + '</div>' +
+    '<div class="heat-legend"><span>меньше</span><div class="ht l0"></div><div class="ht l1"></div><div class="ht l2"></div><div class="ht l3"></div><div class="ht l4"></div><span>больше</span></div>';
+  } else {
+    const mo = [];
+    for(let m=11;m>=0;m--){
+      const d = new Date(); d.setMonth(d.getMonth()-m);
+      let s = 0;
+      const y = d.getFullYear(), mm = d.getMonth();
+      const last = new Date(y, mm+1, 0).getDate();
+      for(let day=1; day<=last; day++) s += ((meta.log||{})[y+'-'+(mm+1)+'-'+day]||{}).p||0;
+      mo.push({ n: t('mo')[mm].slice(0,3), v: s });
+    }
+    const mx = Math.max(1, Math.max.apply(null, mo.map(function(x){return x.v;})));
+    chart = '<div class="year-row">' + mo.map(function(x){
+      return '<div class="yr-col"><div class="yr-bar-bg"><div class="yr-bar" style="height:' + Math.max(3, Math.round(x.v/mx*90)) + 'px"></div></div>' +
+        '<div class="wk-lbl">' + x.n + '</div></div>';
+    }).join('') + '</div>';
+  }
+
+  document.getElementById('app').innerHTML =
+    '<div class="header">' +
+      '<button class="back-btn" onclick="renderCourses()">' + t('back_h') + '</button>' +
+      '<div class="header-right"><div class="score-chip">' + ic('fire',14) + ' ' + streakCount() + '</div></div>' +
+    '</div>' +
+    '<div class="detail-title">Статистика</div>' +
+    '<div class="detail-sub">Ритм важнее объёма — смотри на регулярность</div>' +
+    '<div class="mode-toggle" style="margin:1rem 0">' +
+      '<button class="mode-btn' + (P==='week'?' active':'') + '" onclick="setStatPeriod(\'week\')">Неделя</button>' +
+      '<button class="mode-btn' + (P==='month'?' active':'') + '" onclick="setStatPeriod(\'month\')">Месяц</button>' +
+      '<button class="mode-btn' + (P==='year'?' active':'') + '" onclick="setStatPeriod(\'year\')">Год</button>' +
+    '</div>' +
+    '<div class="card">' + chart + '</div>' +
+    '<div class="stat-grid">' +
+      '<div class="sg"><div class="sg-v">' + ph + '</div><div class="sg-l">фраз</div></div>' +
+      '<div class="sg"><div class="sg-v">' + Math.round(au/60) + '</div><div class="sg-l">минут аудио</div></div>' +
+      '<div class="sg"><div class="sg-v">' + wd + '</div><div class="sg-l">слов</div></div>' +
+      '<div class="sg"><div class="sg-v">' + act + '</div><div class="sg-l">дней занятий</div></div>' +
+      '<div class="sg"><div class="sg-v">' + avg + '</div><div class="sg-l">фраз в день</div></div>' +
+      '<div class="sg"><div class="sg-v">' + bestWeek() + '</div><div class="sg-l">лучшая неделя</div></div>' +
+    '</div>' +
+    '<div class="section-label" style="margin-top:24px">Всего за курс</div>' +
+    '<div class="stat-grid" style="margin-top:10px">' +
+      (function(){
+        const sL=LESSONS, sW=WORDS, sc2=ci;
+        ci=0; LESSONS=COURSES[0].L; WORDS=COURSES[0].W;
+        let p=0,pt=0,w=0,wt=0;
+        for(let l=0;l<LESSONS.length;l++){ p+=lessonSolved(l); pt+=lessonTotal(l); w+=Math.min(wordsKnown(l).length,WORDS[l].length); wt+=WORDS[l].length; }
+        ci=sc2; LESSONS=sL; WORDS=sW;
+        let hrs=0; for(const d of DIALOGS) hrs += dlgStat(d.id).sec||0;
+        return '<div class="sg"><div class="sg-v">' + Math.round(p/pt*100) + '%</div><div class="sg-l">фраз курса</div></div>' +
+          '<div class="sg"><div class="sg-v">' + Math.round(w/wt*100) + '%</div><div class="sg-l">слов курса</div></div>' +
+          '<div class="sg"><div class="sg-v">' + (hrs/3600).toFixed(1) + '</div><div class="sg-l">часов аудио</div></div>';
+      })() +
+    '</div>';
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+function setStatPeriod(p){ statPeriod = p; renderStats(); }
 
 // ─── ЗНАКОМСТВО С ИНТЕРФЕЙСОМ ───
 const TOUR = [
