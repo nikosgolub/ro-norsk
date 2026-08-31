@@ -565,6 +565,33 @@ body.light .ht.l1{background:rgba(15,22,40,0.14)!important}
 body.light .ht.l2{background:rgba(15,22,40,0.32)!important}
 body.light .ht.l3{background:rgba(15,22,40,0.58)!important}
 body.light .feedback.ok,body.light .feedback.err,body.light .feedback.v2{background:rgba(15,22,40,0.04)!important;color:var(--ink)!important}
+
+/* ═══ ЦВЕТ ТОЛЬКО ДЛЯ ОТВЕТОВ ═══ */
+.feedback.ok{background:rgba(74,222,128,0.10)!important;border-color:rgba(74,222,128,0.40)!important;color:#4ade80!important}
+.feedback.err{background:rgba(248,113,113,0.10)!important;border-color:rgba(248,113,113,0.40)!important;color:#f87171!important}
+.feedback.v2{background:rgba(251,191,36,0.10)!important;border-color:rgba(251,191,36,0.40)!important;color:#fbbf24!important}
+.feedback.ok .fb-title,.feedback.ok .listen-btn{color:#4ade80!important}
+.feedback.err .fb-title{color:#f87171!important}
+.feedback.v2 .fb-title{color:#fbbf24!important}
+.feedback .listen-btn{border-color:currentColor!important;opacity:.85}
+.feedback .rule-box{color:var(--ink2)!important}
+.feedback .rule-box b,.feedback .rule-box code{color:var(--ink)!important}
+/* поля ввода при проверке */
+.builder-answer.correct-state,.text-input.correct-state{border-color:#4ade80!important;background:rgba(74,222,128,0.08)!important}
+.builder-answer.wrong-state,.text-input.wrong-state{border-color:#f87171!important;background:rgba(248,113,113,0.08)!important}
+/* разбор ошибки */
+.dw.correct{color:#4ade80!important}
+.dw.missing{background:rgba(248,113,113,0.18)!important;color:#f87171!important;text-decoration:underline;text-decoration-style:wavy}
+.dw.extra{background:rgba(251,191,36,0.14)!important;color:#fbbf24!important;text-decoration:line-through}
+body.light .feedback.ok{background:rgba(21,128,61,0.08)!important;border-color:rgba(21,128,61,0.35)!important;color:#15803d!important}
+body.light .feedback.err{background:rgba(201,42,42,0.07)!important;border-color:rgba(201,42,42,0.35)!important;color:#c92a2a!important}
+body.light .feedback.v2{background:rgba(161,98,7,0.08)!important;border-color:rgba(161,98,7,0.35)!important;color:#a16207!important}
+body.light .feedback.ok .fb-title,body.light .feedback.ok .listen-btn{color:#15803d!important}
+body.light .feedback.err .fb-title,body.light .dw.missing{color:#c92a2a!important}
+body.light .feedback.v2 .fb-title,body.light .dw.extra{color:#a16207!important}
+body.light .dw.correct{color:#15803d!important}
+body.light .builder-answer.correct-state,body.light .text-input.correct-state{border-color:#15803d!important;background:rgba(21,128,61,0.06)!important}
+body.light .builder-answer.wrong-state,body.light .text-input.wrong-state{border-color:#c92a2a!important;background:rgba(201,42,42,0.05)!important}
 </style>
 <script data-goatcounter="https://nikosgolub.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
