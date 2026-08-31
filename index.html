@@ -313,6 +313,7 @@ body.light .wk-bar{background:rgba(15,22,40,0.14)}
 .wk-bar.today.hit{background:var(--green)}
 .wk-lbl{font-size:10.5px;color:var(--ink3)}
 .wk-lbl.today{color:var(--ink);font-weight:700}
+.wk-col.future{opacity:.35}
 .hero-foot{display:flex;align-items:center;gap:12px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.08);font-size:12.5px;color:var(--ink2)}
 .hf-item{display:inline-flex;align-items:center;gap:6px;cursor:pointer}
 .hf-sep{flex:1}
@@ -961,18 +962,19 @@ function renderCourses(){
         '</div>' +
       '</div>' +
       (function(){
-        const days = daysBack(7);
+        const days = weekDays();
         const vals = days.map(function(d){ return logOf(d).p||0; });
         const mx = Math.max(DAILY_GOAL, Math.max.apply(null, vals));
         const wd = t('wd');
         return '<div class="week-strip">' + days.map(function(d,i){
           const v = vals[i];
           const h = Math.max(4, Math.round(v/mx*52));
-          const today = i===6;
+          const today = dstrOf(d) === dstr(0);
+          const future = isFuture(d);
           const hit = v >= DAILY_GOAL;
-          return '<div class="wk-col">' +
+          return '<div class="wk-col' + (future?' future':'') + '">' +
             '<div class="wk-bar-bg"><div class="wk-bar' + (hit?' hit':'') + (today?' today':'') + '" style="height:' + h + 'px"></div></div>' +
-            '<div class="wk-lbl' + (today?' today':'') + '">' + wd[(d.getDay()+6)%7] + '</div>' +
+            '<div class="wk-lbl' + (today?' today':'') + '">' + wd[i] + '</div>' +
           '</div>';
         }).join('') + '</div>';
       })() +
@@ -1242,6 +1244,18 @@ function addKnownWord(l,wi){
   if(!progress[K(l)].w) progress[K(l)].w = [];
   if(progress[K(l)].w.indexOf(wi)===-1){ progress[K(l)].w.push(wi); saveProgress(); logWord(); }
 }
+function weekDays(){
+  const out = [];
+  const now = new Date();
+  const shift = (now.getDay()+6)%7;            // 0 = понедельник
+  for(let i=0;i<7;i++){
+    const d = new Date();
+    d.setDate(now.getDate() - shift + i);
+    out.push(d);
+  }
+  return out;
+}
+function isFuture(d){ const t = new Date(); t.setHours(23,59,59,999); return d > t; }
 function daysBack(n){
   const out = [];
   for(let i=n-1;i>=0;i--){ const d = new Date(); d.setDate(d.getDate()-i); out.push(d); }
@@ -2826,7 +2840,7 @@ let statPeriod = 'week';
 function renderStats(){
   screen = 'stats';
   const P = statPeriod;
-  const days = daysBack(P==='week'?7:P==='month'?30:365);
+  const days = P==='week' ? weekDays() : daysBack(P==='month'?30:365);
   const ph = sumRange(days,'p'), au = sumRange(days,'a'), wd = sumRange(days,'w');
   const act = activeDays(days);
   const avg = act ? Math.round(ph/act) : 0;
@@ -2838,8 +2852,9 @@ function renderStats(){
     const wl = t('wd');
     chart = '<div class="week-strip" style="border:none;padding:0;margin:0;gap:8px">' + days.map(function(d,i){
       const h = Math.max(4, Math.round(vals[i]/mx*100));
-      return '<div class="wk-col"><div class="wk-bar-bg" style="height:100px"><div class="wk-bar' + (vals[i]>=DAILY_GOAL?' hit':'') + '" style="height:' + h + 'px"></div></div>' +
-        '<div class="wk-lbl">' + wl[(d.getDay()+6)%7] + '</div>' +
+      const today = dstrOf(d) === dstr(0);
+      return '<div class="wk-col' + (isFuture(d)?' future':'') + '"><div class="wk-bar-bg" style="height:100px"><div class="wk-bar' + (vals[i]>=DAILY_GOAL?' hit':'') + (today?' today':'') + '" style="height:' + h + 'px"></div></div>' +
+        '<div class="wk-lbl' + (today?' today':'') + '">' + wl[i] + '</div>' +
         '<div class="wk-lbl" style="color:var(--ink2);font-weight:600">' + (vals[i]||'') + '</div></div>';
     }).join('') + '</div>';
   } else if(P==='month'){
