@@ -165,6 +165,10 @@ button{touch-action:manipulation}
 .set-chip:hover{border-color:var(--ink2)}
 .set-chip.on{background:#fff;color:#000001;border-color:#fff}
 .set-chip.add{color:var(--ink3);border-style:dashed}
+.imp-area{min-height:140px;resize:vertical;font-family:inherit;line-height:1.5;padding:12px 14px}
+.imp-hint{font-size:12.5px;color:var(--ink3);line-height:1.7;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:12px}
+.imp-sum{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--ink2)}
+.imp-sum b{color:var(--ink);font-size:15px}
 .my-row{display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid rgba(255,255,255,0.06)}
 .my-row:last-child{border-bottom:none}
 .my-txt{flex:1;min-width:0}
@@ -2621,6 +2625,138 @@ function askConfirm(title, text, cb){
   modalCb = cb;
 }
 function modalYes(){ const cb = modalCb; closeModal(); if(cb) cb(true); }
+
+// ─── ИМПОРТ / ЭКСПОРТ СЛОВАРЯ ───
+let impRows = [];
+
+function parseWords(text){
+  const rows = [], bad = [];
+  const lines = (text||'').split(/\r?\n/);
+  for(const raw of lines){
+    const line = raw.trim();
+    if(!line || line.charAt(0)==='#') continue;
+    let parts = null;
+    if(line.indexOf('\t')>=0) parts = line.split('\t');
+    else if(line.indexOf(' — ')>=0) parts = line.split(' — ');
+    else if(line.indexOf(' – ')>=0) parts = line.split(' – ');
+    else if(line.indexOf(' - ')>=0) parts = line.split(' - ');
+    else if(line.indexOf(';')>=0) parts = line.split(';');
+    else if(line.indexOf(':')>=0) parts = line.split(':');
+    else if(line.indexOf(',')>=0) parts = line.split(',');
+    if(!parts || parts.length < 2){ bad.push(line); continue; }
+    const n = parts[0].replace(/^["']|["']$/g,'').replace(/[<>&]/g,'').trim().slice(0,60);
+    const r = parts.slice(1).join(' ').replace(/^["']|["']$/g,'').replace(/[<>&]/g,'').trim().slice(0,80);
+    if(!n || !r){ bad.push(line); continue; }
+    rows.push({n:n, r:r});
+  }
+  return {rows:rows, bad:bad};
+}
+
+function renderImport(){
+  screen = 'import';
+  const setName2 = myCur==='all' || myCur==='none' ? 'Без раздела' : setName(myCur);
+  document.getElementById('app').innerHTML =
+    '<div class="header">' +
+      '<button class="back-btn" onclick="renderMyWords()">← Раздел</button>' +
+    '</div>' +
+    '<div class="detail-title">Импорт слов</div>' +
+    '<div class="detail-sub">Вставь список или загрузи файл — попадут в «' + setName2 + '»</div>' +
+    '<div class="card" style="margin-top:1rem">' +
+      '<div class="pool-label">Формат: одно слово в строке</div>' +
+      '<div class="imp-hint">ei bok — книга<br>å kjøre, водить<br>melk: молоко</div>' +
+      '<textarea class="text-input imp-area" id="imp-text" placeholder="Вставь список сюда…"></textarea>' +
+      '<div class="btn-row" style="margin-top:12px">' +
+        '<button class="submit-btn retry-btn" onclick="pickFile()">' + ic('down',15) + ' Файл</button>' +
+        '<button class="submit-btn" onclick="previewImport()">Разобрать</button>' +
+      '</div>' +
+      '<input type="file" id="imp-file" accept=".txt,.csv,text/plain,text/csv" style="display:none" onchange="loadFile(event)">' +
+    '</div>' +
+    '<div id="imp-preview"></div>' +
+    '<div class="section-label" style="margin-top:22px">Резервная копия</div>' +
+    '<button class="continue-btn" style="margin-top:10px" onclick="exportWords()">' + ic('share',16) + ' Выгрузить словарь в файл</button>';
+}
+
+function pickFile(){ const f = document.getElementById('imp-file'); if(f && f.click) f.click(); }
+function loadFile(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const rd = new FileReader();
+  rd.onload = function(){
+    const ta = document.getElementById('imp-text');
+    if(ta) ta.value = String(rd.result||'').slice(0, 200000);
+    previewImport();
+  };
+  rd.readAsText(file);
+}
+
+function previewImport(){
+  const ta = document.getElementById('imp-text');
+  const res = parseWords(ta ? ta.value : '');
+  const have = new Set(myList().map(function(w){ return w.n.toLowerCase(); }));
+  const fresh = [], dup = [];
+  const seen = new Set();
+  for(const r of res.rows){
+    const k = r.n.toLowerCase();
+    if(have.has(k) || seen.has(k)){ dup.push(r); continue; }
+    seen.add(k); fresh.push(r);
+  }
+  impRows = fresh;
+  const box = document.getElementById('imp-preview');
+  if(!box) return;
+  if(!res.rows.length && !res.bad.length){ box.innerHTML = '<div class="deck-count" style="margin-top:14px">Пока пусто — вставь список выше.</div>'; return; }
+  const list = fresh.slice(0,8).map(function(r){
+    return '<div class="my-row"><div class="my-txt"><div class="my-no">' + r.n + '</div><div class="my-ru">' + r.r + '</div></div></div>';
+  }).join('');
+  box.innerHTML =
+    '<div class="card" style="margin-top:14px;padding:.7rem .9rem">' +
+      '<div class="imp-sum">' +
+        '<span><b>' + fresh.length + '</b> новых</span>' +
+        (dup.length ? '<span>' + dup.length + ' уже есть</span>' : '') +
+        (res.bad.length ? '<span>' + res.bad.length + ' не распознано</span>' : '') +
+      '</div>' +
+      (list ? '<div style="margin-top:8px">' + list + (fresh.length>8 ? '<div class="deck-count" style="text-align:left;margin-top:6px">…и ещё ' + (fresh.length-8) + '</div>' : '') + '</div>' : '') +
+      (res.bad.length ? '<div class="deck-count" style="text-align:left;margin-top:8px">Не разобрано: ' + res.bad.slice(0,3).map(function(x){ return '«' + x.slice(0,28) + '»'; }).join(', ') + '</div>' : '') +
+    '</div>' +
+    (fresh.length ? '<button class="continue-btn" style="margin-top:12px" onclick="doImport()">Добавить ' + fresh.length + ' ' + (fresh.length===1?'слово':'слов') + '</button>' : '');
+}
+
+function doImport(){
+  if(!impRows.length) return;
+  const set = (myCur!=='all' && myCur!=='none') ? myCur : null;
+  for(const r of impRows){
+    const w = { n:r.n, r:r.r, s:0, d:dnum() };
+    if(set) w.set = set;
+    myList().push(w);
+  }
+  const n = impRows.length;
+  impRows = [];
+  saveMeta();
+  buzz('win');
+  renderMyWords();
+}
+
+function exportWords(){
+  const list = myList();
+  if(!list.length){ alert('Словарь пуст'); return; }
+  const byId = {};
+  for(const s of mySets()) byId[s.id] = s.name;
+  let txt = '';
+  const groups = {};
+  for(const w of list){
+    const g = w.set ? byId[w.set] || 'Без раздела' : 'Без раздела';
+    if(!groups[g]) groups[g] = [];
+    groups[g].push(w.n + ' — ' + w.r);
+  }
+  for(const g in groups) txt += '# ' + g + '\n' + groups[g].join('\n') + '\n\n';
+  try{
+    const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'ro-словарь.txt';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 1500);
+  }catch(e){ alert('Не удалось выгрузить файл'); }
+}
 
 // ─── МОИ СЛОВА ───
 let myCur = 'all';
