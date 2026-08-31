@@ -2914,6 +2914,7 @@ function renderMyWords(){
         '<button class="submit-btn retry-btn" id="ai-fill" onclick="aiFillWord()">' + ic('star',15) + ' Заполнить</button>' +
         '<button class="submit-btn" onclick="myAdd()">Добавить</button>' +
       '</div>' +
+      '<button class="submit-btn retry-btn" style="margin-top:10px" onclick="renderImport()">' + ic('cards',15) + ' Импорт списком</button>' +
     '</div>' +
     (list.length ?
       '<button class="continue-btn" onclick="startMyWords()">' + ic('cards',16) + ' Учить карточки' + (due ? ' · ' + due : '') + '</button>' +
