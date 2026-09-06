@@ -2197,6 +2197,38 @@ function WDl(){ return t('wd'); }
 function sched(){ if(!meta.sched) meta.sched = {days:[], time:'19:00'}; return meta.sched; }
 function isPlannedToday(){ const d=(new Date().getDay()+6)%7; return sched().days.indexOf(d)>=0; }
 
+function backupAll(){
+  const data = { v:2, ts:Date.now(), meta:meta, progress:progress };
+  try{
+    const blob = new Blob([JSON.stringify(data)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'ro-backup-' + dstr(0) + '.json';
+    document.body.appendChild(a); a.click();
+    setTimeout(function(){ a.remove(); URL.revokeObjectURL(url); }, 1500);
+  }catch(e){ alert('Не удалось сохранить копию'); }
+}
+function pickBackup(){ const f = document.getElementById('bk-file'); if(f && f.click) f.click(); }
+function loadBackup(e){
+  const file = e.target.files && e.target.files[0];
+  if(!file) return;
+  const rd = new FileReader();
+  rd.onload = function(){
+    try{
+      const d = JSON.parse(String(rd.result||''));
+      if(!d.meta) throw new Error('bad');
+      askConfirm('Восстановить прогресс?', 'Текущие данные будут заменены копией от ' + new Date(d.ts||Date.now()).toLocaleDateString() + '.', function(){
+        meta = d.meta; if(!meta.mistakes) meta.mistakes = [];
+        progress = d.progress || {};
+        saveMeta(); saveProgress();
+        buzz('win');
+        applyTheme(); restoreCourse(); renderCourses();
+      });
+    }catch(err){ alert('Файл не распознан'); }
+  };
+  rd.readAsText(file);
+}
+
 function renderSchedule(){
   screen = "schedule";
   const s = sched();
@@ -2229,6 +2261,15 @@ function renderSchedule(){
     '<div class="detail-title">' + t('sched') + '</div>' +
     '<div class="detail-sub">' + t('sched_s') + '</div>' +
     '<button class="back-btn" style="margin-bottom:1rem" onclick="renderGoals(1)">Изменить дневные цели</button>' +
+    '<div class="section-label" style="margin-bottom:10px">Резервная копия</div>' +
+    '<div class="card" style="margin-bottom:1.25rem">' +
+      '<div class="deck-count" style="text-align:left;margin:0 0 12px">Прогресс хранится на устройстве. Сохрани копию — восстановишь после чистки браузера или на другом телефоне.</div>' +
+      '<div class="btn-row">' +
+        '<button class="submit-btn retry-btn" onclick="pickBackup()">Восстановить</button>' +
+        '<button class="submit-btn" onclick="backupAll()">Сохранить копию</button>' +
+      '</div>' +
+      '<input type="file" id="bk-file" accept=".json,application/json" style="display:none" onchange="loadBackup(event)">' +
+    '</div>' +
     '<div class="card" style="margin-top:1rem">' +
       '<div class="pool-label">' + monthName + ' ' + y + ' · <span style="color:var(--green)">●</span> ' + t('cal_leg') + '</div>' +
       '<div class="cal-grid">' + cells + '</div>' +
@@ -3194,8 +3235,47 @@ if(TG && TG.CloudStorage){
   }catch(e){}
 }
 
-applyTheme();
-goToLessons();
+
+// ─── ВОССТАНОВЛЕНИЕ ИЗ ОБЛАКА TELEGRAM ───
+function cloudGet(keys, cb){
+  if(!(TG && TG.CloudStorage && TG.CloudStorage.getItems)){ cb(null); return; }
+  let done = false;
+  const finish = function(v){ if(!done){ done = true; cb(v); } };
+  setTimeout(function(){ finish(null); }, 2500);   // не ждём вечно
+  try{
+    TG.CloudStorage.getItems(keys, function(err, res){
+      if(err || !res){ finish(null); return; }
+      finish(res);
+    });
+  }catch(e){ finish(null); }
+}
+
+function bootApp(){
+  cloudGet(['ro_meta','ro_progress'], function(res){
+    if(res){
+      // облако новее или локально пусто — берём облако
+      try{
+        const cm = res.ro_meta ? JSON.parse(res.ro_meta) : null;
+        const cp = res.ro_progress ? JSON.parse(res.ro_progress) : null;
+        const localEmpty = !meta.name && Object.keys(progress).length === 0;
+        const cloudBetter = cm && (localEmpty || (cm.dayCount||0) > (meta.dayCount||0));
+        if(cloudBetter){
+          meta = cm;
+          if(!meta.mistakes) meta.mistakes = [];
+          if(cp) progress = cp;
+          try{
+            localStorage.setItem('ro_meta', JSON.stringify(meta));
+            localStorage.setItem('ro_progress', JSON.stringify(progress));
+          }catch(e){}
+        }
+      }catch(e){}
+    }
+    applyTheme();
+    goToLessons();
+  });
+}
+
+bootApp();
 </script>
 </body>
 </html>
