@@ -313,6 +313,31 @@ body.light .wk-bar{background:rgba(15,22,40,0.14)}
   .ring-arc{transition:none}
   .ring-arc.done{animation:none}
 }
+.toast-ring{position:relative;width:40px;height:40px;flex-shrink:0}
+.toast-chk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ink);opacity:0;animation:chkIn .34s .75s forwards ease-out}
+@keyframes chkIn{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:scale(1)}}
+.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:80;
+  display:flex;align-items:center;gap:11px;min-width:270px;max-width:calc(100vw - 32px);
+  background:linear-gradient(160deg,rgba(38,38,38,0.97),rgba(20,20,20,0.97));backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,0.14);border-radius:16px;padding:12px 15px;
+  box-shadow:0 12px 34px rgba(0,0,0,0.5);animation:toastIn .38s cubic-bezier(.2,.9,.3,1)}
+.toast.out{animation:toastOut .42s ease-in forwards}
+.toast-ic{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.toast-t{font-size:14px;font-weight:700;letter-spacing:-0.2px}
+.toast-d{font-size:12px;color:var(--ink2);margin-top:2px;line-height:1.35}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(-22px) scale(.95)}to{opacity:1;transform:translateX(-50%) translateY(0) scale(1)}}
+@keyframes toastOut{to{opacity:0;transform:translateX(-50%) translateY(-18px)}}
+.allwin{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,0.88);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:1.5rem;animation:awIn .3s ease-out}
+.allwin canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.aw-box{position:relative;text-align:center;max-width:340px;width:100%}
+.aw-rings{position:relative;width:150px;height:150px;margin:0 auto 20px}
+.aw-center{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ink);animation:numIn .5s .5s both ease-out}
+.aw-title{font-size:26px;font-weight:700;letter-spacing:-0.5px;margin-bottom:8px}
+.aw-sub{font-size:14.5px;color:var(--ink2);line-height:1.55;margin-bottom:22px}
+@keyframes awIn{from{opacity:0}to{opacity:1}}
+body.light .toast{background:linear-gradient(160deg,#fff,#f4f5f7);border-color:rgba(15,22,40,0.12);box-shadow:0 12px 34px rgba(15,22,40,0.18)}
+body.light .toast-ic{background:rgba(15,22,40,0.07)}
+body.light .allwin{background:rgba(244,245,247,0.94)}
 /* ─── дневные кольца ─── */
 .rings-hero{display:flex;align-items:center;gap:18px}
 .rings-wrap{position:relative;width:168px;height:168px;flex-shrink:0}
@@ -931,6 +956,84 @@ function openSrsAll(){
   }
 }
 
+// ─── ПОЗДРАВЛЕНИЯ ЗА КОЛЬЦА ───
+const RING_INFO = {
+  p: { t:'Кольцо фраз закрыто!', d:'Дневная норма фраз выполнена', ic:'check' },
+  a: { t:'Кольцо аудио закрыто!', d:'Ты дослушал дневную норму диалогов', ic:'head' },
+  w: { t:'Кольцо слов закрыто!', d:'Карточки на сегодня разобраны', ic:'cards' }
+};
+
+function ringState(){
+  const t = dstr(0);
+  if(!meta.rings || meta.rings.day !== t) meta.rings = { day:t, p:0, a:0, w:0, all:0 };
+  return meta.rings;
+}
+function ringPcts(){
+  return {
+    p: DAILY_GOAL ? todayCount()/DAILY_GOAL : 1,
+    a: LISTEN_GOAL ? listenToday()/LISTEN_GOAL : 1,
+    w: (dayLog().w||0)/10
+  };
+}
+
+function checkRings(){
+  const st = ringState();
+  const pc = ringPcts();
+  const justClosed = [];
+  for(const k of ['p','a','w']){
+    if(!st[k] && pc[k] >= 1){ st[k] = 1; justClosed.push(k); }
+  }
+  const allNow = st.p && st.a && st.w;
+  if(allNow && !st.all){
+    st.all = 1; saveMeta();
+    setTimeout(allRingsWin, 420);
+    return;
+  }
+  if(justClosed.length){
+    saveMeta();
+    ringToast(justClosed[0]);
+  }
+}
+
+function ringToast(k){
+  const info = RING_INFO[k];
+  if(!info) return;
+  const old = document.getElementById('toast');
+  if(old) old.remove();
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.id = 'toast';
+  el.innerHTML = '<div class="toast-ring">' + miniRing(k, 40) + '<div class="toast-chk">' + ic('check',15) + '</div></div>' +
+    '<div class="toast-tx"><div class="toast-t">' + info.t + '</div><div class="toast-d">' + info.d + '</div></div>';
+  document.body.appendChild(el);
+  buzz('win');
+  setTimeout(animateRings, 40);
+  setTimeout(function(){ const t = document.getElementById('toast'); if(t) t.className = 'toast out'; }, 3000);
+  setTimeout(function(){ const t = document.getElementById('toast'); if(t) t.remove(); }, 3500);
+}
+
+function allRingsWin(){
+  const old = document.getElementById('allwin');
+  if(old) old.remove();
+  const el = document.createElement('div');
+  el.className = 'allwin';
+  el.id = 'allwin';
+  el.innerHTML = '<canvas id="fw2"></canvas>' +
+    '<div class="aw-box">' +
+      '<div class="aw-rings">' + trioRings(150) + '<div class="aw-center">' + ic('check',40) + '</div></div>' +
+      '<div class="aw-title">Все кольца закрыты!</div>' +
+      '<div class="aw-sub">Фразы, аудио и слова — полный день.<br>' + streakCount() + ' ' + dayWord(streakCount()) + ' подряд. Så bra!</div>' +
+      '<button class="submit-btn" onclick="closeAllWin()">Дальше</button>' +
+    '</div>';
+  document.body.appendChild(el);
+  buzz('win');
+  setTimeout(function(){ animateRings(); launchFireworks('fw2'); }, 60);
+}
+function closeAllWin(){
+  const el = document.getElementById('allwin');
+  if(el) el.remove();
+}
+
 function renderCourses(){
   screen = 'courses';
   const cards = COURSES.map((c,i) => {
@@ -1066,7 +1169,7 @@ function partDone(l,p){ return partProgress(l,p) >= partSize(l,p); }
 function lessonSolved(l){ let s=0; for(let p=0;p<PARTS;p++) s += partProgress(l,p); return s; }
 function examScore(l){ return (progress[K(l)]||{}).e || 0; }
 function setExamScore(l,pct){ if(!progress[K(l)]) progress[K(l)]={}; if(pct > (progress[K(l)].e||0)){ progress[K(l)].e = pct; saveProgress(); } }
-const PART_PASS = 95;   // % верных ответов в блоке для допуска к следующему
+const PART_PASS = 90;   // % верных ответов в блоке для допуска к следующему
 const EXAM_N = 20, EXAM_PASS = 100;
 function partAcc(l,p){
   const rec = progress[K(l)] || {};
@@ -1210,6 +1313,7 @@ function addListen(sec){
   meta.lsec = (meta.lsec||0) + sec;
   logAdd('a', sec);
   saveMeta();
+  checkRings();
 }
 function todayCount(){ return meta.day===dstr(0) ? (meta.dayCount||0) : 0; }
 function streakCount(){ return (meta.day===dstr(0)||meta.day===dstr(-1)) ? (meta.streak||0) : 0; }
@@ -1221,6 +1325,7 @@ function bumpDaily(){
   }
   meta.dayCount = (meta.dayCount||0)+1;
   logAdd('p', 1);
+  checkRings();
   if(!meta.hist) meta.hist = [];
   if(meta.hist.indexOf(t)<0){ meta.hist.push(t); if(meta.hist.length>400) meta.hist.shift(); }
   saveMeta();
@@ -1259,7 +1364,7 @@ function dayWord(n){ if(meta.lang==='ru'||meta.lang===undefined||meta.lang==='uk
 
 function wordsTotal(l){ return WORDS[l].length; }
 function wordsKnown(l){ return (progress[K(l)]||{}).w || []; }
-function logWord(){ logAdd('w', 1); }
+function logWord(){ logAdd('w', 1); checkRings(); }
 function addKnownWord(l,wi){
   if(!progress[K(l)]) progress[K(l)] = {};
   if(!progress[K(l)].w) progress[K(l)].w = [];
@@ -1300,6 +1405,17 @@ function ringArc(pct,size,stroke,color,offsetR,idx){
   const done = pct >= 100;
   return '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '" opacity="0.55"/>' +
     '<circle class="ring-arc' + (done?' done':'') + '" style="animation-delay:' + ((idx||0)*0.12) + 's" cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + c + '" data-off="' + off + '" data-delay="' + ((idx||0)*0.12) + '"/>';
+}
+
+function miniRing(k, size){
+  const col = k==='p' ? '#ffffff' : k==='a' ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.3)';
+  const stroke = 5;
+  const r = (size-stroke)/2;
+  const c = 2*Math.PI*r;
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="transform:rotate(-90deg)">' +
+    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '" opacity="0.55"/>' +
+    '<circle class="ring-arc done" cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + c + '" data-off="0" data-delay="0.1"/>' +
+  '</svg>';
 }
 
 function animateRings(){
@@ -3277,8 +3393,8 @@ function tourEnd(){
 }
 
 // ─── FIREWORKS ──────────────────────────────────────
-function launchFireworks(){
-  const cv = document.getElementById('fw');
+function launchFireworks(cid){
+  const cv = document.getElementById(cid || 'fw');
   if(!cv) return;
   const ctx = cv.getContext('2d');
   cv.width = window.innerWidth;
