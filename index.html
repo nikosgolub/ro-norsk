@@ -176,6 +176,11 @@ button{touch-action:manipulation}
 .my-row .my-ru{font-size:12.5px;color:var(--ink3);margin-top:2px}
 .my-when{font-size:11px;color:var(--ink3);white-space:nowrap}
 .my-del{background:none;border:none;color:var(--ink3);cursor:pointer;padding:6px;line-height:0}
+.cal-row{display:flex;justify-content:space-between;gap:10px;margin-top:12px}
+.cal-link{background:none;border:none;color:var(--ink3);font-family:inherit;font-size:12px;cursor:pointer;padding:4px 0;text-decoration:underline;text-underline-offset:3px}
+.cal-box{margin-top:14px;padding-top:12px;border-top:1px solid var(--line);text-align:center}
+.cal-t{font-size:12.5px;color:var(--ink2);line-height:1.5}
+.cal-n{font-size:22px;font-weight:700;margin-top:6px;font-variant-numeric:tabular-nums}
 .pl-time{display:flex;justify-content:space-between;font-size:12px;color:var(--ink3);font-variant-numeric:tabular-nums;margin-bottom:7px}
 .pl-track{height:6px;background:rgba(255,255,255,0.12);border-radius:3px;overflow:hidden;cursor:pointer;margin-bottom:14px}
 .pl-fill{height:100%;width:0;background:#fff;border-radius:3px}
@@ -296,11 +301,23 @@ body.light .yr-bar-bg{background:rgba(15,22,40,0.07)}
 body.light .score-chip{background:rgba(15,22,40,0.06);color:var(--ink)}
 body.light .lesson-num,body.light .block-num{background:rgba(15,22,40,0.05);border-color:rgba(15,22,40,0.10)}
 body.light .wk-bar{background:rgba(15,22,40,0.14)}
+.ring-arc{transition:stroke-dashoffset 1.15s cubic-bezier(.22,.68,.32,1)}
+.ring-arc.done{animation:ringPop .55s ease-out forwards}
+@keyframes numIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes ringPop{
+  0%{filter:none}
+  45%{filter:drop-shadow(0 0 7px rgba(255,255,255,0.75))}
+  100%{filter:none}
+}
+@media (prefers-reduced-motion: reduce){
+  .ring-arc{transition:none}
+  .ring-arc.done{animation:none}
+}
 /* ─── дневные кольца ─── */
 .rings-hero{display:flex;align-items:center;gap:18px}
 .rings-wrap{position:relative;width:168px;height:168px;flex-shrink:0}
 .rings-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.rings-big{font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1}
+.rings-big{animation:numIn .5s .25s both ease-out;font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1}
 .rings-small{font-size:11.5px;color:var(--ink3);margin-top:3px}
 .rings-legend{display:flex;flex-direction:column;gap:11px;min-width:0}
 .lg{display:flex;align-items:center;gap:8px;font-size:13px}
@@ -1034,8 +1051,8 @@ function renderCourses(){
         '</div>';
     })() +
     '<div class="footer"><a class="tour-link" onclick="startTour()">Как это работает</a><br>' + t('footer') + ' <a href="https://t.me/nikolaiholub" target="_blank" rel="noopener">@nikolaiholub</a></div>';
+  setTimeout(animateRings, 20);
 }
-
 function K(l){ return (ci===0 ? '' : COURSES[ci].id + '_') + 'l' + l; }
 function partSize(l,p){ return LESSONS[l].parts[p].q.length; }
 function lessonTotal(l){ let s=0; for(let p=0;p<PARTS;p++) s += partSize(l,p); return s; }
@@ -1276,12 +1293,25 @@ function bestWeek(){
   }
   return best;
 }
-function ringArc(pct,size,stroke,color,offsetR){
+function ringArc(pct,size,stroke,color,offsetR,idx){
   const r = (size-stroke)/2 - (offsetR||0);
   const c = 2*Math.PI*r;
   const off = c*(1-Math.min(pct,100)/100);
+  const done = pct >= 100;
   return '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '" opacity="0.55"/>' +
-    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>';
+    '<circle class="ring-arc' + (done?' done':'') + '" style="animation-delay:' + ((idx||0)*0.12) + 's" cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + c + '" data-off="' + off + '" data-delay="' + ((idx||0)*0.12) + '"/>';
+}
+
+function animateRings(){
+  const arcs = document.querySelectorAll ? document.querySelectorAll('.ring-arc') : null;
+  if(!arcs) return;
+  for(let i=0;i<arcs.length;i++){
+    (function(el){
+      const off = el.getAttribute('data-off');
+      const d = parseFloat(el.getAttribute('data-delay')||0) * 1000;
+      setTimeout(function(){ el.style.strokeDashoffset = off; }, 60 + d);
+    })(arcs[i]);
+  }
 }
 function trioRings(size){
   const pPct = Math.round(Math.min(todayCount(),DAILY_GOAL)/DAILY_GOAL*100);
@@ -1289,9 +1319,9 @@ function trioRings(size){
   const wGoal = 10;
   const wPct = Math.round(Math.min(dayLog().w||0, wGoal)/wGoal*100);
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="transform:rotate(-90deg)">' +
-    ringArc(pPct,size,11,'#ffffff',0) +
-    ringArc(aPct,size,11,'rgba(255,255,255,0.55)',15) +
-    ringArc(wPct,size,11,'rgba(255,255,255,0.3)',30) +
+    ringArc(pPct,size,11,'#ffffff',0,0) +
+    ringArc(aPct,size,11,'rgba(255,255,255,0.55)',15,1) +
+    ringArc(wPct,size,11,'rgba(255,255,255,0.3)',30,2) +
   '</svg>';
 }
 function ringSVG(pct,size,stroke,color){
@@ -2401,6 +2431,58 @@ function renderDialogs(){
     '<div class="lesson-list">' + cards + '</div>';
 }
 
+// ─── СИНХРОНИЗАЦИЯ ТЕКСТА С АУДИО ───
+let calib = false;
+
+function dlgTimes(d, dur){
+  // ручная калибровка пользователя имеет приоритет
+  const saved = (meta.sync||{})[d.id];
+  if(saved && saved.length === d.lines.length) return saved;
+  const base = d.lines.map(function(l){ return l.t; });
+  if(base.some(function(t){ return t === undefined; })) return null;
+  // масштабируем разметку под реальную длительность файла
+  const last = base[base.length-1];
+  if(!dur || !last || dur <= last + 1) return base;
+  const k = (dur - 1.5) / last;
+  if(k < 1.05 && k > 0.95) return base;
+  return base.map(function(t){ return t * k; });
+}
+
+function startCalib(){
+  calib = true;
+  if(AU && AU.paused) togglePlay();
+  renderDialog(true);
+}
+function stopCalib(save){
+  if(save){
+    const d = DIALOGS[curDlg];
+    if(calibMarks.length === d.lines.length){
+      if(!meta.sync) meta.sync = {};
+      meta.sync[d.id] = calibMarks.slice();
+      saveMeta();
+      buzz('win');
+    }
+  }
+  calib = false;
+  calibMarks = [];
+  renderDialog();
+}
+let calibMarks = [];
+function markLine(){
+  if(!AU) return;
+  calibMarks.push(Math.max(0, AU.currentTime - 0.15));
+  buzz('ok');
+  const n = document.getElementById('cal-n');
+  if(n) n.textContent = calibMarks.length + ' / ' + DIALOGS[curDlg].lines.length;
+  const el = document.getElementById('dl-' + (calibMarks.length-1));
+  if(el && el.scrollIntoView) try{ el.scrollIntoView({block:'center',behavior:'smooth'}); }catch(e){}
+}
+function resetSync(){
+  const d = DIALOGS[curDlg];
+  if(meta.sync && meta.sync[d.id]){ delete meta.sync[d.id]; saveMeta(); }
+  renderDialog();
+}
+
 let AU = null, curDlg = 0, showRu = false, tickAcc = 0;
 
 function openDialog(i){
@@ -2410,11 +2492,12 @@ function openDialog(i){
   renderDialog();
 }
 
-function renderDialog(){
+function renderDialog(keepAudio){
   const d = DIALOGS[curDlg];
   const st = dlgStat(d.id);
+  const T = dlgTimes(d, AU && AU.duration ? AU.duration : 0);
   const lines = d.lines.map(function(l,li){
-    return '<div class="dl-line" id="dl-' + li + '"' + (l.t!==undefined ? ' onclick="seekTo(' + l.t + ')"' : '') + '>' +
+    return '<div class="dl-line" id="dl-' + li + '"' + (T ? ' onclick="' + (calib ? 'markLine()' : 'seekTo(' + T[li].toFixed(1) + ')') + '"' : '') + '>' +
       '<div class="dl-no">' + l.no + '</div>' +
       '<div class="dl-ru">' + l.ru + '</div>' +
     '</div>';
@@ -2437,6 +2520,19 @@ function renderDialog(){
         '<button class="pl-btn" onclick="skip(5)">+5</button>' +
         '<button class="pl-btn' + (meta.loop?' on':'') + '" id="pl-loop" onclick="toggleLoop()">' + ic('redo',16) + '</button>' +
       '</div>' +
+      (calib
+        ? '<div class="cal-box">' +
+            '<div class="cal-t">Нажимай на каждую реплику, когда её слышишь</div>' +
+            '<div class="cal-n" id="cal-n">' + calibMarks.length + ' / ' + d.lines.length + '</div>' +
+            '<div class="btn-row" style="margin-top:10px">' +
+              '<button class="submit-btn retry-btn" onclick="stopCalib(0)">Отмена</button>' +
+              '<button class="submit-btn" onclick="stopCalib(1)">Готово</button>' +
+            '</div>' +
+          '</div>'
+        : '<div class="cal-row">' +
+            '<button class="cal-link" onclick="startCalib()">Текст не совпадает? Настроить</button>' +
+            ((meta.sync||{})[d.id] ? '<button class="cal-link" onclick="resetSync()">Сбросить</button>' : '') +
+          '</div>') +
     '</div>' +
     '<div class="mode-toggle" style="margin-bottom:1rem">' +
       '<button class="mode-btn' + (showRu?'':' active') + '" onclick="setRu(false)">Только норвежский</button>' +
@@ -2444,7 +2540,7 @@ function renderDialog(){
     '</div>' +
     '<div class="card dl-box' + (showRu?' ru':'') + '">' + lines + '</div>';
 
-  bindAudio();
+  if(!keepAudio) bindAudio(); else { const a = document.getElementById('au'); if(a && AU && a!==AU){} }
 }
 
 function bindAudio(){
@@ -2462,8 +2558,9 @@ function bindAudio(){
     if(f) f.style.width = (cur/dur*100) + '%';
     if(c) c.textContent = mmss(cur);
     // подсветка текущей реплики
+    const T = dlgTimes(d, AU.duration);
     let act = -1;
-    for(let i=0;i<d.lines.length;i++){ if(d.lines[i].t!==undefined && cur >= d.lines[i].t) act = i; }
+    if(T){ for(let i=0;i<T.length;i++){ if(cur >= T[i]) act = i; } }
     for(let i=0;i<d.lines.length;i++){
       const el = document.getElementById('dl-' + i);
       if(el) el.className = 'dl-line' + (i===act ? ' active' : '');
