@@ -54,7 +54,7 @@ button{touch-action:manipulation}
   border:1px solid rgba(255,255,255,0.10);
   box-shadow:0 1px 0 rgba(255,255,255,0.09) inset, 0 8px 28px rgba(0,0,0,0.35);
 }
-.app{max-width:700px;margin:0 auto;padding:0 1rem 3rem;padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right));padding-top:env(safe-area-inset-top)}
+.app{max-width:700px;margin:0 auto;padding:0 1rem calc(5.5rem + env(safe-area-inset-bottom));padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right));padding-top:env(safe-area-inset-top)}
 .header{padding:1.25rem 0 0;display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
 .ic{vertical-align:-3px;display:inline-block;flex-shrink:0}
 .logo{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-0.5px;cursor:pointer}
@@ -125,8 +125,11 @@ button{touch-action:manipulation}
 .why-cmp{margin-top:9px;font-size:12.5px;line-height:1.8}
 .why-cmp span{opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .why-rule{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
-#chat-screen{display:flex;flex-direction:column;min-height:calc(100vh - 20px)}
-.ch-btn{padding:6px 10px;display:inline-flex;align-items:center}
+#chat-screen{display:flex;flex-direction:column;min-height:calc(100vh - 90px)}
+.ch-fab{position:fixed;z-index:40;right:max(16px,env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);background:rgba(255,255,255,0.10);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border:1px solid rgba(255,255,255,0.16);box-shadow:0 6px 24px rgba(0,0,0,0.40);transition:transform .15s,opacity .2s}
+.ch-fab:active{transform:scale(.93)}
+.ch-fab.off{opacity:0;pointer-events:none;transform:scale(.8)}
+body.light .ch-fab{background:rgba(255,255,255,0.94);border-color:rgba(0,0,0,0.14);box-shadow:0 2px 6px rgba(0,0,0,0.10),0 10px 28px rgba(0,0,0,0.18)}
 .ch-modes{display:flex;gap:6px;margin:0 0 14px}
 .ch-mode{flex:1;background:none;border:1px solid var(--line);color:var(--ink2);font-family:inherit;font-size:13px;font-weight:500;padding:9px 0;border-radius:12px;cursor:pointer;transition:all .2s}
 .ch-mode.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -4147,6 +4150,7 @@ function renderChat(){
   }else{
     window.scrollTo(0, 0);
   }
+  mountChatBtn();
 }
 let chatToEnd = false;
 
@@ -4179,23 +4183,24 @@ async function chatSend(){
   renderChat();
 }
 
-// ─── кнопка чата во всех хедерах ───
+// ─── закреплённая кнопка чата внизу справа ───
+let chatFab = null;
 function mountChatBtn(){
-  if(!meta.name) return;
-  const hs = document.querySelectorAll('.header');
-  for(let i=0;i<hs.length;i++){
-    const h = hs[i];
-    if(h.querySelector('.ch-btn')) continue;
-    if(document.getElementById('chat-screen')) continue;
-    let r = h.querySelector('.header-right');
-    if(!r){ r = document.createElement('div'); r.className = 'header-right'; h.appendChild(r); }
-    const b = document.createElement('button');
-    b.className = 'back-btn ch-btn';
-    b.setAttribute('aria-label', t2('title'));
-    b.innerHTML = ic('chat',15);
-    b.onclick = openChat;
-    r.insertBefore(b, r.firstChild);
+  if(!chatFab){
+    chatFab = document.createElement('button');
+    chatFab.className = 'ch-fab off';
+    chatFab.setAttribute('aria-label', t2('title'));
+    chatFab.innerHTML = ic('chat',22);
+    chatFab.onclick = openChat;
+    document.body.appendChild(chatFab);
   }
+  const ready = !!(meta.name && meta.goalsSet && meta.onb);
+  const blocked = !!document.querySelector('.welcome')
+               || !!document.getElementById('chat-screen')
+               || !!document.querySelector('.modal-back')
+               || !!document.querySelector('.tour-mask')
+               || !!document.querySelector('.allwin');
+  chatFab.className = 'ch-fab' + ((ready && !blocked) ? '' : ' off');
 }
 
 // ─── запоминаем экран, чтобы вернуться из чата ───
@@ -4215,8 +4220,10 @@ function wrapScreens(){
     window[n] = w;
   });
   const app = document.getElementById('app');
-  if(app && typeof MutationObserver !== 'undefined'){
-    new MutationObserver(function(){ mountChatBtn(); }).observe(app, { childList:true });
+  if(typeof MutationObserver !== 'undefined'){
+    const mo = new MutationObserver(function(){ mountChatBtn(); });
+    if(app) mo.observe(app, { childList:true });
+    mo.observe(document.body, { childList:true });
   }
   mountChatBtn();
 }
