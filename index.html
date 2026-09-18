@@ -125,6 +125,29 @@ button{touch-action:manipulation}
 .why-cmp{margin-top:9px;font-size:12.5px;line-height:1.8}
 .why-cmp span{opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .why-rule{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
+#chat-screen{display:flex;flex-direction:column;min-height:calc(100vh - 20px)}
+.ch-btn{padding:6px 10px;display:inline-flex;align-items:center}
+.ch-modes{display:flex;gap:6px;margin:0 0 14px}
+.ch-mode{flex:1;background:none;border:1px solid var(--line);color:var(--ink2);font-family:inherit;font-size:13px;font-weight:500;padding:9px 0;border-radius:12px;cursor:pointer;transition:all .2s}
+.ch-mode.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ch-body{flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:14px}
+.ch-msg{max-width:88%;padding:11px 14px;border-radius:16px;font-size:14.5px;line-height:1.6;word-wrap:break-word;overflow-wrap:anywhere}
+.ch-msg.ai{align-self:flex-start;background:rgba(255,255,255,0.06);border:1px solid var(--line);border-bottom-left-radius:5px}
+.ch-msg.me{align-self:flex-end;background:var(--ink);color:var(--bg);border-bottom-right-radius:5px}
+.ch-msg.me code{color:inherit}
+.ch-msg code{background:none;border:none;padding:0;font-family:inherit;font-size:inherit;font-weight:600;color:var(--ink)}
+.ch-msg.ai{color:var(--ink2)}
+.ch-greet{color:var(--ink2)}
+.ch-wait{color:var(--ink3);font-style:italic;opacity:.8}
+.ch-fix{display:inline-block;color:var(--green);font-weight:500}
+.ch-say{display:block;margin-top:7px;background:none;border:1px solid var(--line);color:var(--ink2);border-radius:9px;padding:3px 9px;cursor:pointer;line-height:0}
+.ch-bar{position:sticky;bottom:0;display:flex;gap:8px;align-items:flex-end;padding:10px 0 14px;background:var(--bg)}
+.ch-inp{flex:1;resize:none;background:var(--card-bg,rgba(255,255,255,0.05));border:1px solid var(--line);border-radius:16px;color:var(--ink);font-family:inherit;font-size:15px;line-height:1.5;padding:12px 14px;max-height:140px;outline:none}
+.ch-inp:focus{border-color:var(--ink2)}
+.ch-inp::placeholder{color:var(--ink3)}
+.ch-send{flex:0 0 auto;width:46px;height:46px;border:none;border-radius:16px;background:var(--ink);color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
+.ch-send:disabled,.ch-inp:disabled{opacity:.45;cursor:default}
+body.light .ch-msg.ai{background:rgba(0,0,0,0.04)}
 .play-big{display:block;margin:6px auto 10px;background:#fff;color:#000001;font-size:16px;font-weight:600;font-family:inherit;border:none;border-radius:16px;padding:16px 30px;cursor:pointer;min-height:54px;transition:transform .1s,opacity .2s}
 .play-big:hover{opacity:.9}
 .play-big:active{transform:scale(.97)}
@@ -1656,6 +1679,8 @@ function ic(n,sz){
     target:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/>',
     cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
     bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+    chat:'<path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6.5A8 8 0 0 1 11 4h2a8 8 0 0 1 8 8z"/>',
+    send:'<path d="M4 12 20 4l-4 16-4.5-6.5z"/><path d="M11.5 13.5 20 4"/>',
     ruler:'<rect x="2" y="8" width="20" height="8" rx="2"/><path d="M7 8v3M12 8v4M17 8v3"/>',
     trophy:'<path d="M7 4h10v6a5 5 0 0 1-10 0z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/><path d="M10 15v3h4v-3M8 21h8"/>',
     cards:'<rect x="7" y="4" width="12" height="16" rx="2"/><path d="M4 7v11a2 2 0 0 0 2 2"/>',
@@ -1674,11 +1699,11 @@ function ic(n,sz){
 }
 
 const UI = {
-ru:{w_tag:"Преврати обучение в поход.<br>Каждый урок — твой гребок веслом.<br>Чем ритмичнее прогресс, тем быстрее<br>ты покоришь фьорды языка.",w_btn:"Взяться за вёсла",next:"Далее",start:"Начать",skip:"Пропустить",n_q:"Как тебя зовут?<br>Имя появится на главном экране —<br>твой поход будет именным.",n_ph:"Твоё имя",save:"Сохранить",days1:"день",days2:"дня",days5:"дней",streak_lbl:"занятий подряд",goal_lbl:"цель дня: 1 урок (75 фраз)",cap_ph:"Выучено фраз",cap_w:"Выучено слов",of:"из",lessons:"Уроки",lessons_sub:"17 уроков · уровень A1–A2 · 3 смысловых блока в каждом",lesson:"Урок",cont:"▶ Продолжить: Урок",mist:"Работа над ошибками",srs_rev:"Повторение слов",plan:"<CL>Сегодня по плану тренировка —",footer:"Ro! — норвежский тренажёр · версия 2.0<br>Автор:",l_of:"из",phr_done:"Пройдено",phrases:"фраз",start_l:"▶ Начать урок",cont_b:"▶ Продолжить:",repeat_l:"<RD>Повторить урок",sec1:"<BK>Подготовка",sec2:"<CH>Практика — три блока",sec3:"<FL>Проверка знаний",w_card:"Слова урока",w_learned:" — выучены",exam:"Экзамен",exam_q:"вопросов без подсказок",exam_ok:" — сдан",back_l:"← Урок",back_ls:"← Уроки",back_h:"← Курсы",mode_c:"<CH>Чипы",mode_t:"<KB>Текст",mode_l:"<HD>На слух",your:"Твой ответ",pool:"Слова",tap_w:"Нажимай слова ниже, чтобы составить предложение…",inp_ph:"Напиши предложение по-норвежски…",check:"Проверить",nxt:"Следующее →",again:"<RD>Ещё раз",play:"<SD>Прослушать",l_hint:"Собери фразу, которую услышал",ok_t:"<OK>Правильно! Bra jobbet!",err_t:"<NO>Не совсем верно",v2_t:"<BT>Правило V2",rule:"<RL><b>Правило:</b> ",corr:"Правильный ответ:",listen:"<SD>Послушать",mic:"<MC>Произнести",mic_l:"<MC>Слушаю…",mic_a:"<MC>Ещё раз",pron_ok:"<OK>Отличное произношение! Bra uttale!",pron_h:"<ER>Услышал:",pron_r:"Послушай образец и попробуй ещё раз",mic_e:"Микрофон недоступен — проверь разрешения браузера",done_l:"Урок завершён!",done_p:"— готово!",nxt_b:"Дальше:",all_done:"<TR>Все уроки пройдены!",st_ok:"Правильно",st_err:"Ошибок",st_acc:"Точность",to_ls:"К списку уроков",share:"<SH>Поделиться успехом",know:"Знаю <CK>",tap_f:"Нажми, чтобы увидеть перевод",deck:"Осталось в колоде:",w_of:"Слова урока",w_pct:"выучено",w_srs:"Повторение слов · интервалы SRS",in_d:"в колоде:",w_done:"Слова выучены!",w_rev_done:"Слова повторены!",sched:"<CL>Расписание",sched_s:"Выбери дни занятий — и не пропускай гребки",cal_leg:"занимался · рамка — по плану",days_t:"Дни занятий",time_t:"Время напоминания",ics:"<CL>Добавить в календарь телефона (.ics)",notif_on:" Напоминания браузера включены",notif_off:" Включить напоминания браузера",sched_n:"Браузерные напоминания работают, пока Ro! открыт.<br>Для гарантии добавь расписание в календарь телефона.",pick_days:"Сначала выбери дни занятий",rev_h:"<RD>Работа над ошибками",exam_h:"<GC>Экзамен · Урок",lang:"<GL>Язык / Language",wd:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],mo:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]},
-en:{w_tag:"Turn learning into a voyage.<br>Every lesson is a stroke of the oar.<br>The steadier your rhythm, the sooner<br>you conquer the fjords of the language.",w_btn:"Grab the oars",next:"Next",start:"Start",skip:"Skip",n_q:"What is your name?<br>It will appear on the home screen —<br>your voyage gets personal.",n_ph:"Your name",save:"Save",days1:"day",days2:"days",days5:"days",streak_lbl:"day streak",goal_lbl:"daily goal: 1 lesson (75 phrases)",cap_ph:"Phrases learned",cap_w:"Words learned",of:"of",lessons:"Lessons",lessons_sub:"16 lessons · level A1–A2 · 3 thematic blocks each",lesson:"Lesson",cont:"▶ Continue: Lesson",mist:"Review mistakes",srs_rev:"Word review",plan:"<CL>Training planned for today —",footer:"Ro! — Norwegian trainer · version 2.0<br>Author:",l_of:"of",phr_done:"Completed",phrases:"phrases",start_l:"▶ Start lesson",cont_b:"▶ Continue:",repeat_l:"<RD>Repeat lesson",sec1:"<BK>Preparation",sec2:"<CH>Practice — three blocks",sec3:"<FL>Knowledge check",w_card:"Lesson vocabulary",w_learned:" — learned",exam:"Exam",exam_q:"questions, no hints",exam_ok:" — passed",back_l:"← Lesson",back_ls:"← Lessons",back_h:"← Courses",mode_c:"<CH>Chips",mode_t:"<KB>Typing",mode_l:"<HD>Listening",your:"Your answer",pool:"Words",tap_w:"Tap the words below to build the sentence…",inp_ph:"Type the sentence in Norwegian…",check:"Check",nxt:"Next →",again:"<RD>Try again",play:"<SD>Play",l_hint:"Build the phrase you heard",ok_t:"<OK>Correct! Bra jobbet!",err_t:"<NO>Not quite",v2_t:"<BT>V2 rule",rule:"<RL><b>Rule:</b> ",corr:"Correct answer:",listen:"<SD>Listen",mic:"<MC>Pronounce",mic_l:"<MC>Listening…",mic_a:"<MC>Once more",pron_ok:"<OK>Great pronunciation! Bra uttale!",pron_h:"<ER>I heard:",pron_r:"Listen to the sample and try again",mic_e:"Microphone unavailable — check browser permissions",done_l:"Lesson complete!",done_p:"— done!",nxt_b:"Next:",all_done:"<TR>All lessons complete!",st_ok:"Correct",st_err:"Mistakes",st_acc:"Accuracy",to_ls:"Back to lessons",share:"<SH>Share progress",know:"I know <CK>",tap_f:"Tap to see the translation",deck:"Left in deck:",w_of:"Lesson vocabulary",w_pct:"learned",w_srs:"Word review · SRS intervals",in_d:"in deck:",w_done:"Words learned!",w_rev_done:"Review complete!",sched:"<CL>Schedule",sched_s:"Pick your training days — keep rowing",cal_leg:"practiced · outline — planned",days_t:"Training days",time_t:"Reminder time",ics:"<CL>Add to phone calendar (.ics)",notif_on:" Browser reminders on",notif_off:" Enable browser reminders",sched_n:"Browser reminders work while Ro! is open.<br>For reliability add the schedule to your phone calendar.",pick_days:"Pick training days first",rev_h:"<RD>Mistake review",exam_h:"<GC>Exam · Lesson",lang:"<GL>Language",wd:["Mo","Tu","We","Th","Fr","Sa","Su"],mo:["January","February","March","April","May","June","July","August","September","October","November","December"]},
-uk:{w_tag:"Перетвори навчання на похід.<br>Кожен урок — твій помах весла.<br>Що ритмічніший прогрес, то швидше<br>ти підкориш фйорди мови.",w_btn:"Взятися за весла",next:"Далі",start:"Почати",skip:"Пропустити",n_q:"Як тебе звати?<br>Ім'я з'явиться на головному екрані —<br>твій похід буде іменним.",n_ph:"Твоє ім'я",save:"Зберегти",days1:"день",days2:"дні",days5:"днів",streak_lbl:"занять поспіль",goal_lbl:"ціль дня: 1 урок (75 фраз)",cap_ph:"Вивчено фраз",cap_w:"Вивчено слів",of:"з",lessons:"Уроки",lessons_sub:"16 уроків · рівень A1–A2 · 3 смислові блоки в кожному",lesson:"Урок",cont:"▶ Продовжити: Урок",mist:"Робота над помилками",srs_rev:"Повторення слів",plan:"<CL>Сьогодні за планом тренування —",footer:"Ro! — норвезький тренажер · версія 2.0<br>Автор:",l_of:"з",phr_done:"Пройдено",phrases:"фраз",start_l:"▶ Почати урок",cont_b:"▶ Продовжити:",repeat_l:"<RD>Повторити урок",sec1:"<BK>Підготовка",sec2:"<CH>Практика — три блоки",sec3:"<FL>Перевірка знань",w_card:"Слова уроку",w_learned:" — вивчені",exam:"Екзамен",exam_q:"питань без підказок",exam_ok:" — складено",back_l:"← Урок",back_ls:"← Уроки",back_h:"← Курси",mode_c:"<CH>Чипи",mode_t:"<KB>Текст",mode_l:"<HD>На слух",your:"Твоя відповідь",pool:"Слова",tap_w:"Натискай слова нижче, щоб скласти речення…",inp_ph:"Напиши речення норвезькою…",check:"Перевірити",nxt:"Наступне →",again:"<RD>Ще раз",play:"<SD>Прослухати",l_hint:"Збери фразу, яку почув",ok_t:"<OK>Правильно! Bra jobbet!",err_t:"<NO>Не зовсім так",v2_t:"<BT>Правило V2",rule:"<RL><b>Правило:</b> ",corr:"Правильна відповідь:",listen:"<SD>Послухати",mic:"<MC>Вимовити",mic_l:"<MC>Слухаю…",mic_a:"<MC>Ще раз",pron_ok:"<OK>Чудова вимова! Bra uttale!",pron_h:"<ER>Почув:",pron_r:"Послухай зразок і спробуй ще раз",mic_e:"Мікрофон недоступний — перевір дозволи браузера",done_l:"Урок завершено!",done_p:"— готово!",nxt_b:"Далі:",all_done:"<TR>Усі уроки пройдено!",st_ok:"Правильно",st_err:"Помилок",st_acc:"Точність",to_ls:"До списку уроків",share:"<SH>Поділитися успіхом",know:"Знаю <CK>",tap_f:"Натисни, щоб побачити переклад",deck:"Залишилось у колоді:",w_of:"Слова уроку",w_pct:"вивчено",w_srs:"Повторення слів · інтервали SRS",in_d:"у колоді:",w_done:"Слова вивчено!",w_rev_done:"Слова повторено!",sched:"<CL>Розклад",sched_s:"Обери дні занять — і не пропускай гребків",cal_leg:"займався · рамка — за планом",days_t:"Дні занять",time_t:"Час нагадування",ics:"<CL>Додати в календар телефону (.ics)",notif_on:" Нагадування браузера увімкнено",notif_off:" Увімкнути нагадування браузера",sched_n:"Браузерні нагадування працюють, поки Ro! відкрито.<br>Для гарантії додай розклад у календар телефону.",pick_days:"Спочатку обери дні занять",rev_h:"<RD>Робота над помилками",exam_h:"<GC>Екзамен · Урок",lang:"<GL>Мова",wd:["Пн","Вт","Ср","Чт","Пт","Сб","Нд"],mo:["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"]},
-pl:{w_tag:"Zamień naukę w wyprawę.<br>Każda lekcja to ruch wiosłem.<br>Im równiejszy rytm, tym szybciej<br>zdobędziesz fiordy języka.",w_btn:"Chwyć za wiosła",next:"Dalej",start:"Start",skip:"Pomiń",n_q:"Jak masz na imię?<br>Imię pojawi się na ekranie głównym —<br>Twoja wyprawa będzie osobista.",n_ph:"Twoje imię",save:"Zapisz",days1:"dzień",days2:"dni",days5:"dni",streak_lbl:"dni z rzędu",goal_lbl:"cel dnia: 1 lekcja (75 fraz)",cap_ph:"Nauczone frazy",cap_w:"Nauczone słowa",of:"z",lessons:"Lekcje",lessons_sub:"16 lekcji · poziom A1–A2 · 3 bloki tematyczne",lesson:"Lekcja",cont:"▶ Kontynuuj: Lekcja",mist:"Praca nad błędami",srs_rev:"Powtórka słów",plan:"<CL>Dziś zaplanowany trening —",footer:"Ro! — trener norweskiego · wersja 2.0<br>Autor:",l_of:"z",phr_done:"Ukończono",phrases:"fraz",start_l:"▶ Rozpocznij lekcję",cont_b:"▶ Kontynuuj:",repeat_l:"<RD>Powtórz lekcję",sec1:"<BK>Przygotowanie",sec2:"<CH>Praktyka — trzy bloki",sec3:"<FL>Sprawdzian wiedzy",w_card:"Słówka lekcji",w_learned:" — nauczone",exam:"Egzamin",exam_q:"pytań bez podpowiedzi",exam_ok:" — zdany",back_l:"← Lekcja",back_ls:"← Lekcje",back_h:"← Kursy",mode_c:"<CH>Klocki",mode_t:"<KB>Pisanie",mode_l:"<HD>Ze słuchu",your:"Twoja odpowiedź",pool:"Słowa",tap_w:"Dotykaj słów poniżej, aby ułożyć zdanie…",inp_ph:"Napisz zdanie po norwesku…",check:"Sprawdź",nxt:"Następne →",again:"<RD>Jeszcze raz",play:"<SD>Odtwórz",l_hint:"Ułóż frazę, którą usłyszałeś",ok_t:"<OK>Dobrze! Bra jobbet!",err_t:"<NO>Nie do końca",v2_t:"<BT>Reguła V2",rule:"<RL><b>Reguła:</b> ",corr:"Poprawna odpowiedź:",listen:"<SD>Posłuchaj",mic:"<MC>Wymów",mic_l:"<MC>Słucham…",mic_a:"<MC>Jeszcze raz",pron_ok:"<OK>Świetna wymowa! Bra uttale!",pron_h:"<ER>Usłyszałem:",pron_r:"Posłuchaj wzoru i spróbuj ponownie",mic_e:"Mikrofon niedostępny — sprawdź uprawnienia",done_l:"Lekcja ukończona!",done_p:"— gotowe!",nxt_b:"Dalej:",all_done:"<TR>Wszystkie lekcje ukończone!",st_ok:"Poprawnie",st_err:"Błędy",st_acc:"Dokładność",to_ls:"Do listy lekcji",share:"<SH>Udostępnij postęp",know:"Znam <CK>",tap_f:"Dotknij, aby zobaczyć tłumaczenie",deck:"Zostało w talii:",w_of:"Słówka lekcji",w_pct:"nauczono",w_srs:"Powtórka słów · interwały SRS",in_d:"w talii:",w_done:"Słówka nauczone!",w_rev_done:"Powtórka zakończona!",sched:"<CL>Harmonogram",sched_s:"Wybierz dni nauki — nie opuszczaj wioseł",cal_leg:"ćwiczyłeś · ramka — zaplanowane",days_t:"Dni nauki",time_t:"Czas przypomnienia",ics:"<CL>Dodaj do kalendarza telefonu (.ics)",notif_on:" Przypomnienia przeglądarki włączone",notif_off:" Włącz przypomnienia przeglądarki",sched_n:"Przypomnienia działają, gdy Ro! jest otwarte.<br>Dla pewności dodaj harmonogram do kalendarza.",pick_days:"Najpierw wybierz dni nauki",rev_h:"<RD>Praca nad błędami",exam_h:"<GC>Egzamin · Lekcja",lang:"<GL>Język",wd:["Pn","Wt","Śr","Cz","Pt","So","Nd"],mo:["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"]},
-es:{w_tag:"Convierte el aprendizaje en travesía.<br>Cada lección es una palada de remo.<br>Cuanto más constante el ritmo, antes<br>conquistarás los fiordos del idioma.",w_btn:"Toma los remos",next:"Siguiente",start:"Empezar",skip:"Omitir",n_q:"¿Cómo te llamas?<br>Tu nombre aparecerá en la pantalla principal —<br>tu travesía será personal.",n_ph:"Tu nombre",save:"Guardar",days1:"día",days2:"días",days5:"días",streak_lbl:"días seguidos",goal_lbl:"meta diaria: 1 lección (75 frases)",cap_ph:"Frases aprendidas",cap_w:"Palabras aprendidas",of:"de",lessons:"Lecciones",lessons_sub:"16 lecciones · nivel A1–A2 · 3 bloques temáticos",lesson:"Lección",cont:"▶ Continuar: Lección",mist:"Repaso de errores",srs_rev:"Repaso de palabras",plan:"<CL>Hoy hay entrenamiento —",footer:"Ro! — entrenador de noruego · versión 2.0<br>Autor:",l_of:"de",phr_done:"Completadas",phrases:"frases",start_l:"▶ Empezar lección",cont_b:"▶ Continuar:",repeat_l:"<RD>Repetir lección",sec1:"<BK>Preparación",sec2:"<CH>Práctica — tres bloques",sec3:"<FL>Comprobación",w_card:"Vocabulario de la lección",w_learned:" — aprendido",exam:"Examen",exam_q:"preguntas sin pistas",exam_ok:" — aprobado",back_l:"← Lección",back_ls:"← Lecciones",back_h:"← Cursos",mode_c:"<CH>Fichas",mode_t:"<KB>Teclado",mode_l:"<HD>De oído",your:"Tu respuesta",pool:"Palabras",tap_w:"Toca las palabras para formar la frase…",inp_ph:"Escribe la frase en noruego…",check:"Comprobar",nxt:"Siguiente →",again:"<RD>Otra vez",play:"<SD>Escuchar",l_hint:"Arma la frase que escuchaste",ok_t:"<OK>¡Correcto! Bra jobbet!",err_t:"<NO>No exactamente",v2_t:"<BT>Regla V2",rule:"<RL><b>Regla:</b> ",corr:"Respuesta correcta:",listen:"<SD>Escuchar",mic:"<MC>Pronunciar",mic_l:"<MC>Escuchando…",mic_a:"<MC>Otra vez",pron_ok:"<OK>¡Gran pronunciación! Bra uttale!",pron_h:"<ER>Escuché:",pron_r:"Escucha el ejemplo e inténtalo de nuevo",mic_e:"Micrófono no disponible — revisa los permisos",done_l:"¡Lección completada!",done_p:"— ¡listo!",nxt_b:"Siguiente:",all_done:"<TR>¡Todas las lecciones completadas!",st_ok:"Correctas",st_err:"Errores",st_acc:"Precisión",to_ls:"A la lista de lecciones",share:"<SH>Compartir progreso",know:"Lo sé <CK>",tap_f:"Toca para ver la traducción",deck:"Quedan en el mazo:",w_of:"Vocabulario de la lección",w_pct:"aprendido",w_srs:"Repaso de palabras · intervalos SRS",in_d:"en el mazo:",w_done:"¡Palabras aprendidas!",w_rev_done:"¡Repaso completado!",sched:"<CL>Horario",sched_s:"Elige tus días — y sigue remando",cal_leg:"practicaste · borde — planificado",days_t:"Días de estudio",time_t:"Hora del recordatorio",ics:"<CL>Añadir al calendario del teléfono (.ics)",notif_on:" Recordatorios del navegador activados",notif_off:" Activar recordatorios del navegador",sched_n:"Los recordatorios funcionan mientras Ro! está abierto.<br>Para asegurar, añade el horario al calendario.",pick_days:"Primero elige los días",rev_h:"<RD>Repaso de errores",exam_h:"<GC>Examen · Lección",lang:"<GL>Idioma",wd:["Lu","Ma","Mi","Ju","Vi","Sá","Do"],mo:["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]}
+ru:{w_tag:"Преврати обучение в поход.<br>Каждый урок — твой гребок веслом.<br>Чем ритмичнее прогресс, тем быстрее<br>ты покоришь фьорды языка.",w_btn:"Взяться за вёсла",next:"Далее",start:"Начать",skip:"Пропустить",n_q:"Как тебя зовут?<br>Имя появится на главном экране —<br>твой поход будет именным.",n_ph:"Твоё имя",save:"Сохранить",days1:"день",days2:"дня",days5:"дней",streak_lbl:"занятий подряд",goal_lbl:"цель дня: 1 урок (75 фраз)",cap_ph:"Выучено фраз",cap_w:"Выучено слов",of:"из",lessons:"Уроки",lessons_sub:"17 уроков · уровень A1–A2 · 3 смысловых блока в каждом",lesson:"Урок",cont:"▶ Продолжить: Урок",mist:"Работа над ошибками",srs_rev:"Повторение слов",plan:"<CL>Сегодня по плану тренировка —",footer:"Ro! — норвежский тренажёр · версия 2.1<br>Автор:",l_of:"из",phr_done:"Пройдено",phrases:"фраз",start_l:"▶ Начать урок",cont_b:"▶ Продолжить:",repeat_l:"<RD>Повторить урок",sec1:"<BK>Подготовка",sec2:"<CH>Практика — три блока",sec3:"<FL>Проверка знаний",w_card:"Слова урока",w_learned:" — выучены",exam:"Экзамен",exam_q:"вопросов без подсказок",exam_ok:" — сдан",back_l:"← Урок",back_ls:"← Уроки",back_h:"← Курсы",mode_c:"<CH>Чипы",mode_t:"<KB>Текст",mode_l:"<HD>На слух",your:"Твой ответ",pool:"Слова",tap_w:"Нажимай слова ниже, чтобы составить предложение…",inp_ph:"Напиши предложение по-норвежски…",check:"Проверить",nxt:"Следующее →",again:"<RD>Ещё раз",play:"<SD>Прослушать",l_hint:"Собери фразу, которую услышал",ok_t:"<OK>Правильно! Bra jobbet!",err_t:"<NO>Не совсем верно",v2_t:"<BT>Правило V2",rule:"<RL><b>Правило:</b> ",corr:"Правильный ответ:",listen:"<SD>Послушать",mic:"<MC>Произнести",mic_l:"<MC>Слушаю…",mic_a:"<MC>Ещё раз",pron_ok:"<OK>Отличное произношение! Bra uttale!",pron_h:"<ER>Услышал:",pron_r:"Послушай образец и попробуй ещё раз",mic_e:"Микрофон недоступен — проверь разрешения браузера",done_l:"Урок завершён!",done_p:"— готово!",nxt_b:"Дальше:",all_done:"<TR>Все уроки пройдены!",st_ok:"Правильно",st_err:"Ошибок",st_acc:"Точность",to_ls:"К списку уроков",share:"<SH>Поделиться успехом",know:"Знаю <CK>",tap_f:"Нажми, чтобы увидеть перевод",deck:"Осталось в колоде:",w_of:"Слова урока",w_pct:"выучено",w_srs:"Повторение слов · интервалы SRS",in_d:"в колоде:",w_done:"Слова выучены!",w_rev_done:"Слова повторены!",sched:"<CL>Расписание",sched_s:"Выбери дни занятий — и не пропускай гребки",cal_leg:"занимался · рамка — по плану",days_t:"Дни занятий",time_t:"Время напоминания",ics:"<CL>Добавить в календарь телефона (.ics)",notif_on:" Напоминания браузера включены",notif_off:" Включить напоминания браузера",sched_n:"Браузерные напоминания работают, пока Ro! открыт.<br>Для гарантии добавь расписание в календарь телефона.",pick_days:"Сначала выбери дни занятий",rev_h:"<RD>Работа над ошибками",exam_h:"<GC>Экзамен · Урок",lang:"<GL>Язык / Language",wd:["Пн","Вт","Ср","Чт","Пт","Сб","Вс"],mo:["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"]},
+en:{w_tag:"Turn learning into a voyage.<br>Every lesson is a stroke of the oar.<br>The steadier your rhythm, the sooner<br>you conquer the fjords of the language.",w_btn:"Grab the oars",next:"Next",start:"Start",skip:"Skip",n_q:"What is your name?<br>It will appear on the home screen —<br>your voyage gets personal.",n_ph:"Your name",save:"Save",days1:"day",days2:"days",days5:"days",streak_lbl:"day streak",goal_lbl:"daily goal: 1 lesson (75 phrases)",cap_ph:"Phrases learned",cap_w:"Words learned",of:"of",lessons:"Lessons",lessons_sub:"16 lessons · level A1–A2 · 3 thematic blocks each",lesson:"Lesson",cont:"▶ Continue: Lesson",mist:"Review mistakes",srs_rev:"Word review",plan:"<CL>Training planned for today —",footer:"Ro! — Norwegian trainer · version 2.1<br>Author:",l_of:"of",phr_done:"Completed",phrases:"phrases",start_l:"▶ Start lesson",cont_b:"▶ Continue:",repeat_l:"<RD>Repeat lesson",sec1:"<BK>Preparation",sec2:"<CH>Practice — three blocks",sec3:"<FL>Knowledge check",w_card:"Lesson vocabulary",w_learned:" — learned",exam:"Exam",exam_q:"questions, no hints",exam_ok:" — passed",back_l:"← Lesson",back_ls:"← Lessons",back_h:"← Courses",mode_c:"<CH>Chips",mode_t:"<KB>Typing",mode_l:"<HD>Listening",your:"Your answer",pool:"Words",tap_w:"Tap the words below to build the sentence…",inp_ph:"Type the sentence in Norwegian…",check:"Check",nxt:"Next →",again:"<RD>Try again",play:"<SD>Play",l_hint:"Build the phrase you heard",ok_t:"<OK>Correct! Bra jobbet!",err_t:"<NO>Not quite",v2_t:"<BT>V2 rule",rule:"<RL><b>Rule:</b> ",corr:"Correct answer:",listen:"<SD>Listen",mic:"<MC>Pronounce",mic_l:"<MC>Listening…",mic_a:"<MC>Once more",pron_ok:"<OK>Great pronunciation! Bra uttale!",pron_h:"<ER>I heard:",pron_r:"Listen to the sample and try again",mic_e:"Microphone unavailable — check browser permissions",done_l:"Lesson complete!",done_p:"— done!",nxt_b:"Next:",all_done:"<TR>All lessons complete!",st_ok:"Correct",st_err:"Mistakes",st_acc:"Accuracy",to_ls:"Back to lessons",share:"<SH>Share progress",know:"I know <CK>",tap_f:"Tap to see the translation",deck:"Left in deck:",w_of:"Lesson vocabulary",w_pct:"learned",w_srs:"Word review · SRS intervals",in_d:"in deck:",w_done:"Words learned!",w_rev_done:"Review complete!",sched:"<CL>Schedule",sched_s:"Pick your training days — keep rowing",cal_leg:"practiced · outline — planned",days_t:"Training days",time_t:"Reminder time",ics:"<CL>Add to phone calendar (.ics)",notif_on:" Browser reminders on",notif_off:" Enable browser reminders",sched_n:"Browser reminders work while Ro! is open.<br>For reliability add the schedule to your phone calendar.",pick_days:"Pick training days first",rev_h:"<RD>Mistake review",exam_h:"<GC>Exam · Lesson",lang:"<GL>Language",wd:["Mo","Tu","We","Th","Fr","Sa","Su"],mo:["January","February","March","April","May","June","July","August","September","October","November","December"]},
+uk:{w_tag:"Перетвори навчання на похід.<br>Кожен урок — твій помах весла.<br>Що ритмічніший прогрес, то швидше<br>ти підкориш фйорди мови.",w_btn:"Взятися за весла",next:"Далі",start:"Почати",skip:"Пропустити",n_q:"Як тебе звати?<br>Ім'я з'явиться на головному екрані —<br>твій похід буде іменним.",n_ph:"Твоє ім'я",save:"Зберегти",days1:"день",days2:"дні",days5:"днів",streak_lbl:"занять поспіль",goal_lbl:"ціль дня: 1 урок (75 фраз)",cap_ph:"Вивчено фраз",cap_w:"Вивчено слів",of:"з",lessons:"Уроки",lessons_sub:"16 уроків · рівень A1–A2 · 3 смислові блоки в кожному",lesson:"Урок",cont:"▶ Продовжити: Урок",mist:"Робота над помилками",srs_rev:"Повторення слів",plan:"<CL>Сьогодні за планом тренування —",footer:"Ro! — норвезький тренажер · версія 2.1<br>Автор:",l_of:"з",phr_done:"Пройдено",phrases:"фраз",start_l:"▶ Почати урок",cont_b:"▶ Продовжити:",repeat_l:"<RD>Повторити урок",sec1:"<BK>Підготовка",sec2:"<CH>Практика — три блоки",sec3:"<FL>Перевірка знань",w_card:"Слова уроку",w_learned:" — вивчені",exam:"Екзамен",exam_q:"питань без підказок",exam_ok:" — складено",back_l:"← Урок",back_ls:"← Уроки",back_h:"← Курси",mode_c:"<CH>Чипи",mode_t:"<KB>Текст",mode_l:"<HD>На слух",your:"Твоя відповідь",pool:"Слова",tap_w:"Натискай слова нижче, щоб скласти речення…",inp_ph:"Напиши речення норвезькою…",check:"Перевірити",nxt:"Наступне →",again:"<RD>Ще раз",play:"<SD>Прослухати",l_hint:"Збери фразу, яку почув",ok_t:"<OK>Правильно! Bra jobbet!",err_t:"<NO>Не зовсім так",v2_t:"<BT>Правило V2",rule:"<RL><b>Правило:</b> ",corr:"Правильна відповідь:",listen:"<SD>Послухати",mic:"<MC>Вимовити",mic_l:"<MC>Слухаю…",mic_a:"<MC>Ще раз",pron_ok:"<OK>Чудова вимова! Bra uttale!",pron_h:"<ER>Почув:",pron_r:"Послухай зразок і спробуй ще раз",mic_e:"Мікрофон недоступний — перевір дозволи браузера",done_l:"Урок завершено!",done_p:"— готово!",nxt_b:"Далі:",all_done:"<TR>Усі уроки пройдено!",st_ok:"Правильно",st_err:"Помилок",st_acc:"Точність",to_ls:"До списку уроків",share:"<SH>Поділитися успіхом",know:"Знаю <CK>",tap_f:"Натисни, щоб побачити переклад",deck:"Залишилось у колоді:",w_of:"Слова уроку",w_pct:"вивчено",w_srs:"Повторення слів · інтервали SRS",in_d:"у колоді:",w_done:"Слова вивчено!",w_rev_done:"Слова повторено!",sched:"<CL>Розклад",sched_s:"Обери дні занять — і не пропускай гребків",cal_leg:"займався · рамка — за планом",days_t:"Дні занять",time_t:"Час нагадування",ics:"<CL>Додати в календар телефону (.ics)",notif_on:" Нагадування браузера увімкнено",notif_off:" Увімкнути нагадування браузера",sched_n:"Браузерні нагадування працюють, поки Ro! відкрито.<br>Для гарантії додай розклад у календар телефону.",pick_days:"Спочатку обери дні занять",rev_h:"<RD>Робота над помилками",exam_h:"<GC>Екзамен · Урок",lang:"<GL>Мова",wd:["Пн","Вт","Ср","Чт","Пт","Сб","Нд"],mo:["Січень","Лютий","Березень","Квітень","Травень","Червень","Липень","Серпень","Вересень","Жовтень","Листопад","Грудень"]},
+pl:{w_tag:"Zamień naukę w wyprawę.<br>Każda lekcja to ruch wiosłem.<br>Im równiejszy rytm, tym szybciej<br>zdobędziesz fiordy języka.",w_btn:"Chwyć za wiosła",next:"Dalej",start:"Start",skip:"Pomiń",n_q:"Jak masz na imię?<br>Imię pojawi się na ekranie głównym —<br>Twoja wyprawa będzie osobista.",n_ph:"Twoje imię",save:"Zapisz",days1:"dzień",days2:"dni",days5:"dni",streak_lbl:"dni z rzędu",goal_lbl:"cel dnia: 1 lekcja (75 fraz)",cap_ph:"Nauczone frazy",cap_w:"Nauczone słowa",of:"z",lessons:"Lekcje",lessons_sub:"16 lekcji · poziom A1–A2 · 3 bloki tematyczne",lesson:"Lekcja",cont:"▶ Kontynuuj: Lekcja",mist:"Praca nad błędami",srs_rev:"Powtórka słów",plan:"<CL>Dziś zaplanowany trening —",footer:"Ro! — trener norweskiego · wersja 2.1<br>Autor:",l_of:"z",phr_done:"Ukończono",phrases:"fraz",start_l:"▶ Rozpocznij lekcję",cont_b:"▶ Kontynuuj:",repeat_l:"<RD>Powtórz lekcję",sec1:"<BK>Przygotowanie",sec2:"<CH>Praktyka — trzy bloki",sec3:"<FL>Sprawdzian wiedzy",w_card:"Słówka lekcji",w_learned:" — nauczone",exam:"Egzamin",exam_q:"pytań bez podpowiedzi",exam_ok:" — zdany",back_l:"← Lekcja",back_ls:"← Lekcje",back_h:"← Kursy",mode_c:"<CH>Klocki",mode_t:"<KB>Pisanie",mode_l:"<HD>Ze słuchu",your:"Twoja odpowiedź",pool:"Słowa",tap_w:"Dotykaj słów poniżej, aby ułożyć zdanie…",inp_ph:"Napisz zdanie po norwesku…",check:"Sprawdź",nxt:"Następne →",again:"<RD>Jeszcze raz",play:"<SD>Odtwórz",l_hint:"Ułóż frazę, którą usłyszałeś",ok_t:"<OK>Dobrze! Bra jobbet!",err_t:"<NO>Nie do końca",v2_t:"<BT>Reguła V2",rule:"<RL><b>Reguła:</b> ",corr:"Poprawna odpowiedź:",listen:"<SD>Posłuchaj",mic:"<MC>Wymów",mic_l:"<MC>Słucham…",mic_a:"<MC>Jeszcze raz",pron_ok:"<OK>Świetna wymowa! Bra uttale!",pron_h:"<ER>Usłyszałem:",pron_r:"Posłuchaj wzoru i spróbuj ponownie",mic_e:"Mikrofon niedostępny — sprawdź uprawnienia",done_l:"Lekcja ukończona!",done_p:"— gotowe!",nxt_b:"Dalej:",all_done:"<TR>Wszystkie lekcje ukończone!",st_ok:"Poprawnie",st_err:"Błędy",st_acc:"Dokładność",to_ls:"Do listy lekcji",share:"<SH>Udostępnij postęp",know:"Znam <CK>",tap_f:"Dotknij, aby zobaczyć tłumaczenie",deck:"Zostało w talii:",w_of:"Słówka lekcji",w_pct:"nauczono",w_srs:"Powtórka słów · interwały SRS",in_d:"w talii:",w_done:"Słówka nauczone!",w_rev_done:"Powtórka zakończona!",sched:"<CL>Harmonogram",sched_s:"Wybierz dni nauki — nie opuszczaj wioseł",cal_leg:"ćwiczyłeś · ramka — zaplanowane",days_t:"Dni nauki",time_t:"Czas przypomnienia",ics:"<CL>Dodaj do kalendarza telefonu (.ics)",notif_on:" Przypomnienia przeglądarki włączone",notif_off:" Włącz przypomnienia przeglądarki",sched_n:"Przypomnienia działają, gdy Ro! jest otwarte.<br>Dla pewności dodaj harmonogram do kalendarza.",pick_days:"Najpierw wybierz dni nauki",rev_h:"<RD>Praca nad błędami",exam_h:"<GC>Egzamin · Lekcja",lang:"<GL>Język",wd:["Pn","Wt","Śr","Cz","Pt","So","Nd"],mo:["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec","Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"]},
+es:{w_tag:"Convierte el aprendizaje en travesía.<br>Cada lección es una palada de remo.<br>Cuanto más constante el ritmo, antes<br>conquistarás los fiordos del idioma.",w_btn:"Toma los remos",next:"Siguiente",start:"Empezar",skip:"Omitir",n_q:"¿Cómo te llamas?<br>Tu nombre aparecerá en la pantalla principal —<br>tu travesía será personal.",n_ph:"Tu nombre",save:"Guardar",days1:"día",days2:"días",days5:"días",streak_lbl:"días seguidos",goal_lbl:"meta diaria: 1 lección (75 frases)",cap_ph:"Frases aprendidas",cap_w:"Palabras aprendidas",of:"de",lessons:"Lecciones",lessons_sub:"16 lecciones · nivel A1–A2 · 3 bloques temáticos",lesson:"Lección",cont:"▶ Continuar: Lección",mist:"Repaso de errores",srs_rev:"Repaso de palabras",plan:"<CL>Hoy hay entrenamiento —",footer:"Ro! — entrenador de noruego · versión 2.1<br>Autor:",l_of:"de",phr_done:"Completadas",phrases:"frases",start_l:"▶ Empezar lección",cont_b:"▶ Continuar:",repeat_l:"<RD>Repetir lección",sec1:"<BK>Preparación",sec2:"<CH>Práctica — tres bloques",sec3:"<FL>Comprobación",w_card:"Vocabulario de la lección",w_learned:" — aprendido",exam:"Examen",exam_q:"preguntas sin pistas",exam_ok:" — aprobado",back_l:"← Lección",back_ls:"← Lecciones",back_h:"← Cursos",mode_c:"<CH>Fichas",mode_t:"<KB>Teclado",mode_l:"<HD>De oído",your:"Tu respuesta",pool:"Palabras",tap_w:"Toca las palabras para formar la frase…",inp_ph:"Escribe la frase en noruego…",check:"Comprobar",nxt:"Siguiente →",again:"<RD>Otra vez",play:"<SD>Escuchar",l_hint:"Arma la frase que escuchaste",ok_t:"<OK>¡Correcto! Bra jobbet!",err_t:"<NO>No exactamente",v2_t:"<BT>Regla V2",rule:"<RL><b>Regla:</b> ",corr:"Respuesta correcta:",listen:"<SD>Escuchar",mic:"<MC>Pronunciar",mic_l:"<MC>Escuchando…",mic_a:"<MC>Otra vez",pron_ok:"<OK>¡Gran pronunciación! Bra uttale!",pron_h:"<ER>Escuché:",pron_r:"Escucha el ejemplo e inténtalo de nuevo",mic_e:"Micrófono no disponible — revisa los permisos",done_l:"¡Lección completada!",done_p:"— ¡listo!",nxt_b:"Siguiente:",all_done:"<TR>¡Todas las lecciones completadas!",st_ok:"Correctas",st_err:"Errores",st_acc:"Precisión",to_ls:"A la lista de lecciones",share:"<SH>Compartir progreso",know:"Lo sé <CK>",tap_f:"Toca para ver la traducción",deck:"Quedan en el mazo:",w_of:"Vocabulario de la lección",w_pct:"aprendido",w_srs:"Repaso de palabras · intervalos SRS",in_d:"en el mazo:",w_done:"¡Palabras aprendidas!",w_rev_done:"¡Repaso completado!",sched:"<CL>Horario",sched_s:"Elige tus días — y sigue remando",cal_leg:"practicaste · borde — planificado",days_t:"Días de estudio",time_t:"Hora del recordatorio",ics:"<CL>Añadir al calendario del teléfono (.ics)",notif_on:" Recordatorios del navegador activados",notif_off:" Activar recordatorios del navegador",sched_n:"Los recordatorios funcionan mientras Ro! está abierto.<br>Para asegurar, añade el horario al calendario.",pick_days:"Primero elige los días",rev_h:"<RD>Repaso de errores",exam_h:"<GC>Examen · Lección",lang:"<GL>Idioma",wd:["Lu","Ma","Mi","Ju","Vi","Sá","Do"],mo:["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"]}
 };
 const LANGS = [["ru","Русский 🇷🇺"],["en","English 🇬🇧"],["uk","Українська 🇺🇦"],["pl","Polski 🇵🇱"],["es","Español 🇪🇸"]];
 const ICP = {'<CH>':'grid','<KB>':'keyb','<HD>':'head','<SD>':'sound','<MC>':'mic','<RD>':'redo','<BK>':'book','<FL>':'flag','<CL>':'cal','<GL>':'target','<SH>':'share','<GC>':'cap','<TR>':'trophy','<OK>':'check','<NO>':'cross','<BT>':'bolt','<RL>':'ruler','<ER>':'ear','<CK>':'check','<CD>':'cards','<FR>':'fire','<TG>':'target'};
@@ -3224,7 +3249,7 @@ async function aiExplain(){
     const txt = await aiAsk('Ученик изучает норвежский (bokmål), уровень A1–A2, родной язык русский. ' +
       'Задание: перевести «' + srcText(q) + '». Правильный ответ: «' + q.no + '». ' +
       'Ученик ответил: «' + (state.lastAnswer || '') + '». ' +
-      (state.feedback && state.feedback.diag ? 'Тренажёр определил ошибку так: «' + state.feedback.diag.text.replace(/<[^>]+>/g,'') + '» ' : '') +
+      (state.feedback && state.feedback.diag ? 'Тренажёр определил ошибку так: «' + plainDiag(state.feedback.diag) + '». ' : '') +
       'Объясни по-русски в 2-3 коротких предложениях, в чём именно его ошибка и как запомнить правило. ' +
       'Разбирай именно ту ошибку, которую он допустил, а не тему задания вообще. ' +
       'Без приветствий и без списков, просто объяснение.');
@@ -3641,8 +3666,10 @@ function startMyWords(){
   renderWords();
 }
 
-const APP_VER = '2.0';
+const APP_VER = '2.1';
 const WHATS_NEW = [
+  { t:'Чат с агентом языка', d:'Кнопка с облачком в шапке — на любом экране. Два режима: «Объяснить» разбирает правило по-русски, «Поговорим» ведёт диалог по-норвежски на твоём уровне и мягко поправляет. Агент видит, на каком ты уроке, какую фразу сейчас решаешь и на чём спотыкаешься — можно спрашивать коротко.' },
+  { t:'Разбор ошибок стал честным', d:'Раньше подсказка зависела от темы задания. Теперь приложение сравнивает твой ответ с правильным пословно и объясняет настоящую ошибку: определённая форма, время глагола, падеж местоимения, место «ikke», порядок слов, притяжательные, опечатки и потерянные æ/ø/å.' },
   { t:'Курсы', d:'Приложение выросло из одного курса: теперь это грамматика A1–A2, аудиодиалоги и личный словарь — у каждого свой прогресс.' },
   { t:'Диалоги на слух', d:'30 диалогов с плеером, синхронным текстом и переводом. Следующий открывается после 9 часов прослушивания — метод матричного аудирования.' },
   { t:'Мои карточки', d:'Свой словарь с разделами. Добавляй слова с курсов — они возвращаются по интервалам 1 · 3 · 7 · 14 · 30 дней.' },
@@ -3914,6 +3941,286 @@ function cloudGet(keys, cb){
   }catch(e){ finish(null); }
 }
 
+// ─── ЧАТ С АГЕНТОМ ЯЗЫКА ──────────────────────────────
+let chatLog = [];
+try{ chatLog = JSON.parse(localStorage.getItem('ro_chat') || '[]') || []; }catch(e){ chatLog = []; }
+let chatBusy = false;
+let chatDraft = '';
+let lastScreen = null;
+
+function plainDiag(d){
+  if(!d || !d.text) return '';
+  return d.text.replace(/<li>/g,' • ').replace(/<[^>]+>/g,' ')
+               .replace(/\s+/g,' ').replace(/\s+([.,;:])/g,'$1')
+               .replace(/«\s+/g,'«').replace(/\s+»/g,'»').trim().replace(/\.+$/,'');
+}
+function chatMode(){ return meta.chatmode === 'talk' ? 'talk' : 'teach'; }
+function chatSaveLog(){
+  if(chatLog.length > 60) chatLog = chatLog.slice(-60);
+  try{ localStorage.setItem('ro_chat', JSON.stringify(chatLog)); }catch(e){}
+}
+function chatClear(){
+  askConfirm(t2('clear'), t2('ch_clr_q'), function(){
+    chatLog = []; chatSaveLog(); renderChat();
+  });
+}
+
+const CHAT_T = {
+ru:{ title:'Спросить', teach:'Объяснить', talk:'Поговорим',
+  ph_teach:'Спроси про правило или ошибку…',
+  ph_talk:'Skriv på norsk…',
+  hi_teach:'Спроси что угодно про норвежский. Я вижу, на каком ты уроке, какие фразы заваливаешь и что лежит в твоём словаре — так что можно спрашивать коротко: «почему тут huset?»',
+  hi_talk:'Nå snakker vi norsk. Jeg skriver enkelt, og retter deg underveis.\n\nHva gjorde du i dag?',
+  send:'Отправить', clear:'Очистить', thinking:'Печатает…',
+  ch_clr_q:'Очистить всю переписку?', listen:'Послушать',
+  ctx_on:'вижу твой прогресс' },
+en:{ title:'Ask', teach:'Explain', talk:'Let\'s talk',
+  ph_teach:'Ask about a rule or a mistake…',
+  ph_talk:'Skriv på norsk…',
+  hi_teach:'Ask me anything about Norwegian. I can see which lesson you are on, which phrases you keep failing and what is in your vocabulary — so short questions work: "why huset here?"',
+  hi_talk:'Nå snakker vi norsk. Jeg skriver enkelt, og retter deg underveis.\n\nHva gjorde du i dag?',
+  send:'Send', clear:'Clear', thinking:'Typing…',
+  ch_clr_q:'Clear the whole conversation?', listen:'Listen',
+  ctx_on:'I can see your progress' }
+};
+function t2(k){
+  const d = (meta.lang && meta.lang!=='ru' && CHAT_T[meta.lang]) ? CHAT_T[meta.lang]
+          : (meta.lang && meta.lang!=='ru' ? CHAT_T.en : CHAT_T.ru);
+  return d[k] !== undefined ? d[k] : CHAT_T.ru[k];
+}
+const LANG_NAME = {ru:'русском', en:'английском', uk:'украинском', pl:'польском', es:'испанском'};
+
+// ─── контекст: что агент знает про ученика ───
+function chatContext(){
+  const L = [];
+  const nm = (meta.name || '').trim();
+  const parts = [];
+  if(nm) parts.push('имя ' + nm);
+  const st = streakCount(); if(st) parts.push('занимается ' + st + ' дней подряд');
+  const ts = totalSolved(); if(ts) parts.push('пройдено фраз: ' + ts);
+  if(parts.length) L.push('Ученик: ' + parts.join('; ') + '.');
+
+  try{
+    const co = COURSES[ci];
+    if(co && !co.audio && LESSONS[currentLessonIdx]){
+      const les = LESSONS[currentLessonIdx];
+      let s = 'Сейчас: курс «' + co.title + '», урок ' + (currentLessonIdx+1) + ' «' + les.title + '»';
+      if(les.parts && les.parts[currentPartIdx]) s += ', блок «' + les.parts[currentPartIdx].t + '»';
+      L.push(s + '.');
+    }
+  }catch(e){}
+
+  try{
+    if(state && state.questions && state.questions[state.idx] && state.phase){
+      const q = state.questions[state.idx];
+      let s = 'Фраза на экране: «' + srcText(q) + '» → «' + q.no + '»';
+      if(state.phase === 'revealed' && state.lastAnswer) s += '. Ученик ответил: «' + state.lastAnswer + '»';
+      if(state.feedback && state.feedback.diag) s += '. Тренажёр определил ошибку: ' + plainDiag(state.feedback.diag);
+      L.push(s + '.');
+    }
+  }catch(e){}
+
+  try{
+    const ms = (meta.mistakes || []).slice(-6);
+    if(ms.length) L.push('Фразы, на которых он спотыкается: ' + ms.map(function(m){ return '«' + m.no + '»'; }).join(', ') + '.');
+  }catch(e){}
+
+  try{
+    const my = (meta.my || []).slice(-14);
+    if(my.length) L.push('В личном словаре: ' + my.map(function(w){ return w.no; }).filter(Boolean).join(', ') + '.');
+  }catch(e){}
+
+  if(!L.length) return '';
+  return 'КОНТЕКСТ (используй, только если он относится к вопросу; не пересказывай его просто так):\n' + L.join('\n');
+}
+
+function chatSystem(){
+  const lang = LANG_NAME[meta.lang || 'ru'] || 'русском';
+  if(chatMode() === 'talk'){
+    return 'Ты — норвежский собеседник в тренажёре Ro!. Ученик уровня A1–A2.\n' +
+      'Пиши ТОЛЬКО по-норвежски (bokmål), простыми короткими предложениями уровня A1–A2.\n' +
+      '— 1–3 предложения, и заканчивай вопросом, чтобы разговор продолжался.\n' +
+      '— Если в сообщении ученика есть ошибка, первой строкой дай исправленный вариант в виде «✓ правильный вариант», а потом отвечай по теме.\n' +
+      '— Не используй сложные времена и редкие слова.\n' +
+      '— Если ученик прямо просит объяснить на ' + lang + ' языке — объясни одним предложением и снова перейди на норвежский.\n' +
+      '— Без приветствий в каждом сообщении и без списков.';
+  }
+  return 'Ты — преподаватель норвежского (bokmål) в тренажёре Ro!. Ученик уровня A1–A2.\n' +
+    'Отвечай на ' + lang + ' языке, примеры давай по-норвежски.\n' +
+    '— Коротко: 2–5 предложений. Без приветствий, без вступлений, без списков.\n' +
+    '— Объясняя правило, дай один-два примера с переводом.\n' +
+    '— Норвежские слова и фразы оборачивай в обратные кавычки: `huset`.\n' +
+    '— Не выдумывай слов и форм, которых нет в норвежском. Если не уверен — так и скажи.\n' +
+    '— Если вопрос не про норвежский язык или учёбу, одной фразой верни к теме.';
+}
+
+function chatPrompt(question){
+  const sys = chatSystem();
+  const ctx = chatContext();
+  const hist = chatLog.slice();
+  function build(h){
+    let s = sys + '\n\n';
+    if(ctx) s += ctx + '\n\n';
+    if(h.length){
+      s += 'ПЕРЕПИСКА:\n' + h.map(function(m){
+        return (m.r === 'u' ? 'Ученик: ' : 'Ты: ') + m.t;
+      }).join('\n') + '\n\n';
+    }
+    return s + 'Ученик: ' + question + '\nТы:';
+  }
+  let h = hist;
+  let out = build(h);
+  while(out.length > 9500 && h.length > 2){ h = h.slice(2); out = build(h); }
+  if(out.length > 11000) out = out.slice(0, 11000);
+  return out;
+}
+
+// ─── разметка сообщений ───
+function chatEsc(s){
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function chatFmt(s){
+  let h = chatEsc(s);
+  h = h.replace(/`([^`\n]+)`/g, '<code>$1</code>');
+  h = h.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+  h = h.replace(/^✓\s*(.+)$/gm, '<span class="ch-fix">✓ $1</span>');
+  return h.replace(/\n/g, '<br>');
+}
+
+function chatSetMode(m){
+  meta.chatmode = m; saveMeta();
+  renderChat();
+}
+
+function openChat(){
+  const back = lastScreen;
+  chatBack = (typeof back === 'function') ? back : function(){ renderCourses(); };
+  renderChat();
+}
+let chatBack = null;
+
+function renderChat(){
+  const mode = chatMode();
+  const greet = mode === 'talk' ? t2('hi_talk') : t2('hi_teach');
+  const msgs = chatLog.length
+    ? chatLog.map(function(m, i){
+        const cls = m.r === 'u' ? 'ch-msg me' : 'ch-msg ai';
+        const say = (m.r === 'a' && mode === 'talk')
+          ? '<button class="ch-say" onclick="speak(chatLog[' + i + '].t.replace(/[✓`*]/g,\'\'))">' + ic('sound',13) + '</button>'
+          : '';
+        return '<div class="' + cls + '">' + chatFmt(m.t) + say + '</div>';
+      }).join('')
+    : '<div class="ch-msg ai ch-greet">' + chatFmt(greet) + '</div>';
+
+  document.getElementById('app').innerHTML =
+    '<div id="chat-screen">' +
+      '<div class="header">' +
+        '<div class="logo" onclick="renderCourses()">Ro!</div>' +
+        '<div class="header-right">' +
+          (chatLog.length ? '<button class="back-btn" onclick="chatClear()">' + t2('clear') + '</button>' : '') +
+          '<button class="back-btn" onclick="chatBack()">←</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="ch-modes">' +
+        '<button class="ch-mode' + (mode==='teach'?' on':'') + '" onclick="chatSetMode(\'teach\')">' + t2('teach') + '</button>' +
+        '<button class="ch-mode' + (mode==='talk'?' on':'') + '" onclick="chatSetMode(\'talk\')">' + t2('talk') + '</button>' +
+      '</div>' +
+      '<div class="ch-body" id="ch-body">' + msgs +
+        (chatBusy ? '<div class="ch-msg ai ch-wait">' + t2('thinking') + '</div>' : '') +
+      '</div>' +
+      '<div class="ch-bar">' +
+        '<textarea id="ch-inp" class="ch-inp" rows="1" placeholder="' +
+          (mode==='talk' ? t2('ph_talk') : t2('ph_teach')) + '"' + (chatBusy?' disabled':'') +
+          ' oninput="chatDraft=this.value;chatGrow(this)"' +
+          ' onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();chatSend();}">' +
+          chatEsc(chatDraft) + '</textarea>' +
+        '<button class="ch-send" id="ch-send" onclick="chatSend()"' + (chatBusy?' disabled':'') + '>' +
+          ic('send',18) + '</button>' +
+      '</div>' +
+    '</div>';
+
+  const inp = document.getElementById('ch-inp');
+  if(inp && !chatBusy){ chatGrow(inp); }
+  if(chatToEnd){
+    chatToEnd = false;
+    setTimeout(function(){ window.scrollTo(0, document.body.scrollHeight); }, 20);
+  }else{
+    window.scrollTo(0, 0);
+  }
+}
+let chatToEnd = false;
+
+function chatGrow(el){
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 140) + 'px';
+}
+
+async function chatSend(){
+  if(chatBusy) return;
+  const inp = document.getElementById('ch-inp');
+  const q = ((inp && inp.value) || chatDraft || '').trim();
+  if(!q) return;
+  chatLog.push({ r:'u', t:q.slice(0, 1200) });
+  chatDraft = '';
+  chatBusy = true;
+  chatToEnd = true;
+  chatSaveLog();
+  renderChat();
+  try{
+    const prompt = chatPrompt(q);
+    const txt = await aiAsk(prompt);
+    chatLog.push({ r:'a', t:String(txt).trim() });
+  }catch(e){
+    chatLog.push({ r:'a', t:(e && e.message ? e.message : aiErrText('other')) });
+  }
+  chatBusy = false;
+  chatToEnd = true;
+  chatSaveLog();
+  renderChat();
+}
+
+// ─── кнопка чата во всех хедерах ───
+function mountChatBtn(){
+  if(!meta.name) return;
+  const hs = document.querySelectorAll('.header');
+  for(let i=0;i<hs.length;i++){
+    const h = hs[i];
+    if(h.querySelector('.ch-btn')) continue;
+    if(document.getElementById('chat-screen')) continue;
+    let r = h.querySelector('.header-right');
+    if(!r){ r = document.createElement('div'); r.className = 'header-right'; h.appendChild(r); }
+    const b = document.createElement('button');
+    b.className = 'back-btn ch-btn';
+    b.setAttribute('aria-label', t2('title'));
+    b.innerHTML = ic('chat',15);
+    b.onclick = openChat;
+    r.insertBefore(b, r.firstChild);
+  }
+}
+
+// ─── запоминаем экран, чтобы вернуться из чата ───
+function wrapScreens(){
+  const names = ['renderCourses','renderLessons','renderLesson','render','renderWords',
+                 'renderSchedule','renderDialogs','renderDialog','renderMyWords',
+                 'renderMyDecks','renderStats','renderImport'];
+  names.forEach(function(n){
+    const f = window[n];
+    if(typeof f !== 'function' || f.__wrapped) return;
+    const w = function(){
+      const a = Array.prototype.slice.call(arguments);
+      lastScreen = function(){ f.apply(null, a); };
+      return f.apply(null, a);
+    };
+    w.__wrapped = true;
+    window[n] = w;
+  });
+  const app = document.getElementById('app');
+  if(app && typeof MutationObserver !== 'undefined'){
+    new MutationObserver(function(){ mountChatBtn(); }).observe(app, { childList:true });
+  }
+  mountChatBtn();
+}
+
 function bootApp(){
   cloudGet(['ro_meta','ro_progress'], function(res){
     if(res){
@@ -3935,6 +4242,7 @@ function bootApp(){
       }catch(e){}
     }
     applyTheme();
+    wrapScreens();
     goToLessons();
   });
 }
