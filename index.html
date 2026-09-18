@@ -376,12 +376,31 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
 .rings-wrap{position:relative;width:168px;height:168px;flex-shrink:0}
 .rings-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 .rings-big{animation:numIn .5s .25s both ease-out;font-size:34px;font-weight:700;letter-spacing:-1px;line-height:1}
+.ring-lap{filter:drop-shadow(0 0 3px var(--bg)) drop-shadow(0 0 2px var(--bg))}
+.lg-lap{margin-left:5px;font-size:11px;font-weight:700;opacity:.55;vertical-align:1px}
 .rings-small{font-size:11.5px;color:var(--ink3);margin-top:3px}
 .rings-legend{display:flex;flex-direction:column;gap:11px;min-width:0}
-.lg{display:flex;align-items:center;gap:8px;font-size:13px}
+.rings-wrap svg{width:100%;height:100%;display:block}
+@media (max-width:389px){
+  .rings-hero{gap:14px}
+  .rings-wrap{width:142px;height:142px}
+  .rings-big{font-size:29px}
+  .lg{font-size:12px;gap:7px}
+  .lg-t{min-width:38px}
+}
+@media (max-width:339px){
+  .rings-hero{flex-direction:column;gap:14px}
+  .rings-wrap{width:138px;height:138px}
+  .rings-big{font-size:27px}
+  .rings-legend{width:100%;gap:9px}
+  .lg{font-size:12px}
+  .lg-v{margin-left:auto}
+}
+.lg{display:flex;align-items:center;gap:8px;font-size:13px;white-space:nowrap}
 .lg-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
-.lg-t{color:var(--ink2);min-width:44px}
+.lg-t{color:var(--ink2);min-width:44px;flex:0 0 auto}
 .lg-v{font-weight:600;font-variant-numeric:tabular-nums}
+.lg-v.over{color:var(--ink)}
 /* полоса недели */
 .week-strip{display:flex;gap:6px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08)}
 .wk-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -1608,14 +1627,14 @@ function renderCourses(){
       '<div class="rings-hero">' +
         '<div class="rings-wrap">' + trioRings(168) +
           '<div class="rings-center">' +
-            '<div class="rings-big">' + Math.min(tc,DAILY_GOAL) + '</div>' +
+            '<div class="rings-big">' + tc + '</div>' +
             '<div class="rings-small">из ' + DAILY_GOAL + ' фраз</div>' +
           '</div>' +
         '</div>' +
         '<div class="rings-legend">' +
-          '<div class="lg"><span class="lg-dot" style="background:var(--r1)"></span><span class="lg-t">Фразы</span><span class="lg-v">' + Math.min(tc,DAILY_GOAL) + ' / ' + DAILY_GOAL + '</span></div>' +
-          '<div class="lg"><span class="lg-dot" style="background:var(--r2)"></span><span class="lg-t">Аудио</span><span class="lg-v">' + lm + ' / ' + LISTEN_GOAL + ' мин</span></div>' +
-          '<div class="lg"><span class="lg-dot" style="background:var(--r3)"></span><span class="lg-t">Слова</span><span class="lg-v">' + (dayLog().w||0) + ' / 10</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:var(--r1)"></span><span class="lg-t">Фразы</span><span class="lg-v' + (tc>=DAILY_GOAL?' over':'') + '">' + tc + ' / ' + DAILY_GOAL + lapBadge(DAILY_GOAL?tc/DAILY_GOAL*100:0) + '</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:var(--r2)"></span><span class="lg-t">Аудио</span><span class="lg-v' + (lm>=LISTEN_GOAL?' over':'') + '">' + lm + ' / ' + LISTEN_GOAL + ' мин' + lapBadge(LISTEN_GOAL?lm/LISTEN_GOAL*100:0) + '</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:var(--r3)"></span><span class="lg-t">Слова</span><span class="lg-v' + ((dayLog().w||0)>=10?' over':'') + '">' + (dayLog().w||0) + ' / 10' + lapBadge((dayLog().w||0)/10*100) + '</span></div>' +
         '</div>' +
       '</div>' +
       (function(){
@@ -1946,10 +1965,30 @@ function bestWeek(){
 function ringArc(pct,size,stroke,color,offsetR,idx){
   const r = (size-stroke)/2 - (offsetR||0);
   const c = 2*Math.PI*r;
-  const off = c*(1-Math.min(pct,100)/100);
-  const done = pct >= 100;
-  return '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--rtrack)" stroke-width="' + stroke + '"/>' +
-    '<circle class="ring-arc' + (done?' done':'') + '" style="animation-delay:' + ((idx||0)*0.12) + 's" cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + c + '" data-off="' + off + '" data-delay="' + ((idx||0)*0.12) + '"/>';
+  const cx = size/2, cy = size/2;
+  const base = (idx||0)*0.12;
+  function arc(p, lap){
+    const off = c*(1 - Math.max(0, Math.min(p,100))/100);
+    const d = base + lap*0.22;
+    return '<circle class="ring-arc' + (p>=100?' done':'') + (lap?' ring-lap':'') +
+      '" style="animation-delay:' + d + 's" cx="' + cx + '" cy="' + cy + '" r="' + r +
+      '" fill="none" stroke="' + color + '" stroke-width="' + stroke +
+      '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + c +
+      '" data-off="' + off + '" data-delay="' + d + '"/>';
+  }
+  let out = '<circle cx="' + cx + '" cy="' + cy + '" r="' + r +
+    '" fill="none" stroke="var(--rtrack)" stroke-width="' + stroke + '"/>';
+  if(pct <= 100) return out + arc(pct, 0);
+  // план перевыполнен: полный круг + текущий виток поверх него
+  out += arc(100, 0);
+  const rest = pct - Math.floor(pct/100)*100;
+  if(rest > 0) out += arc(rest, 1);
+  return out;
+}
+function lapsOf(pct){ return Math.max(1, Math.floor(pct/100) + (pct % 100 > 0 ? 1 : 0)); }
+function lapBadge(pct){
+  const l = Math.floor(pct/100);
+  return l >= 1 && pct > 100 ? '<span class="lg-lap">×' + (l+1) + '</span>' : '';
 }
 
 function miniRing(k, size){
@@ -1975,10 +2014,10 @@ function animateRings(){
   }
 }
 function trioRings(size){
-  const pPct = Math.round(Math.min(todayCount(),DAILY_GOAL)/DAILY_GOAL*100);
-  const aPct = LISTEN_GOAL ? Math.round(Math.min(listenToday(),LISTEN_GOAL)/LISTEN_GOAL*100) : 0;
+  const pPct = DAILY_GOAL ? Math.round(todayCount()/DAILY_GOAL*100) : 0;
+  const aPct = LISTEN_GOAL ? Math.round(listenToday()/LISTEN_GOAL*100) : 0;
   const wGoal = 10;
-  const wPct = Math.round(Math.min(dayLog().w||0, wGoal)/wGoal*100);
+  const wPct = Math.round((dayLog().w||0)/wGoal*100);
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="transform:rotate(-90deg)">' +
     ringArc(pPct,size,11,'var(--r1)',0,0) +
     ringArc(aPct,size,11,'var(--r2)',15,1) +
