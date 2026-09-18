@@ -55,7 +55,7 @@ button{touch-action:manipulation}
   border:1px solid rgba(255,255,255,0.10);
   box-shadow:0 1px 0 rgba(255,255,255,0.09) inset, 0 8px 28px rgba(0,0,0,0.35);
 }
-.app{max-width:700px;margin:0 auto;padding:0 1rem calc(5.5rem + env(safe-area-inset-bottom));padding-left:max(1rem,env(safe-area-inset-left));padding-right:max(1rem,env(safe-area-inset-right));padding-top:env(safe-area-inset-top)}
+.app{max-width:700px;margin:0 auto;padding-bottom:calc(5.5rem + max(env(safe-area-inset-bottom),var(--tg-bottom,0px)));padding-left:max(1rem,env(safe-area-inset-left),var(--tg-left,0px));padding-right:max(1rem,env(safe-area-inset-right),var(--tg-right,0px));padding-top:max(env(safe-area-inset-top),var(--tg-top,0px))}
 .header{padding:1.25rem 0 0;display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
 .ic{vertical-align:-3px;display:inline-block;flex-shrink:0}
 .logo{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-0.5px;cursor:pointer}
@@ -127,7 +127,7 @@ button{touch-action:manipulation}
 .why-cmp span{opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .why-rule{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
 #chat-screen{display:flex;flex-direction:column;min-height:calc(100vh - 90px)}
-.ch-fab{position:fixed;z-index:40;right:max(16px,env(safe-area-inset-right));bottom:calc(16px + env(safe-area-inset-bottom));width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);background:rgba(255,255,255,0.10);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border:1px solid rgba(255,255,255,0.16);box-shadow:0 6px 24px rgba(0,0,0,0.40);transition:transform .15s,opacity .2s}
+.ch-fab{position:fixed;z-index:40;right:max(16px,env(safe-area-inset-right),var(--tg-right,0px));bottom:calc(16px + max(env(safe-area-inset-bottom),var(--tg-bottom,0px)));width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);background:rgba(255,255,255,0.10);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border:1px solid rgba(255,255,255,0.16);box-shadow:0 6px 24px rgba(0,0,0,0.40);transition:transform .15s,opacity .2s}
 .ch-fab:active{transform:scale(.93)}
 .ch-fab.off{opacity:0;pointer-events:none;transform:scale(.8)}
 body.light .ch-fab{background:rgba(255,255,255,0.94);border-color:rgba(0,0,0,0.14);box-shadow:0 2px 6px rgba(0,0,0,0.10),0 10px 28px rgba(0,0,0,0.18)}
@@ -349,7 +349,7 @@ body.light .wk-bar{background:rgba(15,22,40,0.14)}
 .toast-ring{position:relative;width:40px;height:40px;flex-shrink:0}
 .toast-chk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--ink);opacity:0;animation:chkIn .34s .75s forwards ease-out}
 @keyframes chkIn{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:scale(1)}}
-.toast{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top));transform:translateX(-50%);z-index:80;
+.toast{position:fixed;left:50%;top:calc(14px + max(env(safe-area-inset-top),var(--tg-top,0px)));transform:translateX(-50%);z-index:80;
   display:flex;align-items:center;gap:11px;min-width:270px;max-width:calc(100vw - 32px);
   background:linear-gradient(160deg,rgba(38,38,38,0.97),rgba(20,20,20,0.97));backdrop-filter:blur(20px);
   border:1px solid rgba(255,255,255,0.14);border-radius:16px;padding:12px 15px;
@@ -450,7 +450,7 @@ body.light .wk-bar.today{background:#15161a}
 #fw{position:fixed;inset:0;z-index:50;pointer-events:none}
 
 /* ─── WELCOME SCREEN ─── */
-.welcome{position:fixed;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;text-align:center;overflow:hidden;background:var(--bg)}
+.welcome{position:fixed;inset:0;z-index:5;padding-top:var(--tg-top,0px);display:flex;flex-direction:column;align-items:center;text-align:center;overflow:hidden;background:var(--bg)}
 .welcome.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch;justify-content:flex-start;overscroll-behavior:contain}
 .welcome.scroll .welcome-content{padding-bottom:calc(40px + env(safe-area-inset-bottom))}
 .welcome-content{margin-top:calc(12vh + env(safe-area-inset-top));padding:0 1.5rem;max-width:420px}
@@ -1319,11 +1319,98 @@ let ci = 0;
 
 function applyTheme(){
   const light = meta.theme === 'light';
+  const bg = light ? '#f4f5f7' : '#0c0c0c';
   try{
     document.body.className = light ? 'light' : '';
     const m = document.querySelector('meta[name="theme-color"]');
     if(m) m.setAttribute('content', light ? '#f4f5f7' : '#000001');
   }catch(e){}
+  if(TG){
+    try{ if(TG.setHeaderColor) TG.setHeaderColor(bg); }catch(e){}
+    try{ if(TG.setBackgroundColor) TG.setBackgroundColor(bg); }catch(e){}
+  }
+}
+
+// ─── ПОЛНЫЙ ЭКРАН В TELEGRAM ──────────────────────────
+function fsSupported(){
+  try{ return !!(TG && TG.isVersionAtLeast && TG.isVersionAtLeast('8.0') && TG.requestFullscreen); }
+  catch(e){ return false; }
+}
+function fsOn(){ return meta.fs !== false; }
+function applySafeArea(){
+  if(typeof document === 'undefined' || !document.documentElement) return;
+  let top=0, bottom=0, left=0, right=0;
+  if(TG){
+    try{
+      const a = TG.safeAreaInset || {}, b = TG.contentSafeAreaInset || {};
+      top    = (a.top||0) + (b.top||0);
+      bottom = (a.bottom||0) + (b.bottom||0);
+      left   = Math.max(a.left||0, b.left||0);
+      right  = Math.max(a.right||0, b.right||0);
+    }catch(e){}
+  }
+  try{
+    const st = document.documentElement.style;
+    if(!st || !st.setProperty) return;
+    st.setProperty('--tg-top', top + 'px');
+    st.setProperty('--tg-bottom', bottom + 'px');
+    st.setProperty('--tg-left', left + 'px');
+    st.setProperty('--tg-right', right + 'px');
+  }catch(e){}
+}
+let fsTries = 0;
+function applyFullscreen(){
+  if(!fsSupported()) return;
+  try{
+    if(fsOn()){
+      if(!TG.isFullscreen){
+        TG.requestFullscreen();
+        if(fsTries < 3){
+          fsTries++;
+          setTimeout(function(){ if(fsOn() && TG && !TG.isFullscreen) applyFullscreen(); }, 400 * fsTries);
+        }
+      }
+    }
+    else if(TG.isFullscreen && TG.exitFullscreen) TG.exitFullscreen();
+  }catch(e){}
+  applySafeArea();
+}
+function fsDiag(){
+  const parts = ['Ro! ' + APP_VER];
+  if(!TG) parts.push('вне Telegram');
+  else{
+    parts.push('Telegram ' + (TG.version || '?'));
+    parts.push(TG.platform || '?');
+    parts.push('requestFullscreen: ' + (TG.requestFullscreen ? 'есть' : 'нет'));
+    parts.push('сейчас: ' + (TG.isFullscreen ? 'полный экран' : 'обычный'));
+  }
+  return parts.join(' · ');
+}
+function toggleFullscreen(){
+  meta.fs = !fsOn();
+  saveMeta();
+  applyFullscreen();
+  buzz('ok');
+  setTimeout(function(){ if(screen === 'schedule') renderSchedule(); }, 120);
+}
+function initTelegram(){
+  if(!TG) { applySafeArea(); return; }
+  try{ if(TG.disableVerticalSwipes) TG.disableVerticalSwipes(); }catch(e){}
+  try{
+    if(TG.onEvent){
+      TG.onEvent('safeAreaChanged', applySafeArea);
+      TG.onEvent('contentSafeAreaChanged', applySafeArea);
+      TG.onEvent('fullscreenChanged', function(){ applySafeArea(); });
+      TG.onEvent('fullscreenFailed', function(){
+        meta.fs = false;
+        try{ saveMeta(); }catch(e){}
+        applySafeArea();
+      });
+      TG.onEvent('viewportChanged', applySafeArea);
+    }
+  }catch(e){}
+  applySafeArea();
+  applyFullscreen();
 }
 function toggleTheme(){
   meta.theme = meta.theme === 'light' ? 'dark' : 'light';
@@ -1640,7 +1727,17 @@ function totalPhrases(){ let s=0; for(let i=0;i<LESSONS.length;i++) s += lessonT
 function totalSolved(){ let s=0; for(let i=0;i<LESSONS.length;i++) s += lessonSolved(i); return s; }
 // ─── TELEGRAM / HAPTICS / SHARE ───
 const TG = (typeof window!=="undefined") && window.Telegram && window.Telegram.WebApp;
-if(TG){ try{ TG.ready(); TG.expand(); }catch(e){} }
+if(TG){
+  try{ TG.ready(); TG.expand(); }catch(e){}
+  // полный экран — по умолчанию включён, просим сразу; настройки уточнят позже
+  try{
+    if(TG.isVersionAtLeast && TG.isVersionAtLeast('8.0') && TG.requestFullscreen){
+      let saved = null;
+      try{ saved = JSON.parse(localStorage.getItem('ro_meta')||'{}'); }catch(e){}
+      if(!saved || saved.fs !== false) TG.requestFullscreen();
+    }
+  }catch(e){}
+}
 function persist(key,val){
   try{ localStorage.setItem(key,val); }catch(e){}
   if(TG && TG.CloudStorage){ try{ TG.CloudStorage.setItem(key,val,function(){}); }catch(e){} }
@@ -2854,6 +2951,20 @@ function renderSchedule(){
     '<div class="detail-title">' + t('sched') + '</div>' +
     '<div class="detail-sub">' + t('sched_s') + '</div>' +
     '<button class="back-btn" style="margin-bottom:1rem" onclick="renderGoals(1)">Изменить дневные цели</button>' +
+    '<div class="card" style="margin-bottom:1.25rem">' +
+      '<div class="sched-row" style="margin:0">' +
+        '<span class="sched-label">Полный экран</span>' +
+        (fsSupported()
+          ? '<button class="back-btn" onclick="toggleFullscreen()">' + (fsOn() ? 'Включён' : 'Выключен') + '</button>'
+          : '<span class="deck-count" style="margin:0">недоступен</span>') +
+      '</div>' +
+      '<div class="deck-count" style="text-align:left;margin-top:10px">' +
+        (fsSupported()
+          ? 'Убирает верхнюю панель Telegram — остаются только плавающие кнопки закрытия и меню.'
+          : 'Твой Telegram не поддерживает этот режим — нужен Bot API 8.0 и новее.') +
+      '</div>' +
+      '<div class="deck-count" style="text-align:left;margin-top:8px;opacity:.55">' + fsDiag() + '</div>' +
+    '</div>' +
     '<div class="section-label" style="margin-bottom:10px">Резервная копия</div>' +
     '<div class="card" style="margin-bottom:1.25rem">' +
       '<div class="deck-count" style="text-align:left;margin:0 0 12px">Прогресс хранится на устройстве. Сохрани копию — восстановишь после чистки браузера или на другом телефоне.</div>' +
@@ -3673,6 +3784,7 @@ function startMyWords(){
 
 const APP_VER = '2.1';
 const WHATS_NEW = [
+  { t:'Полный экран в Telegram', d:'Верхняя панель Telegram с названием и кнопкой «Закрыть» убирается — остаются только плавающие кнопки закрытия и меню поверх приложения. Свайп вниз больше не закрывает приложение во время прокрутки. Выключить можно в «Расписании».' },
   { t:'Чат с агентом языка', d:'Кнопка с облачком в шапке — на любом экране. Два режима: «Объяснить» разбирает правило по-русски, «Поговорим» ведёт диалог по-норвежски на твоём уровне и мягко поправляет. Агент видит, на каком ты уроке, какую фразу сейчас решаешь и на чём спотыкаешься — можно спрашивать коротко.' },
   { t:'Разбор ошибок стал честным', d:'Раньше подсказка зависела от темы задания. Теперь приложение сравнивает твой ответ с правильным пословно и объясняет настоящую ошибку: определённая форма, время глагола, падеж местоимения, место «ikke», порядок слов, притяжательные, опечатки и потерянные æ/ø/å.' },
   { t:'Курсы', d:'Приложение выросло из одного курса: теперь это грамматика A1–A2, аудиодиалоги и личный словарь — у каждого свой прогресс.' },
@@ -4251,6 +4363,7 @@ function bootApp(){
       }catch(e){}
     }
     applyTheme();
+    initTelegram();
     wrapScreens();
     goToLessons();
   });
