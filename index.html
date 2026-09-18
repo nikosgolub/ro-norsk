@@ -3154,21 +3154,42 @@ function closeDialog(){ if(AU){ AU.pause(); AU = null; } renderDialogs(); }
 // ─── ИИ (через Cloudflare Worker — ключ хранится на сервере) ───
 const AI_URL = 'https://ro-ai.nikosgolub.workers.dev';
 
+const AI_ERR = {
+  ru:{ quota:'Дневной лимит бесплатных запросов к ИИ исчерпан. Попробуй завтра — разбор ошибок и подсказки в уроках работают без ИИ.',
+       key:'Ключ доступа к ИИ не принимается. Нужно обновить его в настройках Worker.',
+       model:'Модель ИИ недоступна. Нужно обновить Worker.',
+       net:'Нет связи с ИИ. Проверь интернет и попробуй ещё раз.',
+       other:'ИИ сейчас не отвечает. Попробуй чуть позже.' },
+  en:{ quota:'The free daily AI quota is used up. Try again tomorrow — mistake analysis and lesson hints work without AI.',
+       key:'The AI access key is not accepted. It needs updating in the Worker settings.',
+       model:'The AI model is unavailable. The Worker needs updating.',
+       net:'No connection to the AI. Check your internet and try again.',
+       other:'The AI is not responding right now. Try again a bit later.' }
+};
+function aiErrText(reason){
+  const d = (meta.lang && meta.lang!=='ru' && AI_ERR[meta.lang]) ? AI_ERR[meta.lang] : (meta.lang && meta.lang!=='ru' ? AI_ERR.en : AI_ERR.ru);
+  return d[reason] || d.other;
+}
 async function aiAsk(prompt, json){
-  const res = await fetch(AI_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ prompt: prompt, json: !!json })
-  });
+  let res;
+  try{
+    res = await fetch(AI_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: prompt, json: !!json })
+    });
+  }catch(e){ throw new Error(aiErrText('net')); }
   if(!res.ok){
-    let detail = '';
-    try{ detail = (await res.text()).slice(0,200); }catch(e){}
-    throw new Error('HTTP ' + res.status + (detail ? ' · ' + detail : ''));
+    let reason = 'other';
+    try{ const j = await res.json(); if(j && j.reason) reason = j.reason; }catch(e){}
+    throw new Error(aiErrText(reason));
   }
   const data = await res.json();
   const txt = (data.text || '').trim();
-  if(!txt) throw new Error('empty');
-  return json ? JSON.parse(txt.replace(/^```json|```$/g,'').trim()) : txt;
+  if(!txt) throw new Error(aiErrText('other'));
+  try{
+    return json ? JSON.parse(txt.replace(/^```json|```$/g,'').trim()) : txt;
+  }catch(e){ throw new Error(aiErrText('other')); }
 }
 
 // 1. Автозаполнение карточки
@@ -3188,7 +3209,7 @@ async function aiFillWord(){
     if(b) b.value = (r.ru || '') + (r.ex ? ' · ' + r.ex : '');
   }catch(e){
     if(b && !b.value) b.value = '';
-    alert('Ошибка ИИ:\n\n' + (e && e.message ? e.message : e));
+    alert((e && e.message ? e.message : aiErrText('other')));
   }
   if(btn){ btn.disabled = false; btn.innerHTML = ic('star',15) + ' Заполнить'; }
 }
@@ -3209,7 +3230,7 @@ async function aiExplain(){
       'Без приветствий и без списков, просто объяснение.');
     box.innerHTML = txt.replace(/</g,'&lt;').replace(/\n/g,'<br>');
   }catch(e){
-    box.innerHTML = 'Ошибка: ' + ((e && e.message ? e.message : e) + '').replace(/</g,'&lt;');
+    box.innerHTML = ((e && e.message ? e.message : aiErrText('other')) + '').replace(/</g,'&lt;');
   }
 }
 
@@ -3236,7 +3257,7 @@ async function aiPractice(){
     screen = 'exercise';
     render();
   }catch(e){
-    alert('Ошибка ИИ:\n\n' + (e && e.message ? e.message : e));
+    alert((e && e.message ? e.message : aiErrText('other')));
     if(btn){ btn.disabled = false; btn.innerHTML = ic('star',16) + ' Тренировать фразами'; }
   }
 }
