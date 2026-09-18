@@ -15,6 +15,7 @@
 html{-webkit-text-size-adjust:100%}
 :root{
   --bg:#0c0c0c;--paper:#131313;--ink:#f5f5f5;--ink2:#a3a3a3;--ink3:#666;
+  --r1:#ffffff;--r2:rgba(255,255,255,0.55);--r3:rgba(255,255,255,0.30);--rtrack:rgba(255,255,255,0.10);
   --line:#232325;--blue:#7aa2f7;--blue-light:#16213a;--green:#4ade80;
   --green-light:#0d2818;--red:#f87171;--red-light:#2d1414;
   --amber:#fbbf24;--amber-light:#2b2210;
@@ -504,6 +505,7 @@ body.light .wk-bar.today{background:#15161a}
 /* ─── СВЕТЛАЯ ТЕМА ─── */
 body.light{
   --bg:#f4f5f7;--paper:#ffffff;--ink:#15161a;--ink2:#5b6068;--ink3:#8c919a;--line:#e3e5ea;
+  --r1:#15161a;--r2:rgba(21,22,26,0.62);--r3:rgba(21,22,26,0.38);--rtrack:rgba(15,22,40,0.12);
   --blue:#2f5fd0;--blue-light:#e7eeff;--green:#15803d;--green-light:#e4f7ea;
   --red:#c92a2a;--red-light:#fdeaea;--amber:#a16207;--amber-light:#fdf4d9;
   color:var(--ink);
@@ -1524,9 +1526,9 @@ function renderCourses(){
           '</div>' +
         '</div>' +
         '<div class="rings-legend">' +
-          '<div class="lg"><span class="lg-dot" style="background:#fff"></span><span class="lg-t">Фразы</span><span class="lg-v">' + Math.min(tc,DAILY_GOAL) + ' / ' + DAILY_GOAL + '</span></div>' +
-          '<div class="lg"><span class="lg-dot" style="background:rgba(255,255,255,0.55)"></span><span class="lg-t">Аудио</span><span class="lg-v">' + lm + ' / ' + LISTEN_GOAL + ' мин</span></div>' +
-          '<div class="lg"><span class="lg-dot" style="background:rgba(255,255,255,0.3)"></span><span class="lg-t">Слова</span><span class="lg-v">' + (dayLog().w||0) + ' / 10</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:var(--r1)"></span><span class="lg-t">Фразы</span><span class="lg-v">' + Math.min(tc,DAILY_GOAL) + ' / ' + DAILY_GOAL + '</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:var(--r2)"></span><span class="lg-t">Аудио</span><span class="lg-v">' + lm + ' / ' + LISTEN_GOAL + ' мин</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:var(--r3)"></span><span class="lg-t">Слова</span><span class="lg-v">' + (dayLog().w||0) + ' / 10</span></div>' +
         '</div>' +
       '</div>' +
       (function(){
@@ -1849,17 +1851,17 @@ function ringArc(pct,size,stroke,color,offsetR,idx){
   const c = 2*Math.PI*r;
   const off = c*(1-Math.min(pct,100)/100);
   const done = pct >= 100;
-  return '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '" opacity="0.55"/>' +
+  return '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--rtrack)" stroke-width="' + stroke + '"/>' +
     '<circle class="ring-arc' + (done?' done':'') + '" style="animation-delay:' + ((idx||0)*0.12) + 's" cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + color + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + c + '" data-off="' + off + '" data-delay="' + ((idx||0)*0.12) + '"/>';
 }
 
 function miniRing(k, size){
-  const col = k==='p' ? '#ffffff' : k==='a' ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.3)';
+  const col = k==='p' ? 'var(--r1)' : k==='a' ? 'var(--r2)' : 'var(--r3)';
   const stroke = 5;
   const r = (size-stroke)/2;
   const c = 2*Math.PI*r;
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="transform:rotate(-90deg)">' +
-    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '" opacity="0.55"/>' +
+    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--rtrack)" stroke-width="' + stroke + '"/>' +
     '<circle class="ring-arc done" cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + c + '" data-off="0" data-delay="0.1"/>' +
   '</svg>';
 }
@@ -1881,9 +1883,9 @@ function trioRings(size){
   const wGoal = 10;
   const wPct = Math.round(Math.min(dayLog().w||0, wGoal)/wGoal*100);
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="transform:rotate(-90deg)">' +
-    ringArc(pPct,size,11,'#ffffff',0,0) +
-    ringArc(aPct,size,11,'rgba(255,255,255,0.55)',15,1) +
-    ringArc(wPct,size,11,'rgba(255,255,255,0.3)',30,2) +
+    ringArc(pPct,size,11,'var(--r1)',0,0) +
+    ringArc(aPct,size,11,'var(--r2)',15,1) +
+    ringArc(wPct,size,11,'var(--r3)',30,2) +
   '</svg>';
 }
 function ringSVG(pct,size,stroke,color){
@@ -1891,8 +1893,8 @@ function ringSVG(pct,size,stroke,color){
   const c = 2*Math.PI*r;
   const off = c*(1-Math.min(pct,100)/100);
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
-    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--line)" stroke-width="' + stroke + '"/>' +
-    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + (color||'#ffffff') + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>' +
+    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="var(--rtrack)" stroke-width="' + stroke + '"/>' +
+    '<circle cx="' + size/2 + '" cy="' + size/2 + '" r="' + r + '" fill="none" stroke="' + (color||'var(--r1)') + '" stroke-width="' + stroke + '" stroke-linecap="round" stroke-dasharray="' + c + '" stroke-dashoffset="' + off + '"/>' +
   '</svg>';
 }
 function wordsAllTotal(){ let s=0; for(let i=0;i<WORDS.length;i++) s += WORDS[i].length; return s; }
