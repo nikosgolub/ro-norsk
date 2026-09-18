@@ -119,6 +119,12 @@ button{touch-action:manipulation}
 .rule-box{margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08);font-size:13px;color:var(--ink2);line-height:1.65}
 .rule-box b{color:var(--ink)}
 .rule-box code{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:1px 6px;font-family:inherit;font-size:12.5px;color:var(--blue)}
+.why-list{margin:6px 0 0;padding-left:18px}
+.why-list li{margin:4px 0}
+.why-also{margin-top:8px}
+.why-cmp{margin-top:9px;font-size:12.5px;line-height:1.8}
+.why-cmp span{opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.why-rule{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
 .play-big{display:block;margin:6px auto 10px;background:#fff;color:#000001;font-size:16px;font-weight:600;font-family:inherit;border:none;border-radius:16px;padding:16px 30px;cursor:pointer;min-height:54px;transition:transform .1s,opacity .2s}
 .play-big:hover{opacity:.9}
 .play-big:active{transform:scale(.97)}
@@ -733,6 +739,418 @@ function getRuleHTML(type){
   if(!r) return "";
   return '<div class="rule-box">' + t('rule') + r + '</div>';
 }
+
+// ─── РАЗБОР ОШИБКИ: что именно человек сделал не так ──────────
+const VERB_GROUPS = ("være|er|var|vært;ha|har|hadde|hatt;bli|blir|ble|blitt;gå|går|gikk|gått;komme|kommer|kom|kommet;"+
+"se|ser|så|sett;si|sier|sa|sagt;ta|tar|tok|tatt;gi|gir|ga|gitt;få|får|fikk|fått;vite|vet|visste|visst;"+
+"drikke|drikker|drakk|drukket;finne|finner|fant|funnet;hjelpe|hjelper|hjalp|hjulpet;sove|sover|sov|sovet;"+
+"stå|står|sto|stått;ligge|ligger|lå|ligget;sitte|sitter|satt|sittet;sette|setter|satte|satt;legge|legger|la|lagt;"+
+"skrive|skriver|skrev|skrevet;lese|leser|leste|lest;synge|synger|sang|sunget;vinne|vinner|vant|vunnet;"+
+"falle|faller|falt|falt;løpe|løper|løp|løpt;le|ler|lo|ledd;gråte|gråter|gråt|grått;spørre|spør|spurte|spurt;"+
+"svare|svarer|svarte|svart;selge|selger|solgte|solgt;forstå|forstår|forsto|forstått;bestå|består|besto|bestått;"+
+"dra|drar|dro|dratt;fly|flyr|fløy|fløyet;henge|henger|hang|hengt;stryke|stryker|strøk|strøket;"+
+"skulle|skal|skulle|skullet;ville|vil|ville|villet;kunne|kan|kunne|kunnet;måtte|må|måtte|måttet;burde|bør|burde|burdet;"+
+"jobbe|jobber|jobbet|jobbet;snakke|snakker|snakket|snakket;spise|spiser|spiste|spist;kjøpe|kjøper|kjøpte|kjøpt;"+
+"bo|bor|bodde|bodd;tro|tror|trodde|trodd;skje|skjer|skjedde|skjedd;snø|snør|snødde|snødd;lage|lager|laget|laget;"+
+"lære|lærer|lærte|lært;like|liker|likte|likt;vente|venter|ventet|ventet;ringe|ringer|ringte|ringt;"+
+"møte|møter|møtte|møtt;kjenne|kjenner|kjente|kjent;flytte|flytter|flyttet|flyttet;miste|mister|mistet|mistet;"+
+"glemme|glemmer|glemte|glemt;begynne|begynner|begynte|begynt;slutte|slutter|sluttet|sluttet;prøve|prøver|prøvde|prøvd;"+
+"høre|hører|hørte|hørt;elske|elsker|elsket|elsket;trenge|trenger|trengte|trengt;koste|koster|kostet|kostet;"+
+"betale|betaler|betalte|betalt;studere|studerer|studerte|studert;regne|regner|regnet|regnet;vaske|vasker|vasket|vasket;"+
+"rydde|rydder|ryddet|ryddet;holde|holder|holdt|holdt;bruke|bruker|brukte|brukt;håpe|håper|håpet|håpet;"+
+"savne|savner|savnet|savnet;smake|smaker|smakte|smakt;hete|heter|het|hett;reise|reiser|reiste|reist;"+
+"bade|bader|badet|badet;svømme|svømmer|svømte|svømt;åpne|åpner|åpnet|åpnet;lukke|lukker|lukket|lukket;"+
+"stenge|stenger|stengte|stengt;våkne|våkner|våknet|våknet;vokse|vokser|vokste|vokst;smile|smiler|smilte|smilt;"+
+"tenke|tenker|tenkte|tenkt;mene|mener|mente|ment;besøke|besøker|besøkte|besøkt;invitere|inviterer|inviterte|invitert;"+
+"pakke|pakker|pakket|pakket;bake|baker|bakte|bakt;male|maler|malte|malt;lete|leter|lette|lett;"+
+"passe|passer|passet|passet;klare|klarer|klarte|klart;trene|trener|trente|trent;feriere|ferierer|ferierte|feriert;"+
+"hvile|hviler|hvilte|hvilt;leke|leker|lekte|lekt;danse|danser|danset|danset;lytte|lytter|lyttet|lyttet"
+).split(";").map(function(s){return s.split("|");});
+
+const VERB_FORM = {};
+VERB_GROUPS.forEach(function(g,gi){ g.forEach(function(f,ti){ if(f && !(f in VERB_FORM)) VERB_FORM[f]=[gi,ti]; }); });
+const MODALS = new Set(["skal","skulle","vil","ville","kan","kunne","må","måtte","bør","burde"]);
+const FINITE = new Set(["er","var","har","hadde","blir","ble","skal","skulle","vil","ville","kan","kunne","må","måtte","bør","burde"]);
+
+const ADJ_GROUPS = ("stor|stort|store;liten|lite|små;god|godt|gode;ny|nytt|nye;gammel|gammelt|gamle;varm|varmt|varme;"+
+"kald|kaldt|kalde;fin|fint|fine;vakker|vakkert|vakre;dyr|dyrt|dyre;billig|billig|billige;rask|raskt|raske;"+
+"sterk|sterkt|sterke;søt|søtt|søte;høy|høyt|høye;viktig|viktig|viktige;enkel|enkelt|enkle;"+
+"vanskelig|vanskelig|vanskelige;glad|glad|glade;syk|sykt|syke;ren|rent|rene;mørk|mørkt|mørke;lys|lyst|lyse;"+
+"ung|ungt|unge;lang|langt|lange;kort|kort|korte;sen|sent|sene;tidlig|tidlig|tidlige;travel|travelt|travle;"+
+"sliten|slitent|slitne;tung|tungt|tunge").split(";").map(function(s){return s.split("|");});
+const ADJ_FORM = {};
+ADJ_GROUPS.forEach(function(g,gi){ g.forEach(function(f,ti){ if(f && !(f in ADJ_FORM)) ADJ_FORM[f]=[gi,ti]; }); });
+
+const DEG_GROUPS = ("stor|større|størst;liten|mindre|minst;god|bedre|best;gammel|eldre|eldst;ung|yngre|yngst;"+
+"lang|lengre|lengst;mange|flere|flest;mye|mer|mest;ny|nyere|nyest;varm|varmere|varmest;kald|kaldere|kaldest;"+
+"fin|finere|finest;vakker|vakrere|vakrest;dyr|dyrere|dyrest;billig|billigere|billigst;rask|raskere|raskest;"+
+"sterk|sterkere|sterkest;søt|søtere|søtest;høy|høyere|høyest;viktig|viktigere|viktigst;enkel|enklere|enklest;"+
+"vanskelig|vanskeligere|vanskeligst;sen|senere|senest;tidlig|tidligere|tidligst;ofte|oftere|oftest"
+).split(";").map(function(s){return s.split("|");});
+const DEG_FORM = {};
+DEG_GROUPS.forEach(function(g,gi){ g.forEach(function(f,ti){ if(f && !(f in DEG_FORM)) DEG_FORM[f]=[gi,ti]; }); });
+
+const NOUN_IRR = {
+  "bok":{d:"boka",p:"bøker",pd:"bøkene"}, "barn":{d:"barnet",p:"barn",pd:"barna"},
+  "mann":{d:"mannen",p:"menn",pd:"mennene"}, "nøkkel":{d:"nøkkelen",p:"nøkler",pd:"nøklene"},
+  "hus":{d:"huset",p:"hus",pd:"husene"}, "far":{d:"faren",p:"fedre",pd:"fedrene"},
+  "mor":{d:"mora",p:"mødre",pd:"mødrene"}, "søster":{d:"søstera",p:"søstre",pd:"søstrene"},
+  "bror":{d:"broren",p:"brødre",pd:"brødrene"}, "natt":{d:"natta",p:"netter",pd:"nettene"},
+  "ord":{d:"ordet",p:"ord",pd:"ordene"}, "år":{d:"året",p:"år",pd:"årene"},
+  "fjell":{d:"fjellet",p:"fjell",pd:"fjellene"}, "spørsmål":{d:"spørsmålet",p:"spørsmål",pd:"spørsmålene"},
+  "svar":{d:"svaret",p:"svar",pd:"svarene"}, "rom":{d:"rommet",p:"rom",pd:"rommene"}
+};
+const ART = new Set(["en","ei","et"]);
+const QWORD = new Set(["hva","hvem","hvor","når","hvorfor","hvordan","hvilken","hvilket","hvilke"]);
+const PRON_CASE = {jeg:"meg",du:"deg",han:"ham",hun:"henne",vi:"oss",de:"dem",
+                   meg:"jeg",deg:"du",ham:"han",henne:"hun",oss:"vi",dem:"de"};
+const SUBJ_PRON = new Set(["jeg","du","han","hun","vi","dere","de"]);
+const SUBJ_ALL = new Set(["jeg","du","han","hun","vi","dere","de","det","den","man"]);
+const POSS = new Set(["min","mi","mitt","mine","din","di","ditt","dine","hans","hennes","vår","vårt","våre","deres","sin","si","sitt","sine"]);
+const TIMEW = new Set(["går","morgen","kveld","dag","natt","fjor","sommer","vinter","høst","vår"]);
+
+function isDefOf(ind,def){
+  if(NOUN_IRR[ind] && NOUN_IRR[ind].d===def) return true;
+  if(def===ind+"en"||def===ind+"et"||def===ind+"a") return true;
+  if(ind.slice(-1)==="e" && (def===ind+"n"||def===ind+"t"||def===ind.slice(0,-1)+"a")) return true;
+  return false;
+}
+function isPlurOf(sg,pl){
+  if(NOUN_IRR[sg] && NOUN_IRR[sg].p===pl && pl!==sg) return true;
+  return pl===sg+"er" || (sg.slice(-1)==="e" && pl===sg+"r");
+}
+function isPlurDefOf(sg,pd){
+  if(NOUN_IRR[sg] && NOUN_IRR[sg].pd===pd) return true;
+  return pd===sg+"ene" || (sg.slice(-1)==="e" && pd===sg+"ne");
+}
+function nounRel(uw,cw){
+  if(isDefOf(uw,cw)) return "noun_def";
+  if(isDefOf(cw,uw)) return "noun_indef";
+  if(isPlurOf(uw,cw)) return "noun_plur";
+  if(isPlurOf(cw,uw)) return "noun_sing";
+  if(isPlurDefOf(uw,cw)) return "noun_plurdef";
+  if(isPlurDefOf(cw,uw)) return "noun_plurindef";
+  return null;
+}
+function lev(a,b){
+  const m=a.length,n=b.length; if(Math.abs(m-n)>2) return 9;
+  let prev=Array.from({length:n+1},function(_,j){return j;});
+  for(let i=1;i<=m;i++){ const cur=[i];
+    for(let j=1;j<=n;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur; }
+  return prev[n];
+}
+function deAccent(s){ return s.replace(/æ/g,"a").replace(/ø/g,"o").replace(/å/g,"a"); }
+function pairRelated(a,b){
+  if(PRON_CASE[a]===b) return true;
+  const va=VERB_FORM[a],vb=VERB_FORM[b]; if(va&&vb&&va[0]===vb[0]) return true;
+  if(nounRel(a,b)) return true;
+  const aa=ADJ_FORM[a],ab=ADJ_FORM[b]; if(aa&&ab&&aa[0]===ab[0]) return true;
+  const da=DEG_FORM[a],db=DEG_FORM[b]; if(da&&db&&da[0]===db[0]) return true;
+  if(ART.has(a)&&ART.has(b)) return true;
+  if(lev(a,b)<=1 && Math.max(a.length,b.length)>3) return true;
+  return false;
+}
+
+function alignOps(a,b){
+  const m=a.length,n=b.length;
+  const cost=function(i,j){ return a[i]===b[j] ? 0 : (pairRelated(a[i],b[j]) ? 0.55 : 1.05); };
+  const d=[]; for(let i=0;i<=m;i++){ d.push(new Array(n+1).fill(0)); d[i][0]=i; }
+  for(let j=0;j<=n;j++) d[0][j]=j;
+  for(let i=1;i<=m;i++) for(let j=1;j<=n;j++)
+    d[i][j]=Math.min(d[i-1][j]+1, d[i][j-1]+1, d[i-1][j-1]+cost(i-1,j-1));
+  const ops=[]; let i=m,j=n;
+  while(i>0||j>0){
+    if(i>0&&j>0&&Math.abs(d[i][j]-(d[i-1][j-1]+cost(i-1,j-1)))<1e-9){
+      ops.unshift(a[i-1]===b[j-1] ? {op:"eq",u:a[i-1],c:b[j-1]} : {op:"sub",u:a[i-1],c:b[j-1]});
+      i--; j--; continue;
+    }
+    if(i>0&&Math.abs(d[i][j]-(d[i-1][j]+1))<1e-9){ ops.unshift({op:"extra",u:a[i-1]}); i--; continue; }
+    ops.unshift({op:"miss",c:b[j-1]}); j--;
+  }
+  return ops;
+}
+
+function finiteIdx(w){
+  for(let i=0;i<w.length;i++){
+    if(i>0 && w[i-1]==="i" && (w[i]==="går"||w[i]==="fjor")) continue; // «i går» — не глагол
+    if(FINITE.has(w[i])) return i;
+    const v=VERB_FORM[w[i]];
+    if(v&&(v[1]===1||v[1]===2)) return i;
+  }
+  return -1;
+}
+function tokz(s){ return normalize(s||"").split(/\s+/).filter(Boolean); }
+function q(w){ return "«<code>"+w+"</code>»"; }
+
+// ─── тексты объяснений ────────────────────────────────
+const WHY = {
+ru:{
+ lbl:"<RL><b>Почему не так:</b> ",
+ t_v2:"Порядок слов · правило V2", t_ord:"Порядок слов", t_ikke:"Место «ikke»", t_err:"Разбор ошибки",
+ you:"Ты написал", need:"Нужно",
+ order_v2:function(f,v,s){return "Слова ты подобрал верно — ошибка в порядке. Предложение начинается с "+q(f)+", значит глагол "+q(v)+" обязан стоять вторым, а подлежащее "+q(s)+" уходит за глагол.";},
+ order_qw:function(f,v,s){return "После вопросительного слова "+q(f)+" сразу идёт глагол "+q(v)+", и только потом подлежащее "+q(s)+". Слова верные — сбит порядок.";},
+ order_q0:function(v,s){return "В вопросе без вопросительного слова глагол "+q(v)+" стоит первым, а подлежащее "+q(s)+" — сразу за ним.";},
+ order_ikke:function(p,n){return "Все слова верные — не на месте только «ikke». Здесь оно идёт "+(p?"после "+q(p):"в начале")+(n?" и перед "+q(n):", в самом конце")+".";},
+ order_svo:function(s0,v){return "В обычном утверждении порядок такой: подлежащее "+q(s0)+" → глагол "+q(v)+" → всё остальное. Глагол стоит вторым, и ничего между подлежащим и глаголом не вставляется.";},
+ order_poss:function(n,pw){return "В живом норвежском притяжательное слово ставится ПОСЛЕ существительного, а само существительное — в определённой форме: <code>"+n+" "+pw+"</code>. Вариант с притяжательным впереди тоже существует, но он официальный — в живой речи так почти не говорят.";},
+ fixed_ph:function(u,cw,ph){return "Здесь "+q(ph)+" — устойчивое выражение времени, слово внутри него не меняется: нужно "+q(cw)+", а не "+q(u)+".";},
+ order_gen:"Слова верные, но порядок другой.",
+ moved:function(w){return "Слово "+q(w)+" стоит не на своём месте.";},
+ verb_form:function(u,c,tu,tc,tail){return "Глагол выбран верно, но форма не та: "+q(u)+" — это "+tu+", а здесь требуется "+tc+" — "+q(c)+". "+tail;},
+ vt:["инфинитив","настоящее время (presens)","прошедшее время (preteritum)","форма после har (perfektum)"],
+ vtail:["После skal / vil / kan / må / bør и после «å» глагол стоит в инфинитиве — без окончания -r.",
+        "В настоящем времени глагол получает -r и не меняется по лицам.",
+        "Прошедшее время (preteritum) — одна форма для всех лиц.",
+        "После «har» ставится причастие (perfektum)."],
+ verb_other:function(u,c){return "Здесь другой глагол: нужно "+q(c)+", а не "+q(u)+".";},
+ noun_def:function(u,c){return q(u)+" — неопределённая форма. Речь о конкретном, уже известном предмете, поэтому определённость выражается окончанием: "+q(c)+".";},
+ noun_indef:function(u,c){return q(u)+" — определённая форма («тот самый»). Здесь предмет не конкретный, нужна неопределённая форма "+q(c)+" — обычно с en / ei / et.";},
+ noun_plur:function(u,c){return "Нужно множественное число "+q(c)+", а не единственное "+q(u)+".";},
+ noun_sing:function(u,c){return "Нужно единственное число "+q(c)+", а не множественное "+q(u)+".";},
+ noun_plurdef:function(u,c){return "Нужна определённая форма множественного числа "+q(c)+".";},
+ noun_plurindef:function(u,c){return "Нужна неопределённая форма множественного числа "+q(c)+".";},
+ pron_obj:function(u,c){return q(u)+" — форма подлежащего (кто делает). Здесь местоимение — дополнение, действие направлено на него, поэтому нужна объектная форма "+q(c)+". Пары: jeg→meg, du→deg, han→ham, hun→henne, vi→oss, de→dem.";},
+ pron_subj:function(u,c){return q(u)+" — объектная форма. Здесь местоимение — подлежащее, тот, кто выполняет действие, поэтому нужно "+q(c)+".";},
+ adj_form:function(u,c){return "Прилагательное должно согласоваться с существительным: "+q(c)+", а не "+q(u)+". en bil → stor bil, et hus → stort hus, мн. число и определённая форма → store.";},
+ adj_degree:function(u,c){return "Нужна другая степень сравнения: "+q(c)+", а не "+q(u)+".";},
+ art_gender:function(u,c){return "Артикль не тот: "+q(c)+", а не "+q(u)+". en — общий род, ei — женский, et — средний.";},
+ miss_art:function(c){return "Пропущен артикль "+q(c)+": перед существительным в неопределённой форме нужен en / ei / et.";},
+ extra_art:function(u){return "Артикль "+q(u)+" здесь лишний — существительное уже стоит в определённой форме.";},
+ miss_ikke:"Пропущено отрицание «ikke» — фраза получилась утвердительной.",
+ extra_ikke:"«ikke» здесь лишнее — фраза утвердительная.",
+ dup_ikke:"«ikke» стоит дважды — отрицание в предложении одно.",
+ toomany:"Расхождений слишком много — фраза собрана иначе. Сравни свой вариант с правильным по словам и собери заново.",
+ miss_skal:"Пропущен «skal». Будущее время строится как skal + инфинитив: <code>skal jobbe</code>.",
+ miss_har:"Пропущен «har». Перфект строится как har + причастие: <code>har jobbet</code>.",
+ miss_aux:function(c){return "Пропущен "+q(c)+" — без него время построено не до конца.";},
+ extra_aux:function(u){return "Слово "+q(u)+" здесь лишнее.";},
+ miss_aa:"Пропущена частица «å» перед инфинитивом.",
+ extra_aa:"«å» здесь не нужна: после skal / vil / kan / må инфинитив идёт без «å».",
+ typo:function(u,c){return "Опечатка: "+q(u)+" → "+q(c)+".";},
+ letter:function(u,c){return "Потерялась норвежская буква: "+q(u)+" → "+q(c)+". æ, ø и å — отдельные буквы, а не варианты a и o.";},
+ word:function(u,c){return "Не то слово: нужно "+q(c)+", а не "+q(u)+".";},
+ miss_word:function(c){return "Пропущено слово "+q(c)+".";},
+ extra_word:function(u){return "Лишнее слово "+q(u)+".";},
+ many:"Ошибок несколько:"
+},
+en:{
+ lbl:"<RL><b>Why it's wrong:</b> ",
+ t_v2:"Word order · the V2 rule", t_ord:"Word order", t_ikke:"Position of «ikke»", t_err:"What went wrong",
+ you:"You wrote", need:"Correct",
+ order_v2:function(f,v,s){return "You picked the right words — the order is off. The sentence starts with "+q(f)+", so the verb "+q(v)+" must come second and the subject "+q(s)+" moves after it.";},
+ order_qw:function(f,v,s){return "After the question word "+q(f)+" comes the verb "+q(v)+" straight away, and only then the subject "+q(s)+". The words are right, the order is not.";},
+ order_q0:function(v,s){return "In a yes/no question the verb "+q(v)+" comes first and the subject "+q(s)+" right after it.";},
+ order_ikke:function(p,n){return "All the words are right — only «ikke» is misplaced. Here it goes "+(p?"after "+q(p):"first")+(n?" and before "+q(n):", at the very end")+".";},
+ order_svo:function(s0,v){return "A plain statement runs: subject "+q(s0)+" → verb "+q(v)+" → everything else. The verb comes second and nothing squeezes in between the subject and the verb.";},
+ order_poss:function(n,pw){return "In everyday Norwegian the possessive goes AFTER the noun, and the noun takes the definite ending: <code>"+n+" "+pw+"</code>. Putting the possessive first is also possible, but it is the formal register — rare in everyday speech.";},
+ fixed_ph:function(u,cw,ph){return "Here "+q(ph)+" is a fixed time expression — the word inside it does not change: you need "+q(cw)+", not "+q(u)+".";},
+ order_gen:"The words are right, but the order is different.",
+ moved:function(w){return "The word "+q(w)+" is in the wrong place.";},
+ verb_form:function(u,c,tu,tc,tail){return "Right verb, wrong form: "+q(u)+" is the "+tu+", but here you need the "+tc+" — "+q(c)+". "+tail;},
+ vt:["infinitive","present tense (presens)","past tense (preteritum)","form after har (perfektum)"],
+ vtail:["After skal / vil / kan / må / bør and after «å» the verb stays in the infinitive — no -r ending.",
+        "In the present tense the verb takes -r and never changes by person.",
+        "The past tense (preteritum) has one form for all persons.",
+        "After «har» comes the participle (perfektum)."],
+ verb_other:function(u,c){return "This is a different verb: you need "+q(c)+", not "+q(u)+".";},
+ noun_def:function(u,c){return q(u)+" is the indefinite form. The thing here is specific and already known, so definiteness goes into the ending: "+q(c)+".";},
+ noun_indef:function(u,c){return q(u)+" is the definite form ('that particular one'). Here the thing is not specific, so you need the indefinite "+q(c)+" — usually with en / ei / et.";},
+ noun_plur:function(u,c){return "You need the plural "+q(c)+", not the singular "+q(u)+".";},
+ noun_sing:function(u,c){return "You need the singular "+q(c)+", not the plural "+q(u)+".";},
+ noun_plurdef:function(u,c){return "You need the definite plural "+q(c)+".";},
+ noun_plurindef:function(u,c){return "You need the indefinite plural "+q(c)+".";},
+ pron_obj:function(u,c){return q(u)+" is the subject form (the one doing it). Here the pronoun is the object — the action is aimed at it — so you need the object form "+q(c)+". Pairs: jeg→meg, du→deg, han→ham, hun→henne, vi→oss, de→dem.";},
+ pron_subj:function(u,c){return q(u)+" is the object form. Here the pronoun is the subject, the one performing the action, so you need "+q(c)+".";},
+ adj_form:function(u,c){return "The adjective has to agree with the noun: "+q(c)+", not "+q(u)+". en bil → stor bil, et hus → stort hus, plural and definite → store.";},
+ adj_degree:function(u,c){return "A different degree of comparison is needed: "+q(c)+", not "+q(u)+".";},
+ art_gender:function(u,c){return "Wrong article: "+q(c)+", not "+q(u)+". en is common gender, ei feminine, et neuter.";},
+ miss_art:function(c){return "The article "+q(c)+" is missing: an indefinite noun needs en / ei / et in front of it.";},
+ extra_art:function(u){return "The article "+q(u)+" is redundant here — the noun already carries the definite ending.";},
+ miss_ikke:"The negation «ikke» is missing — the sentence came out affirmative.",
+ extra_ikke:"«ikke» does not belong here — the sentence is affirmative.",
+ dup_ikke:"«ikke» appears twice — a sentence carries only one negation.",
+ toomany:"Too much is different — the sentence is built another way. Compare your version with the correct one word by word and rebuild it.",
+ miss_skal:"«skal» is missing. The future is skal + infinitive: <code>skal jobbe</code>.",
+ miss_har:"«har» is missing. The perfect is har + participle: <code>har jobbet</code>.",
+ miss_aux:function(c){return q(c)+" is missing — the tense is not fully built without it.";},
+ extra_aux:function(u){return "The word "+q(u)+" does not belong here.";},
+ miss_aa:"The infinitive marker «å» is missing.",
+ extra_aa:"«å» is not needed: after skal / vil / kan / må the infinitive comes bare.",
+ typo:function(u,c){return "Typo: "+q(u)+" → "+q(c)+".";},
+ letter:function(u,c){return "A Norwegian letter got lost: "+q(u)+" → "+q(c)+". æ, ø and å are separate letters, not variants of a and o.";},
+ word:function(u,c){return "Wrong word: you need "+q(c)+", not "+q(u)+".";},
+ miss_word:function(c){return "The word "+q(c)+" is missing.";},
+ extra_word:function(u){return "The word "+q(u)+" is redundant.";},
+ many:"There is more than one slip:"
+}};
+function W(){ return (meta.lang && meta.lang!=="ru" && WHY[meta.lang]) ? WHY[meta.lang] : (meta.lang && meta.lang!=="ru" ? WHY.en : WHY.ru); }
+
+function classifyPair(uw,cw,cArr,j){
+  const L=W();
+  if(cArr && j>0 && cArr[j-1]==="i" && TIMEW.has(cw))
+    return {order:false, text:L.fixed_ph(uw,cw,"i "+cw)};
+  if(PRON_CASE[uw]===cw) return {order:false, text:(SUBJ_PRON.has(cw)?L.pron_subj:L.pron_obj)(uw,cw)};
+  const vu=VERB_FORM[uw],vc=VERB_FORM[cw];
+  if(vu&&vc){
+    if(vu[0]===vc[0]) return {order:false, text:L.verb_form(uw,cw,L.vt[vu[1]],L.vt[vc[1]],L.vtail[vc[1]])};
+    return {order:false, text:L.verb_other(uw,cw)};
+  }
+  const nr=nounRel(uw,cw);
+  if(nr) return {order:false, text:L[nr](uw,cw)};
+  const au=ADJ_FORM[uw],ac=ADJ_FORM[cw];
+  if(au&&ac&&au[0]===ac[0]) return {order:false, text:L.adj_form(uw,cw)};
+  const du=DEG_FORM[uw],dc=DEG_FORM[cw];
+  if(du&&dc&&du[0]===dc[0]) return {order:false, text:L.adj_degree(uw,cw)};
+  if(ART.has(uw)&&ART.has(cw)) return {order:false, text:L.art_gender(uw,cw)};
+  if(deAccent(uw)===deAccent(cw)) return {order:false, text:L.letter(uw,cw)};
+  if(lev(uw,cw)<=1 && Math.max(uw.length,cw.length)>3) return {order:false, text:L.typo(uw,cw)};
+  return {order:false, text:L.word(uw,cw)};
+}
+function classifyMiss(cw){
+  const L=W();
+  if(cw==="ikke") return {order:false, text:L.miss_ikke};
+  if(cw==="skal") return {order:false, text:L.miss_skal};
+  if(cw==="har") return {order:false, text:L.miss_har};
+  if(cw==="å")   return {order:false, text:L.miss_aa};
+  if(MODALS.has(cw)||FINITE.has(cw)) return {order:false, text:L.miss_aux(cw)};
+  if(ART.has(cw)) return {order:false, text:L.miss_art(cw)};
+  return {order:false, text:L.miss_word(cw)};
+}
+function classifyExtra(uw,c){
+  const L=W();
+  if(uw==="ikke") return {order:false, text:(c&&c.indexOf("ikke")>=0)?L.dup_ikke:L.extra_ikke};
+  if(uw==="å")    return {order:false, text:L.extra_aa};
+  if(MODALS.has(uw)||FINITE.has(uw)) return {order:false, text:L.extra_aux(uw)};
+  if(ART.has(uw)) return {order:false, text:L.extra_art(uw)};
+  return {order:false, text:L.extra_word(uw)};
+}
+
+function orderDiag(u,c){
+  const L=W();
+  const ui=u.indexOf("ikke"), ci=c.indexOf("ikke");
+  if(ui>=0&&ci>=0&&ui!==ci){
+    const nu=u.filter(function(w){return w!=="ikke";}).join(" ");
+    const nc=c.filter(function(w){return w!=="ikke";}).join(" ");
+    if(nu===nc) return {order:true, title:L.t_ikke, text:L.order_ikke(c[ci-1], c[ci+1])};
+  }
+  for(let i=0;i<c.length-1;i++){
+    if(POSS.has(c[i+1]) && !POSS.has(c[i])){
+      const pi=u.indexOf(c[i+1]);
+      if(pi>=0 && pi<u.length-1 && pairRelated(u[pi+1],c[i]))
+        return {order:true, title:L.t_ord, text:L.order_poss(c[i],c[i+1])};
+    }
+  }
+  const vc=finiteIdx(c), vu=finiteIdx(u);
+  if(vc>=1 && vu!==vc){
+    const front=c.slice(0,vc).join(" ");
+    if(c.length>vc+1 && SUBJ_ALL.has(c[vc+1])){
+      const txt = QWORD.has(c[0]) ? L.order_qw(front,c[vc],c[vc+1]) : L.order_v2(front,c[vc],c[vc+1]);
+      return {order:true, title:L.t_v2, text:txt, rule:true};
+    }
+    if(SUBJ_ALL.has(c[0])) return {order:true, title:L.t_ord, text:L.order_svo(c[0],c[vc]), rule:true};
+  }
+  if(vc===0&&vu!==0&&c.length>1) return {order:true, title:L.t_v2, text:L.order_q0(c[0],c[1]), rule:true};
+  return {order:true, title:L.t_ord, text:L.order_gen, rule:true};
+}
+
+// полное соответствие слово-в-слово: те же слова, но другой порядок и/или формы
+function bijection(u,c){
+  if(u.length!==c.length) return null;
+  const used=new Array(c.length).fill(false), pairs=[], left=[];
+  u.forEach(function(w,i){
+    let j=-1;
+    for(let k=0;k<c.length;k++) if(!used[k]&&c[k]===w){ j=k; break; }
+    if(j>=0){ used[j]=true; pairs.push([i,j]); } else left.push(i);
+  });
+  for(const i of left){
+    let j=-1;
+    for(let k=0;k<c.length;k++) if(!used[k]&&pairRelated(u[i],c[k])){ j=k; break; }
+    if(j<0) return null;
+    used[j]=true; pairs.push([i,j]);
+  }
+  return pairs.sort(function(a,b){ return a[0]-b[0]; });
+}
+function packItems(items,L){
+  if(items.length===1) return items[0].text;
+  if(items.length>3) return L.toomany;
+  return L.many+'<ul class="why-list">'+items.map(function(i){return "<li>"+i.text+"</li>";}).join("")+"</ul>";
+}
+
+function diagnose(userRaw, correctRaw){
+  const u=tokz(userRaw), c=tokz(correctRaw);
+  if(!u.length||!c.length||u.join(" ")===c.join(" ")) return null;
+  const L=W();
+
+  const pairs=bijection(u,c);
+  if(pairs){
+    let ident=true;
+    for(let k=1;k<pairs.length;k++) if(pairs[k][1]<pairs[k-1][1]) ident=false;
+    const notes=[];
+    pairs.forEach(function(p){ if(u[p[0]]!==c[p[1]]) notes.push(classifyPair(u[p[0]],c[p[1]],c,p[1])); });
+    if(!ident){
+      const d=orderDiag(u,c);
+      if(notes.length) d.text += '<div class="why-also">'+packItems(notes,L)+'</div>';
+      return d;
+    }
+    if(notes.length) return {order:false, title:L.t_err, text:packItems(notes,L)};
+  }
+
+  const ops=alignOps(u,c);
+  const missAt={}, extraAt={};
+  ops.forEach(function(o,i){
+    if(o.op==="miss"){ (missAt[o.c]=missAt[o.c]||[]).push(i); }
+    if(o.op==="extra"){ (extraAt[o.u]=extraAt[o.u]||[]).push(i); }
+  });
+  Object.keys(missAt).forEach(function(w){
+    if(!extraAt[w]) return;
+    const n=Math.min(missAt[w].length, extraAt[w].length);
+    for(let k=0;k<n;k++){ ops[missAt[w][k]].op="moved"; ops[extraAt[w][k]].op="drop"; }
+  });
+
+  const items=[]; let allOrder=true;
+  ops.forEach(function(o){
+    if(o.op==="eq"||o.op==="drop") return;
+    if(o.op==="moved"){ items.push({order:true, text:L.moved(o.c)}); return; }
+    let it;
+    if(o.op==="sub") it=classifyPair(o.u,o.c,c,c.indexOf(o.c));
+    else if(o.op==="miss") it=classifyMiss(o.c);
+    else it=classifyExtra(o.u,c);
+    items.push(it); allOrder=false;
+  });
+  if(!items.length) return null;
+
+  if(allOrder){
+    const d=orderDiag(u,c);
+    if(items.length===1) d.text=items[0].text;
+    return d;
+  }
+  return {order:false, title:L.t_err, text:packItems(items,L)};
+}
+
+function escHT(s){ return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+function icp(s){
+  return s.replace(/<(CH|KB|HD|SD|MC|RD|BK|FL|CL|GL|SH|GC|TR|OK|NO|BT|RL|ER|CK|CD|FR|TG)>/g,
+    function(m){ return ic(ICP[m]) + ' '; });
+}
+function ruleText(type){
+  return (meta.lang && meta.lang!=="ru" && TYPE_RULES_EN[type]) ? TYPE_RULES_EN[type] : (TYPE_RULES[type]||"");
+}
+function explainHTML(qn){
+  const d = state.feedback && state.feedback.diag;
+  if(!d) return getRuleHTML(qn.type);
+  const L=W();
+  let inner = icp(L.lbl) + d.text;
+  inner += '<div class="why-cmp"><span>'+L.you+':</span> <code>'+escHT(state.lastAnswer||"")+'</code><br>'+
+           '<span>'+L.need+':</span> <code>'+escHT(qn.no)+'</code></div>';
+  if(d.rule){
+    const r = ruleText(qn.type);
+    if(r) inner += '<div class="why-rule">' + t('rule') + r + '</div>';
+  }
+  return '<div class="rule-box">' + inner + '</div>';
+}
+
 
 // ─── UTILS ──────────────────────────────────────────
 const TIME_ADV = new Set(["i dag","i går","i morgen","nå","snart","senere","før","alltid","aldri","ofte","sjelden","allerede"]);
@@ -2031,18 +2449,17 @@ function render(){
         '<div class="pron-res" id="pron-res"></div></div>';
     } else if(feedback.type==="v2"){
       feedbackHTML = '<div class="feedback v2">' +
-        '<div class="fb-title">' + t('v2_t') + '</div>' +
-        '<div>' + feedback.message + '</div>' +
+        '<div class="fb-title">' + (feedback.diag ? icp('<BT>') + feedback.diag.title : t('v2_t')) + '</div>' +
         '<div class="diff-view"><span class="diff-label">' + t('corr') + '</span>' +
           feedback.diff.map(d=>'<span class="dw ' + d.status + '">' + d.word + '</span>').join(" ") + '</div>' +
-        (state.exam ? '' : getRuleHTML(current.type)) +
+        (state.exam ? '' : explainHTML(current)) +
         (state.exam ? '' : '<button class="listen-btn" style="margin-top:10px" onclick="aiExplain()">' + ic('star',14) + ' Почему?</button><div class="pron-res" id="ai-exp"></div>') +
       '</div>';
     } else {
       feedbackHTML = '<div class="feedback err">' +
         '<div class="fb-title">' + t('err_t') + '</div>' +
         '<div class="diff-view">' + feedback.diff.map(d=>'<span class="dw ' + d.status + '">' + d.word + '</span>').join(" ") + '</div>' +
-        (state.exam ? '' : getRuleHTML(current.type)) +
+        (state.exam ? '' : explainHTML(current)) +
         (state.exam ? '' : '<button class="listen-btn" style="margin-top:10px" onclick="aiExplain()">' + ic('star',14) + ' Почему?</button><div class="pron-res" id="ai-exp"></div>') +
       '</div>';
     }
@@ -2156,11 +2573,11 @@ function doSubmit(){
     if(state.review) removeMistake(correct);
   } else {
     if(!state.retryMode && !state.review) addMistake(state.questions[state.idx]);
-    const v2hint = checkV2(userAnswer);
     const diff = diffAnswers(userAnswer,correct);
-    state.feedback = v2hint
-      ? {type:"v2",message:v2hint,diff}
-      : {type:"err",diff};
+    const dg = diagnose(userAnswer,correct);
+    state.feedback = (dg && dg.order)
+      ? {type:"v2",diag:dg,diff}
+      : {type:"err",diag:dg,diff};
     buzz("err");
     setTimeout(()=>{
       const c = document.getElementById("q-card");
@@ -2771,7 +3188,7 @@ async function aiFillWord(){
     if(b) b.value = (r.ru || '') + (r.ex ? ' · ' + r.ex : '');
   }catch(e){
     if(b && !b.value) b.value = '';
-    alert('Не удалось получить подсказку — проверь интернет и попробуй ещё раз.');
+    alert('Ошибка ИИ:\n\n' + (e && e.message ? e.message : e));
   }
   if(btn){ btn.disabled = false; btn.innerHTML = ic('star',15) + ' Заполнить'; }
 }
@@ -2786,11 +3203,13 @@ async function aiExplain(){
     const txt = await aiAsk('Ученик изучает норвежский (bokmål), уровень A1–A2, родной язык русский. ' +
       'Задание: перевести «' + srcText(q) + '». Правильный ответ: «' + q.no + '». ' +
       'Ученик ответил: «' + (state.lastAnswer || '') + '». ' +
+      (state.feedback && state.feedback.diag ? 'Тренажёр определил ошибку так: «' + state.feedback.diag.text.replace(/<[^>]+>/g,'') + '» ' : '') +
       'Объясни по-русски в 2-3 коротких предложениях, в чём именно его ошибка и как запомнить правило. ' +
+      'Разбирай именно ту ошибку, которую он допустил, а не тему задания вообще. ' +
       'Без приветствий и без списков, просто объяснение.');
     box.innerHTML = txt.replace(/</g,'&lt;').replace(/\n/g,'<br>');
   }catch(e){
-    box.innerHTML = 'Не удалось получить объяснение — проверь интернет.';
+    box.innerHTML = 'Ошибка: ' + ((e && e.message ? e.message : e) + '').replace(/</g,'&lt;');
   }
 }
 
@@ -2817,7 +3236,7 @@ async function aiPractice(){
     screen = 'exercise';
     render();
   }catch(e){
-    alert('Не удалось получить подсказку — проверь интернет и попробуй ещё раз.');
+    alert('Ошибка ИИ:\n\n' + (e && e.message ? e.message : e));
     if(btn){ btn.disabled = false; btn.innerHTML = ic('star',16) + ' Тренировать фразами'; }
   }
 }
@@ -2834,10 +3253,10 @@ function openModal(html){
   document.body.appendChild(m);
   m.addEventListener('click', function(e){ if(e.target===m) closeModal(); });
 }
-function askText(title, ph, cb){
+function askText(title, ph, cb, val){
   openModal(
     '<div class="modal-title">' + title + '</div>' +
-    '<input class="text-input" id="modal-inp" type="text" placeholder="' + ph + '" onkeydown="if(event.key===\'Enter\')modalOk()">' +
+    '<input class="text-input" id="modal-inp" type="text" placeholder="' + ph + '" value="' + (val||'') + '" onkeydown="if(event.key===\'Enter\')modalOk()">' +
     '<div class="modal-row">' +
       '<button class="submit-btn retry-btn" onclick="closeModal()">Отмена</button>' +
       '<button class="submit-btn" onclick="modalOk()">Готово</button>' +
@@ -3036,6 +3455,16 @@ function myAddSet(){
     renderMyWords();
   });
 }
+function myRenameSet(id){
+  askText('Переименовать раздел', 'Название', function(n){
+    const name = (n||'').replace(/[<>&"]/g,'').trim().slice(0,30);
+    if(!name) return;
+    const s = mySets().find(function(x){ return x.id===id; });
+    if(s){ s.name = name; saveMeta(); }
+    renderMyWords();
+  }, setName(id));
+}
+
 function myDelSet(id){
   askConfirm('Удалить раздел «' + setName(id) + '»?', 'Слова не пропадут — они станут без раздела.', function(){
     meta.mysets = mySets().filter(function(s){ return s.id!==id; });
@@ -3155,11 +3584,12 @@ function renderMyWords(){
     '<div class="header">' +
       '<button class="back-btn" onclick="renderMyDecks()">← Разделы</button>' +
       '<div class="header-right">' +
-        (isSet ? '<button class="back-btn" onclick="myDelSet(\'' + myCur + '\')">' + ic('cross',15) + '</button>' : '') +
+        (isSet ? '<button class="back-btn" onclick="myRenameSet(\'' + myCur + '\')">' + ic('pencil',15) + '</button>' +
+                 '<button class="back-btn" onclick="myDelSet(\'' + myCur + '\')">' + ic('cross',15) + '</button>' : '') +
         '<div class="score-chip">' + ic('cards',14) + ' ' + list.length + '</div>' +
       '</div>' +
     '</div>' +
-    '<div class="detail-title">' + title + '</div>' +
+    '<div class="detail-title"' + (isSet ? ' onclick="myRenameSet(\'' + myCur + '\')" style="cursor:pointer"' : '') + '>' + title + (isSet ? '<span class="edit-hint">' + ic('pencil',13) + '</span>' : '') + '</div>' +
     '<div class="detail-sub">' + (due ? due + ' слов ждут повторения' : 'Все слова повторены — добавь новые') + '</div>' +
     '<div class="card" style="margin-top:1rem">' +
       '<input class="text-input" id="my-no" type="text" placeholder="Слово по-норвежски" style="margin-bottom:8px">' +
