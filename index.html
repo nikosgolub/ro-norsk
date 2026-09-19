@@ -88,6 +88,19 @@ button{touch-action:manipulation}
 .word-chip.pool:hover{border-color:var(--ink2)}
 .word-chip.selected{background:#fff;color:#000001}
 .word-pool{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:1.25rem}
+.word-chip[data-src]{touch-action:none}
+.word-chip.dragging{opacity:.22}
+.drag-ghost{position:fixed;left:0;top:0;z-index:100;pointer-events:none;margin:0;box-shadow:0 10px 28px rgba(0,0,0,.45);transition:none}
+.drop-caret{display:inline-block;width:3px;height:30px;border-radius:2px;background:var(--ink);opacity:.8;animation:caretBlink .9s ease-in-out infinite}
+@keyframes caretBlink{0%,100%{opacity:.85}50%{opacity:.3}}
+.builder-answer.drop-over{border-style:solid;border-color:var(--ink)}
+.word-chip.hint-bounce{animation:hintHop 1.1s ease-in-out infinite;position:relative;z-index:1}
+@keyframes hintHop{0%,55%,100%{transform:translateY(0)}20%{transform:translateY(-9px)}35%{transform:translateY(0)}45%{transform:translateY(-4px)}}
+.builder-answer.hint-more{animation:shake .4s ease}
+.hint-note{font-size:12.5px;color:var(--ink2);margin:-6px 0 4px 2px}
+.alt-note{font-size:13px;color:var(--ink2);line-height:1.6;margin:4px 0 10px}
+.alt-note code{background:none;border:none;padding:0;font-family:inherit;font-weight:600;color:var(--ink)}
+@media (prefers-reduced-motion:reduce){.word-chip.hint-bounce{animation:none;outline:2px solid var(--ink);outline-offset:2px}}
 .text-input{width:100%;padding:14px 16px;font-size:16px;font-family:inherit;background:var(--bg);border:2px solid var(--line);border-radius:14px;color:var(--ink);outline:none;transition:border-color .2s;margin-bottom:1rem;min-height:50px}
 .text-input:focus{border-color:var(--ink2)}
 .text-input.correct-state{border-color:var(--green);background:var(--green-light)}
@@ -1036,7 +1049,8 @@ function W(){ return (meta.lang && meta.lang!=="ru" && WHY[meta.lang]) ? WHY[met
 
 function classifyPair(uw,cw,cArr,j){
   const L=W();
-  if(cArr && j>0 && cArr[j-1]==="i" && TIMEW.has(cw))
+  // «i gå» вместо «i går» — это другая форма слова; «i morgn» — просто опечатка
+  if(cArr && j>0 && cArr[j-1]==="i" && TIMEW.has(cw) && (VERB_FORM[uw] || lev(uw,cw)>1))
     return {order:false, text:L.fixed_ph(uw,cw,"i "+cw)};
   if(PRON_CASE[uw]===cw) return {order:false, text:(SUBJ_PRON.has(cw)?L.pron_subj:L.pron_obj)(uw,cw)};
   const vu=VERB_FORM[uw],vc=VERB_FORM[cw];
@@ -1190,7 +1204,7 @@ function explainHTML(qn){
   const L=W();
   let inner = icp(L.lbl) + d.text;
   inner += '<div class="why-cmp"><span>'+L.you+':</span> <code>'+escHT(state.lastAnswer||"")+'</code><br>'+
-           '<span>'+L.need+':</span> <code>'+escHT(qn.no)+'</code></div>';
+           '<span>'+L.need+':</span> <code>'+escHT(state.target||qn.no)+'</code></div>';
   if(d.rule){
     const r = ruleText(qn.type);
     if(r) inner += '<div class="why-rule">' + t('rule') + r + '</div>';
@@ -1220,8 +1234,93 @@ function checkV2(user) {
   return null;
 }
 
+
+// ─── РАВНОЦЕННЫЕ ВАРИАНТЫ ПОРЯДКА СЛОВ ────────────────
+// «I morgen skal hun se deg» = «Hun skal se deg i morgen»: время можно поставить в начало (V2) или в конец.
+const TIME_EXPR = (function(){
+  const L = ['nå','snart','senere','i dag tidlig','i morgen tidlig','ved middagstid',
+    'neste uke','neste år','neste måned','forrige uke','forrige år','denne uka','denne uken',
+    'hver dag','hver morgen','hver kveld','hver uke','om en time','om to dager','om en uke','om et år'];
+  ['går','dag','morgen','kveld','natt','morges','fjor','år','sommer','vinter','høst','vår','helgen','helga',
+   'ettermiddag','overmorgen','forgårs','januar','februar','mars','april','mai','juni','juli','august',
+   'september','oktober','november','desember'].forEach(function(x){ L.push('i '+x); });
+  ['mandag','tirsdag','onsdag','torsdag','fredag','lørdag','søndag'].forEach(function(x){ L.push('på '+x); L.push('på '+x+'er'); });
+  ['sommeren','vinteren','høsten','våren','morgenen','kvelden','natta','natten','dagen','helgene'].forEach(function(x){ L.push('om '+x); });
+  return L.map(function(x){ return x.split(' '); }).sort(function(a,b){ return b.length-a.length; });
+})();
+function timeAt(w, from){                 // длина выражения времени, начинающегося с позиции from
+  for(const t of TIME_EXPR){
+    let ok = from + t.length <= w.length;
+    for(let k=0; ok && k<t.length; k++) if(w[from+k] !== t[k]) ok = false;
+    if(ok) return t.length;
+  }
+  return 0;
+}
+function isFiniteTok(w, i){
+  if(i>0 && w[i-1]==='i' && (w[i]==='går'||w[i]==='fjor')) return false;
+  if(FINITE.has(w[i])) return true;
+  const v = VERB_FORM[w[i]]; return !!(v && (v[1]===1 || v[1]===2));
+}
+function onlyFiniteAt(w, idx, skipFrom, skipLen){ // в предложении ровно один спрягаемый глагол
+  for(let i=0;i<w.length;i++){
+    if(i===idx || (i>=skipFrom && i<skipFrom+skipLen)) continue;
+    if(isFiniteTok(w,i)) return false;
+  }
+  return true;
+}
+function capFirst(a){
+  if(!a.length) return a;
+  const b = a.slice();
+  b[0] = b[0].charAt(0).toUpperCase() + b[0].slice(1);
+  return b;
+}
+function altForms(no){
+  if(/\?/.test(no)) return [];                            // вопросы не трогаем
+  const trail = (no.match(/[.!]+\s*$/)||[''])[0];
+  const orig = no.replace(/[.!,]+/g,'').trim().split(/\s+/);
+  const w = orig.map(function(x){ return x.toLowerCase(); });
+  const keep = orig.map(function(x,i){ return PROPER.has(x) ? x : w[i]; });
+  const out = [];
+  // 1) время впереди + V2  →  подлежащее, глагол … время
+  const tl = timeAt(w, 0);
+  if(tl && w.length > tl+2 && isFiniteTok(w, tl) && SUBJ_ALL.has(w[tl+1]) && onlyFiniteAt(w, tl, 0, tl)){
+    const T = keep.slice(0,tl), V = keep[tl], S = keep[tl+1], R = keep.slice(tl+2);
+    out.push(capFirst([S,V].concat(R,T)).join(' ') + trail);
+  }
+  // 2) подлежащее, глагол … время в конце  →  время, глагол, подлежащее …
+  if(SUBJ_ALL.has(w[0]) && w.length >= 4 && isFiniteTok(w, 1)){
+    for(let k=2; k<w.length; k++){
+      const n = timeAt(w, k);
+      if(n && k+n === w.length && onlyFiniteAt(w, 1, k, n)){
+        const T = keep.slice(k), V = keep[1], S = keep[0], R = keep.slice(2,k);
+        if(R.length || true) out.push(capFirst(T.concat([V,S],R)).join(' ') + trail);
+        break;
+      }
+    }
+  }
+  return out.filter(function(x){ return normalize(x) !== normalize(no); });
+}
+function acceptedForms(no){ return [no].concat(altForms(no)); }
+// какой из допустимых вариантов ближе всего к ответу — с ним и сравниваем при ошибке
+function closestForm(user, no){
+  const forms = acceptedForms(no);
+  if(forms.length === 1) return no;
+  const u = normalize(user||'').split(/\s+/).filter(Boolean);
+  let best = no, bs = -1;
+  forms.forEach(function(f, i){
+    const c = normalize(f).split(/\s+/).filter(Boolean);
+    let pre = 0; while(pre < u.length && pre < c.length && u[pre]===c[pre]) pre++;
+    const score = buildLCS(u, c).length * 100 + pre * 10 - i;     // при равенстве — канонический
+    if(score > bs){ bs = score; best = f; }
+  });
+  return best;
+}
+
 function normalize(s){ return s.trim().toLowerCase().replace(/[?!,.]/g,"").replace(/\s+/g," ").trim(); }
-function isCorrect(u,c){ return normalize(u)===normalize(c); }
+function isCorrect(u,c){
+  const n = normalize(u);
+  return acceptedForms(c).some(function(f){ return normalize(f)===n; });
+}
 
 function buildLCS(a,b){
   const m=a.length,n=b.length,dp=Array.from({length:m+1},()=>Array(n+1).fill(0));
@@ -2603,7 +2702,7 @@ function render(){
     return;
   }
 
-  const hasContent = mode==="builder" ? selected.length>0 : textVal.trim().length>0;
+  const hasContent = mode!=="text" ? selected.length>0 : textVal.trim().length>0;
   let inputCls = "";
   if(phase==="revealed") inputCls = feedback&&feedback.type==="ok" ? "correct-state" : "wrong-state";
   else if(hasContent) inputCls = "has-content";
@@ -2612,6 +2711,11 @@ function render(){
   if(feedback){
     if(feedback.type==="ok"){
       feedbackHTML = '<div class="feedback ok"><div class="fb-title">' + t('ok_t') + '</div>' +
+        (feedback.alt
+          ? '<div class="alt-note">' + (feedback.v2
+              ? 'Твой порядок слов тоже верный. А в этом задании тренируем V2 — время впереди, глагол вторым: <code>' + escHT(feedback.canon) + '</code>'
+              : 'Твой порядок слов тоже верный. Ещё вариант: <code>' + escHT(feedback.canon) + '</code>') + '</div>'
+          : '') +
         '<button class="listen-btn" onclick="speak(state.questions[state.idx].no)">' + t('listen') + '</button>' +
         (SR ? '<button class="listen-btn" id="mic-btn" style="margin-left:8px" onclick="pronounce()">' + t('mic') + '</button>' : '') +
         '<div class="pron-res" id="pron-res"></div></div>';
@@ -2633,16 +2737,19 @@ function render(){
     }
   }
 
+  const hintOn = phase==="answering" && state.hintAt!==undefined && state.hintAt!==null;
   const builderHTML =
     '<div class="pool-label">' + t('your') + '</div>' +
-    '<div class="builder-answer ' + inputCls + '" id="builder-ans">' +
+    '<div class="builder-answer ' + inputCls + (hintOn && state.hintAt<0 ? ' hint-more' : '') + '" id="builder-ans">' +
       (selected.length===0
         ? '<span class="placeholder">' + t('tap_w') + '</span>'
-        : selected.map((w,i)=>'<span class="word-chip selected" onclick="removeWord(' + i + ')">' + w + '</span>').join("")) +
+        : selected.map((w,i)=>'<span class="word-chip selected' + (hintOn && state.hintAt===i ? ' hint-bounce' : '') +
+            '" data-src="ans" data-i="' + i + '" onclick="removeWord(' + i + ')">' + w + '</span>').join("")) +
     '</div>' +
+    (hintOn ? '<div class="hint-note">' + (state.hintAt<0 ? 'Пока всё верно — но не хватает слов' : 'Ошибка начинается с прыгающего слова') + '</div>' : '') +
     '<div class="pool-label" style="margin-top:1rem">' + t('pool') + '</div>' +
-    '<div class="word-pool">' +
-      pool.map((w,i)=>'<span class="word-chip pool" onclick="addWord(' + i + ')">' + w + '</span>').join("") +
+    '<div class="word-pool" id="word-pool">' +
+      pool.map((w,i)=>'<span class="word-chip pool" data-src="pool" data-i="' + i + '" onclick="addWord(' + i + ')">' + w + '</span>').join("") +
     '</div>';
 
   const textHTML =
@@ -2702,6 +2809,7 @@ function addWord(i){
   const w=state.pool[i];
   state.selected=[...state.selected,w];
   state.pool=state.pool.filter((_,j)=>j!==i);
+  state.hintAt=null;
   render();
 }
 function removeWord(i){
@@ -2709,13 +2817,118 @@ function removeWord(i){
   const w=state.selected[i];
   state.pool=shuffle([...state.pool,w]);
   state.selected=state.selected.filter((_,j)=>j!==i);
+  state.hintAt=null;
   render();
+}
+
+// ─── ПЕРЕТАСКИВАНИЕ ЧИПОВ ─────────────────────────────
+let drag = null, dragEatClick = false;
+function dropIndex(box, x, y, skip){
+  const chips = [].slice.call(box.querySelectorAll('.word-chip')).filter(function(c){ return c!==skip; });
+  for(let k=0;k<chips.length;k++){
+    const r = chips[k].getBoundingClientRect();
+    if(y < r.top) return k;
+    if(y <= r.bottom && x < r.left + r.width/2) return k;
+  }
+  return chips.length;
+}
+function overEl(el, x, y, pad){
+  if(!el) return false;
+  const r = el.getBoundingClientRect(); pad = pad||0;
+  return x >= r.left-pad && x <= r.right+pad && y >= r.top-pad && y <= r.bottom+pad;
+}
+function dragClearMarks(){
+  const c = document.querySelector('.drop-caret'); if(c) c.remove();
+  const b = document.getElementById('builder-ans'); if(b) b.classList.remove('drop-over');
+}
+function dragStart(e){
+  const r = drag.chip.getBoundingClientRect();
+  drag.dx = e.clientX - r.left; drag.dy = e.clientY - r.top;
+  const g = drag.chip.cloneNode(true);
+  g.className = drag.chip.className.replace('hint-bounce','') + ' drag-ghost';
+  g.removeAttribute('onclick');
+  g.style.width = r.width + 'px';
+  document.body.appendChild(g);
+  drag.ghost = g;
+  drag.chip.classList.add('dragging');
+  drag.on = true;
+  buzz('ok');
+}
+function dragMove(e){
+  // слово висит над пальцем, чтобы было видно, куда оно ляжет
+  drag.ghost.style.transform = 'translate(' + (e.clientX - drag.dx) + 'px,' + (e.clientY - drag.dy - 34) + 'px) scale(1.06)';
+  const box = document.getElementById('builder-ans');
+  dragClearMarks();
+  if(overEl(box, e.clientX, e.clientY, 18)){
+    box.classList.add('drop-over');
+    const ph = box.querySelector('.placeholder'); if(ph) ph.style.visibility = 'hidden';
+    const skip = drag.src==='ans' ? drag.chip : null;
+    const k = dropIndex(box, e.clientX, e.clientY, skip);
+    const chips = [].slice.call(box.querySelectorAll('.word-chip')).filter(function(c){ return c!==skip; });
+    const caret = document.createElement('span'); caret.className = 'drop-caret';
+    if(k < chips.length) box.insertBefore(caret, chips[k]); else box.appendChild(caret);
+    drag.to = k;
+  } else {
+    const ph = box && box.querySelector('.placeholder'); if(ph) ph.style.visibility = '';
+    drag.to = null;
+  }
+}
+function dragEnd(e){
+  if(!drag) return;
+  const d = drag; drag = null;
+  if(!d.on) return;                       // был обычный тап — пусть сработает onclick
+  dragEatClick = true;
+  setTimeout(function(){ dragEatClick = false; }, 60);
+  if(d.ghost) d.ghost.remove();
+  dragClearMarks();
+  if(state.phase!=="answering"){ render(); return; }
+  const sel = state.selected.slice(), pool = state.pool.slice();
+  if(d.to!==null && d.to!==undefined){
+    let w;
+    if(d.src==='pool'){ w = pool[d.i]; pool.splice(d.i,1); }
+    else { w = sel[d.i]; sel.splice(d.i,1); }
+    sel.splice(Math.min(d.to, sel.length), 0, w);
+  } else if(d.src==='ans'){
+    pool.push(sel[d.i]); sel.splice(d.i,1);   // вытащил из ответа — слово вернулось в набор
+  } else { render(); return; }
+  state.selected = sel; state.pool = pool; state.hintAt = null;
+  render();
+}
+if(typeof document!=='undefined' && document.addEventListener){
+  document.addEventListener('pointerdown', function(e){
+    if(state.phase!=="answering" || (e.button!==undefined && e.button!==0)) return;
+    const chip = e.target && e.target.closest ? e.target.closest('.word-chip[data-src]') : null;
+    if(!chip) return;
+    drag = { chip:chip, src:chip.getAttribute('data-src'), i:+chip.getAttribute('data-i'),
+             x0:e.clientX, y0:e.clientY, pid:e.pointerId, on:false, to:null };
+  });
+  document.addEventListener('pointermove', function(e){
+    if(!drag || e.pointerId!==drag.pid) return;
+    if(!drag.on){
+      const dx = e.clientX-drag.x0, dy = e.clientY-drag.y0;
+      if(dx*dx + dy*dy < 64) return;      // до 8px — это ещё тап
+      dragStart(e);
+    }
+    e.preventDefault();
+    dragMove(e);
+  }, {passive:false});
+  document.addEventListener('pointerup', dragEnd);
+  document.addEventListener('pointercancel', function(){
+    if(!drag) return;
+    const d = drag; drag = null;
+    if(d.ghost) d.ghost.remove();
+    dragClearMarks();
+    if(d.on) render();
+  });
+  document.addEventListener('click', function(e){
+    if(dragEatClick){ e.stopPropagation(); e.preventDefault(); }
+  }, true);
 }
 function onTextInput(v){ state.textVal=v; }
 
 function switchMode(m){
   state.mode=m;state.phase="answering";state.feedback=null;
-  state.selected=[];state.textVal="";
+  state.selected=[];state.textVal="";state.hintAt=null;
   state.retryUsed=false;state.retryMode=false;
   state.pool=makePool(state.questions[state.idx].no);
   render();
@@ -2733,16 +2946,37 @@ function doSubmit(){
   state.lastAnswer = userAnswer;
   const correct = state.questions[state.idx].no;
 
+  // одна бесплатная подсказка на фразу: первое неверное слово подпрыгивает, ошибка не засчитывается
+  if(!isCorrect(userAnswer,correct) && state.mode!=="text" && !state.exam && !state.retryMode &&
+     !(state.hintQs===state.questions && state.hintIdx===state.idx)){
+    let at = -1, far = -1;
+    acceptedForms(correct).forEach(function(f){
+      const ct = normalize(f).split(/\s+/).filter(Boolean);
+      let a = -1;
+      for(let k=0;k<state.selected.length;k++){ if(normalize(state.selected[k]) !== ct[k]){ a = k; break; } }
+      const reach = a < 0 ? 1e9 : a;              // вариант, с которым ответ совпадает дольше всего
+      if(reach > far){ far = reach; at = a; }
+    });
+    state.hintQs = state.questions; state.hintIdx = state.idx;
+    state.hintAt = at;
+    buzz('err');
+    render();
+    return;
+  }
+
   if(isCorrect(userAnswer,correct)){
     if(!state.retryMode){ state.score++; }
     state.correctCount += state.retryMode ? 0 : 1;
-    state.feedback={type:"ok"};
+    const alt = normalize(userAnswer) !== normalize(correct);
+    state.feedback={type:"ok", alt:alt, canon:correct, v2:alt && timeAt(normalize(correct).split(' '),0)>0};
     buzz("ok");
     if(state.review) removeMistake(correct);
   } else {
     if(!state.retryMode && !state.review) addMistake(state.questions[state.idx]);
-    const diff = diffAnswers(userAnswer,correct);
-    const dg = diagnose(userAnswer,correct);
+    const target = closestForm(userAnswer, correct);
+    state.target = target;
+    const diff = diffAnswers(userAnswer,target);
+    const dg = diagnose(userAnswer,target);
     state.feedback = (dg && dg.order)
       ? {type:"v2",diag:dg,diff}
       : {type:"err",diag:dg,diff};
@@ -2763,6 +2997,7 @@ function doRetry(){
   state.feedback = null;
   state.selected = [];
   state.textVal = "";
+  state.hintAt = null;
   state.pool = makePool(state.questions[state.idx].no);
   render();
 }
@@ -2774,7 +3009,7 @@ function advance(){
   if(!state.review && !state.ai) touchLesson(currentLessonIdx);
   if(next>=state.questions.length){state.phase="done";render();return;}
   state.idx=next;state.phase="answering";state.feedback=null;
-  state.selected=[];state.textVal="";
+  state.selected=[];state.textVal="";state.hintAt=null;
   state.retryUsed=false;state.retryMode=false;
   state.pool=makePool(state.questions[next].no);
   render();
