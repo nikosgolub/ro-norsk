@@ -127,7 +127,7 @@ button{touch-action:manipulation}
 .submit-btn{width:100%;padding:15px;font-size:15px;font-weight:600;font-family:inherit;background:#fff;color:#000001;border:none;border-radius:16px;cursor:pointer;transition:opacity .2s,transform .1s;letter-spacing:.01em;min-height:50px}
 .submit-btn:hover{opacity:.88}
 .submit-btn:active{transform:scale(.98)}
-.submit-btn:disabled{opacity:.35;cursor:not-allowed}
+.submit-btn:disabled{--dim:.35;opacity:var(--dim);cursor:not-allowed}
 .submit-btn.next{background:var(--green);color:#04150b}
 .btn-row{display:flex;gap:10px}
 .btn-row .submit-btn{flex:1}
@@ -162,10 +162,10 @@ button{touch-action:manipulation}
    Движение тут не украшение, а подсказка о направлении: глубже по иерархии —
    экран приходит справа, назад — уходит влево, на том же уровне просто
    поднимается. Внутри экрана (нажал слово, проверил ответ) не анимируем. */
-@keyframes scFwd{from{opacity:0;transform:translate3d(18px,0,0)}to{opacity:1;transform:none}}
-@keyframes scBack{from{opacity:0;transform:translate3d(-18px,0,0)}to{opacity:1;transform:none}}
-@keyframes scRise{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:1;transform:none}}
-@keyframes scFade{from{opacity:0}to{opacity:1}}
+@keyframes scFwd{from{opacity:0;transform:translate3d(18px,0,0)}to{opacity:var(--dim,1);transform:none}}
+@keyframes scBack{from{opacity:0;transform:translate3d(-18px,0,0)}to{opacity:var(--dim,1);transform:none}}
+@keyframes scRise{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:var(--dim,1);transform:none}}
+@keyframes scFade{from{opacity:0}to{opacity:var(--dim,1)}}
 /* Класс висит на самих объектах, а не на контейнере: перерисовка внутри экрана
    создаёт элементы уже без него — и ничего заново не дёргается. */
 .sc-a{animation:scRise .36s cubic-bezier(.22,.78,.3,1) both;animation-delay:var(--sd,0s)}
@@ -316,7 +316,7 @@ body.light .cover img{opacity:1;filter:invert(1) hue-rotate(180deg) brightness(1
 .course-card{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:18px;padding:1.15rem 1.25rem;cursor:pointer;transition:border-color .2s,transform .1s}
 .course-card:hover{border-color:rgba(255,255,255,0.22)}
 .course-card:active{transform:scale(.99)}
-.course-card.soon{opacity:.45;cursor:default}
+.course-card.soon{--dim:.45;opacity:var(--dim);cursor:default}
 .course-top{display:flex;align-items:center;justify-content:space-between;gap:10px}
 .course-title{font-size:17px;font-weight:700;letter-spacing:-0.2px}
 .course-pct{font-size:13px;font-weight:600;color:var(--ink2);font-variant-numeric:tabular-nums}
@@ -324,7 +324,8 @@ body.light .cover img{opacity:1;filter:invert(1) hue-rotate(180deg) brightness(1
 .course-sub{font-size:13px;color:var(--ink3);margin-top:4px;line-height:1.4}
 .course-meta{font-size:12px;color:var(--ink3);margin-top:7px}
 /* compact right-side progress on lesson cards */
-.lesson-card.locked{opacity:.5}
+.lesson-card.locked{--dim:.5;opacity:var(--dim)}
+.block-card.locked{--dim:.5;opacity:var(--dim)}
 .lesson-card.locked .lesson-num{background:var(--bg);border-color:var(--line);color:var(--ink3)}
 .lesson-card.expired{border-color:rgba(251,191,36,0.38)}
 .lesson-card.expired .lesson-num{background:var(--amber-light);border-color:#6b5a10;color:var(--amber)}
@@ -379,7 +380,7 @@ body.light .yr-bar-bg{background:rgba(15,22,40,0.07)}
 }
 .submit-btn.retry-btn{background:var(--paper)!important;color:var(--ink)!important;border:1px solid var(--line)!important;box-shadow:none}
 .submit-btn.next{background:var(--grad)!important}
-.submit-btn:disabled{opacity:.35;box-shadow:none}
+.submit-btn:disabled{--dim:.35;opacity:var(--dim);box-shadow:none}
 /* активные состояния — ровный фиолетовый */
 .mode-btn.active{background:rgba(255,255,255,0.12)!important;color:var(--ink)!important;border-color:transparent!important}
 .wd-chip.on,.set-chip.on,.goal-btn.on,.lang-btn.on,.pl-btn.on,.word-chip.selected{
@@ -663,7 +664,7 @@ body.light .onb-dot.active{background:#15161a}
   background:var(--grad);color:#fff;border:none;
   box-shadow:0 4px 16px rgba(83,0,208,0.28);
 }
-.submit-btn:disabled{opacity:.32;box-shadow:none}
+.submit-btn:disabled{--dim:.32;opacity:var(--dim);box-shadow:none}
 
 .goal-btn.on .goal-desc,.goal-btn.on .goal-ph{opacity:.85}
 .pl-pause{border-color:#fff}
@@ -696,7 +697,7 @@ body.light .type-badge{background:linear-gradient(120deg,rgba(83,0,208,0.10),rgb
   background:#fff!important;color:#0c0c0c!important;border:none!important;box-shadow:none!important;
 }
 .submit-btn.retry-btn{background:var(--paper)!important;color:var(--ink)!important;border:1px solid var(--line)!important;box-shadow:none!important}
-.submit-btn:disabled{opacity:.32!important;box-shadow:none!important}
+.submit-btn:disabled{--dim:.32;opacity:var(--dim)!important;box-shadow:none!important}
 .score-chip{background:rgba(255,255,255,0.07)!important;color:var(--ink2)!important;border:1px solid var(--line)!important;box-shadow:none!important}
 .mode-btn.active{background:#fff!important;color:#0c0c0c!important;border-color:transparent!important}
 .word-chip.selected,.wd-chip.on,.set-chip.on,.goal-btn.on,.lang-btn.on,.pl-btn.on{background:#fff!important;color:#0c0c0c!important;border-color:#fff!important}
@@ -4274,7 +4275,7 @@ function renderMyDecks(){
     '<div class="lessons-sub">Разделы со своими словами и повторениями</div>' +
     (all.length ? '<button class="continue-btn" onclick="openDeck(\'all\')">' + ic('cards',16) + ' Учить всё' + (dueAll ? ' · ' + dueAll + ' к повтору' : '') + '</button>' : '') +
     '<div class="lesson-list">' + decks +
-      '<div class="lesson-card" style="border-style:dashed;opacity:.75" onclick="myAddSet()">' +
+      '<div class="lesson-card" style="border-style:dashed;--dim:.75;opacity:var(--dim)" onclick="myAddSet()">' +
         '<div class="lesson-num">+</div>' +
         '<div class="lesson-info"><div class="lesson-title">Новый раздел</div>' +
         '<div class="lesson-sub">Например: урок 5, еда, работа</div></div>' +
