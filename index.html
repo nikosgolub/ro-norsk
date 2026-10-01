@@ -100,6 +100,24 @@ button{touch-action:manipulation}
 .hint-note{font-size:12.5px;color:var(--ink2);margin:-6px 0 4px 2px}
 .alt-note{font-size:13px;color:var(--ink2);line-height:1.6;margin:4px 0 10px}
 .alt-note code{background:none;border:none;padding:0;font-family:inherit;font-weight:600;color:var(--ink)}
+.gset-preview{display:flex;justify-content:center;margin:2px 0 18px}
+.gset-of{font-size:11px;color:var(--ink2);line-height:1.3;margin-top:2px}
+.gset-now{font-size:26px;font-weight:700;letter-spacing:-.5px;line-height:1;font-variant-numeric:tabular-nums}
+.gset-preview .rings-wrap{position:relative;flex-shrink:0}
+.gset{padding:14px 0;border-top:1px solid var(--line)}
+.gset:first-of-type{border-top:none;padding-top:4px}
+.gset-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.gset-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.gset-name{font-size:14px;font-weight:600}
+.gset-hint{font-size:12px;color:var(--ink3)}
+.gset-row{display:flex;align-items:center;gap:12px}
+.gset-btn{width:46px;height:46px;flex-shrink:0;border-radius:14px;border:1px solid var(--line);background:var(--paper);color:var(--ink);font-size:24px;font-family:inherit;line-height:1;cursor:pointer;transition:all .15s}
+.gset-btn:active{transform:scale(.94)}
+.gset-btn:disabled{opacity:.3;cursor:default}
+.gset-val{flex:1;text-align:center;line-height:1.15}
+.gset-val b{display:block;font-size:26px;font-weight:700;font-variant-numeric:tabular-nums}
+.gset-val span{font-size:12px;color:var(--ink2)}
+.rings-hero{cursor:pointer}
 @media (prefers-reduced-motion:reduce){.word-chip.hint-bounce{animation:none;outline:2px solid var(--ink);outline-offset:2px}}
 .text-input{width:100%;padding:14px 16px;font-size:16px;font-family:inherit;background:var(--bg);border:2px solid var(--line);border-radius:14px;color:var(--ink);outline:none;transition:border-color .2s;margin-bottom:1rem;min-height:50px}
 .text-input:focus{border-color:var(--ink2)}
@@ -414,6 +432,7 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
 .lg-t{color:var(--ink2);min-width:44px;flex:0 0 auto}
 .lg-v{font-weight:600;font-variant-numeric:tabular-nums}
 .lg-v.over{color:var(--ink)}
+.lg-v.off{color:var(--ink3);font-weight:500}
 /* полоса недели */
 .week-strip{display:flex;gap:6px;margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,0.08)}
 .wk-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:6px}
@@ -1623,7 +1642,7 @@ function ringPcts(){
   return {
     p: DAILY_GOAL ? todayCount()/DAILY_GOAL : 1,
     a: LISTEN_GOAL ? listenToday()/LISTEN_GOAL : 1,
-    w: (dayLog().w||0)/10
+    w: WORD_GOAL ? (dayLog().w||0)/WORD_GOAL : 1
   };
 }
 
@@ -1723,7 +1742,7 @@ function renderCourses(){
       ? '<div class="plan-banner" onclick="renderSchedule()">' + t('plan') + ' ' + sched().time + '</div>'
       : '') +
     '<div class="hero">' +
-      '<div class="rings-hero">' +
+      '<div class="rings-hero" onclick="renderGoalEdit()" title="Изменить цели">' +
         '<div class="rings-wrap">' + trioRings(168) +
           '<div class="rings-center">' +
             '<div class="rings-big">' + tc + '</div>' +
@@ -1732,8 +1751,8 @@ function renderCourses(){
         '</div>' +
         '<div class="rings-legend">' +
           '<div class="lg"><span class="lg-dot" style="background:var(--r1)"></span><span class="lg-t">Фразы</span><span class="lg-v' + (tc>=DAILY_GOAL?' over':'') + '">' + tc + ' / ' + DAILY_GOAL + lapBadge(DAILY_GOAL?tc/DAILY_GOAL*100:0) + '</span></div>' +
-          '<div class="lg"><span class="lg-dot" style="background:var(--r2)"></span><span class="lg-t">Аудио</span><span class="lg-v' + (lm>=LISTEN_GOAL?' over':'') + '">' + lm + ' / ' + LISTEN_GOAL + ' мин' + lapBadge(LISTEN_GOAL?lm/LISTEN_GOAL*100:0) + '</span></div>' +
-          '<div class="lg"><span class="lg-dot" style="background:var(--r3)"></span><span class="lg-t">Слова</span><span class="lg-v' + ((dayLog().w||0)>=10?' over':'') + '">' + (dayLog().w||0) + ' / 10' + lapBadge((dayLog().w||0)/10*100) + '</span></div>' +
+          '<div class="lg"><span class="lg-dot" style="background:var(--r2)"></span><span class="lg-t">Аудио</span>' + (LISTEN_GOAL ? '<span class="lg-v' + (lm>=LISTEN_GOAL?' over':'') + '">' + lm + ' / ' + LISTEN_GOAL + ' мин' + lapBadge(lm/LISTEN_GOAL*100) + '</span>' : '<span class="lg-v off">выключено</span>') + '</div>' +
+          '<div class="lg"><span class="lg-dot" style="background:var(--r3)"></span><span class="lg-t">Слова</span>' + (WORD_GOAL ? '<span class="lg-v' + ((dayLog().w||0)>=WORD_GOAL?' over':'') + '">' + (dayLog().w||0) + ' / ' + WORD_GOAL + lapBadge((dayLog().w||0)/WORD_GOAL*100) + '</span>' : '<span class="lg-v off">выключено</span>') + '</div>' +
         '</div>' +
       '</div>' +
       (function(){
@@ -1756,7 +1775,9 @@ function renderCourses(){
       '<div class="hero-foot">' +
         '<span class="hf-item">' + ic('fire',13) + ' ' + sc + ' ' + dayWord(sc) + '</span>' +
         '<span class="hf-sep"></span>' +
-        '<span class="hf-item" onclick="renderStats()">Вся статистика ›</span>' +
+        '<span class="hf-item" onclick="event.stopPropagation();renderGoalEdit()">' + ic('target',13) + ' Нагрузка</span>' +
+        '<span class="hf-sep"></span>' +
+        '<span class="hf-item" onclick="event.stopPropagation();renderStats()">Вся статистика ›</span>' +
       '</div>' +
     '</div>' +
     (function(){
@@ -1955,6 +1976,7 @@ const GOAL_OPTS = [
 const LISTEN_OPTS = [0, 15, 30, 60];
 Object.defineProperty(globalThis, 'DAILY_GOAL', { get: function(){ return meta.goal || 75; } });
 Object.defineProperty(globalThis, 'LISTEN_GOAL', { get: function(){ return meta.lgoal===undefined ? 60 : meta.lgoal; } });
+Object.defineProperty(globalThis, 'WORD_GOAL', { get: function(){ return meta.wgoal===undefined ? 10 : meta.wgoal; } });
 function listenToday(){ return meta.lday===dstr(0) ? Math.round((meta.lsec||0)/60) : 0; }
 function dayLog(d){
   if(!meta.log) meta.log = {};
@@ -2116,15 +2138,16 @@ function animateRings(){
     })(arcs[i]);
   }
 }
-function trioRings(size){
+function trioRings(size, stroke, gap){
+  stroke = stroke || 11; gap = gap || 15;
   const pPct = DAILY_GOAL ? Math.round(todayCount()/DAILY_GOAL*100) : 0;
   const aPct = LISTEN_GOAL ? Math.round(listenToday()/LISTEN_GOAL*100) : 0;
-  const wGoal = 10;
-  const wPct = Math.round((dayLog().w||0)/wGoal*100);
+  const wGoal = WORD_GOAL;
+  const wPct = wGoal ? Math.round((dayLog().w||0)/wGoal*100) : 0;
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="transform:rotate(-90deg)">' +
-    ringArc(pPct,size,11,'var(--r1)',0,0) +
-    ringArc(aPct,size,11,'var(--r2)',15,1) +
-    ringArc(wPct,size,11,'var(--r3)',30,2) +
+    ringArc(pPct,size,stroke,'var(--r1)',0,0) +
+    ringArc(LISTEN_GOAL ? aPct : 100, size,stroke, LISTEN_GOAL ? 'var(--r2)' : 'var(--rdone)', gap,1) +
+    ringArc(wGoal ? wPct : 100, size,stroke, wGoal ? 'var(--r3)' : 'var(--rdone)', gap*2,2) +
   '</svg>';
 }
 function ringSVG(pct,size,stroke,color){
@@ -2279,6 +2302,136 @@ function renderGoals(back, step){
   w.innerHTML = '<div class="welcome-content" style="margin-top:calc(11vh + env(safe-area-inset-top))">' + body + '</div>';
   document.body.appendChild(w);
 }
+
+// ─── ДНЕВНЫЕ ЦЕЛИ: ОТДЕЛЬНЫЙ ЭКРАН СО СТУПЕНЯМИ ───────
+const GOAL_DEF = {
+  p: { key:'goal',  min:10, max:300, step:10, unit:'фраз', name:'Фразы', hint:'Сколько фраз проходить за день' },
+  a: { key:'lgoal', min:0,  max:180, step:10, unit:'мин',  name:'Аудио', hint:'Сколько минут слушать диалоги' },
+  w: { key:'wgoal', min:0,  max:100, step:10, unit:'слов', name:'Слова', hint:'Сколько карточек повторять' }
+};
+const LOAD_PRESETS = [
+  { p:25,  a:20, w:5,  min:'5–10 минут',   d:'Треть урока в день — спокойный ритм' },
+  { p:50,  a:30, w:10, min:'15–20 минут',  d:'Два блока в день — уверенный темп' },
+  { p:75,  a:60, w:10, min:'25–30 минут',  d:'Целый урок в день — быстрый прогресс' },
+  { p:150, a:90, w:20, min:'50–60 минут',  d:'Два урока в день — максимальный темп' }
+];
+let goalDraft = null, goalManual = false;
+function goalCur(k){
+  if(k==='p') return DAILY_GOAL;
+  if(k==='a') return LISTEN_GOAL;
+  return WORD_GOAL;
+}
+function goalStep(k, dir){
+  const d = GOAL_DEF[k], cur = goalDraft[k], st = d.step;
+  // с некруглого значения первый шаг подтягивает к ближайшему кратному 10
+  let v = dir > 0 ? Math.floor(cur/st)*st + st : Math.ceil(cur/st)*st - st;
+  v = Math.max(d.min, Math.min(d.max, v));
+  if(v === goalDraft[k]) return;
+  goalDraft[k] = v;
+  buzz('ok');
+  renderGoalEdit(true);
+}
+function goalSave(){
+  goalManual = false;
+  meta.goal  = goalDraft.p;
+  meta.lgoal = goalDraft.a;
+  meta.wgoal = goalDraft.w;
+  meta.goalsSet = 1;
+  saveMeta();
+  goalDraft = null;
+  buzz('win');
+  renderCourses();
+}
+function goalReset(){
+  goalDraft = { p:LOAD_PRESETS[2].p, a:LOAD_PRESETS[2].a, w:LOAD_PRESETS[2].w };
+  buzz('ok');
+  renderGoalEdit(true);
+}
+function renderLoadPick(){
+  screen = 'goaledit';
+  const cur = { p:goalCur('p'), a:goalCur('a'), w:goalCur('w') };
+  document.getElementById('app').innerHTML =
+    '<div class="header">' +
+      '<div class="logo" onclick="renderCourses()">Ro!</div>' +
+      '<div class="header-right"><button class="back-btn" onclick="goalDraft=null;renderCourses()">← Главная</button></div>' +
+    '</div>' +
+    '<div class="detail-title">Нагрузка на день</div>' +
+    '<div class="detail-sub">Выбери ритм — по нему считаются три кольца на главной. Менять можно в любой момент, прогресс не сбросится.</div>' +
+    '<div class="goal-list" style="margin-top:1.25rem">' +
+      LOAD_PRESETS.map(function(o,i){
+        const on = cur.p===o.p && cur.a===o.a && cur.w===o.w;
+        return '<button class="goal-btn' + (on?' on':'') + '" onclick="setLoadPreset(' + i + ')">' +
+          '<span class="goal-time">' + o.min + '</span>' +
+          '<span class="goal-desc">' + o.d + '</span>' +
+          '<span class="goal-ph">' + o.p + ' фраз · ' + o.a + ' мин · ' + o.w + ' слов</span>' +
+        '</button>';
+      }).join('') +
+    '</div>' +
+    '<button class="submit-btn retry-btn" style="margin-top:14px" onclick="goalManualOn()">' + ic('target',15) + ' Настроить вручную</button>';
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+function setLoadPreset(i){
+  const o = LOAD_PRESETS[i];
+  meta.goal = o.p; meta.lgoal = o.a; meta.wgoal = o.w; meta.goalsSet = 1;
+  saveMeta(); buzz('win');
+  goalDraft = null; goalManual = false;
+  renderCourses();
+}
+function goalManualOn(){ goalManual = true; renderGoalEdit(); }
+function renderGoalEdit(keep){
+  screen = 'goaledit';
+  if(!keep || !goalDraft) goalDraft = { p:goalCur('p'), a:goalCur('a'), w:goalCur('w') };
+  if(!goalManual) return renderLoadPick();
+  const save = meta.goal;
+  const sl = meta.lgoal, sw = meta.wgoal;
+  meta.goal = goalDraft.p; meta.lgoal = goalDraft.a; meta.wgoal = goalDraft.w;
+  const preview = trioRings(144, 8, 11);                     // прогресс за сегодня относительно новой цели
+  meta.goal = save; meta.lgoal = sl; meta.wgoal = sw;
+  const changed = goalDraft.p!==goalCur('p') || goalDraft.a!==goalCur('a') || goalDraft.w!==goalCur('w');
+
+  const rows = ['p','a','w'].map(function(k){
+    const d = GOAL_DEF[k], v = goalDraft[k];
+    const dotCol = v ? ('var(--r' + (k==='p'?1:k==='a'?2:3) + ')') : 'var(--rdone)';
+    return '<div class="gset">' +
+      '<div class="gset-top">' +
+        '<span class="gset-dot" style="background:' + dotCol + '"></span>' +
+        '<span class="gset-name">' + d.name + '</span>' +
+        '<span class="gset-hint">' + d.hint + '</span>' +
+      '</div>' +
+      '<div class="gset-row">' +
+        '<button class="gset-btn" onclick="goalStep(\'' + k + '\',-1)"' + (v<=d.min?' disabled':'') + '>−</button>' +
+        '<div class="gset-val"><b>' + v + '</b><span>' + (v===0 ? 'выключено' : d.unit) + '</span></div>' +
+        '<button class="gset-btn" onclick="goalStep(\'' + k + '\',1)"' + (v>=d.max?' disabled':'') + '>+</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+
+  document.getElementById('app').innerHTML =
+    '<div class="header">' +
+      '<div class="logo" onclick="renderCourses()">Ro!</div>' +
+      '<div class="header-right"><button class="back-btn" onclick="goalManual=false;renderGoalEdit()">← Ритм</button></div>' +
+    '</div>' +
+    '<div class="detail-title">Вручную</div>' +
+    '<div class="detail-sub">Каждый параметр меняется шагом в 10. Ноль выключает кольцо — оно будет считаться закрытым.</div>' +
+    '<div class="card" style="margin-top:1.25rem">' +
+      '<div class="gset-preview"><div class="rings-wrap" style="width:144px;height:144px">' + preview +
+        '<div class="rings-center"><div class="gset-now">' + todayCount() + '</div>' +
+        '<div class="gset-of">из ' + goalDraft.p + '</div></div></div></div>' +
+      rows +
+    '</div>' +
+    '<button class="submit-btn" style="margin-top:4px" onclick="goalSave()"' + (changed?'':' disabled') + '>' +
+      (changed ? 'Сохранить цели' : 'Цели не изменились') + '</button>' +
+    '<button class="back-btn" style="margin:10px auto 0;display:block" onclick="goalReset()">Вернуть по умолчанию · 75 / 60 / 10</button>';
+  // дуги ставим сразу, без проигрывания анимации на каждое нажатие
+  const arcs = document.querySelectorAll('.ring-arc');
+  for(let i=0;i<arcs.length;i++){
+    arcs[i].style.animation = 'none';
+    arcs[i].style.transition = keep ? 'stroke-dashoffset .3s ease' : 'none';
+    arcs[i].style.strokeDashoffset = arcs[i].getAttribute('data-off');
+  }
+  try{ window.scrollTo(0,0); }catch(e){}
+}
+
 function setGoal(v,b){ meta.goal = v; saveMeta(); renderGoals(b,0); }
 function setLGoal(v,b){ meta.lgoal = v; saveMeta(); renderGoals(b,1); }
 function finishGoals(b){
@@ -3229,7 +3382,7 @@ function renderSchedule(){
     '</div>' +
     '<div class="detail-title">' + t('sched') + '</div>' +
     '<div class="detail-sub">' + t('sched_s') + '</div>' +
-    '<button class="back-btn" style="margin-bottom:1rem" onclick="renderGoals(1)">Изменить дневные цели</button>' +
+
     '<div class="card" style="margin-bottom:1.25rem">' +
       '<div class="sched-row" style="margin:0">' +
         '<span class="sched-label">Полный экран</span>' +
@@ -4064,7 +4217,7 @@ function startMyWords(){
 const APP_VER = '2.2';
 const WHATS_NEW = [
   { t:'Экзамен прощает одну ошибку', d:'Раньше для допуска к следующему уроку нужны были все 20 из 20. Теперь можно ошибиться один раз — две ошибки по-прежнему означают пересдачу.' },
-  { t:'Цель до 150 фраз в день', d:'В «Расписании» → «Изменить дневные цели» появился четвёртый вариант: два урока в день, 50–60 минут. Кольцо и статистика считают по новой цели.' },
+  { t:'Нагрузка настраивается сама', d:'На главном экране под кольцами появилась «Нагрузка». Там четыре готовых ритма — от трети урока до двух уроков в день (150 фраз) — и ручная настройка, где фразы, минуты аудио и слова меняются шагом в 10. Ноль выключает кольцо.' },
   { t:'Полный экран в Telegram', d:'Верхняя панель Telegram с названием и кнопкой «Закрыть» убирается — остаются только плавающие кнопки закрытия и меню поверх приложения. Свайп вниз больше не закрывает приложение во время прокрутки. Выключить можно в «Расписании».' },
   { t:'Чат с агентом языка', d:'Кнопка с облачком в шапке — на любом экране. Два режима: «Объяснить» разбирает правило по-русски, «Поговорим» ведёт диалог по-норвежски на твоём уровне и мягко поправляет. Агент видит, на каком ты уроке, какую фразу сейчас решаешь и на чём спотыкаешься — можно спрашивать коротко.' },
   { t:'Разбор ошибок стал честным', d:'Раньше подсказка зависела от темы задания. Теперь приложение сравнивает твой ответ с правильным пословно и объясняет настоящую ошибку: определённая форма, время глагола, падеж местоимения, место «ikke», порядок слов, притяжательные, опечатки и потерянные æ/ø/å.' },
