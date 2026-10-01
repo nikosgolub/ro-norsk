@@ -3680,7 +3680,9 @@ function dlgTimes(d, dur){
   const last = base[base.length-1];
   if(!dur || !last || dur <= last + 1) return base;
   const k = (dur - 1.5) / last;
-  if(k < 1.05 && k > 0.95) return base;
+  // Небольшая разница — это почти всегда хвост тишины в конце файла, а не другая запись.
+  // Растягивать из-за неё всю разметку нельзя: середина диалога уезжает заметнее всего.
+  if(k < 1.15 && k > 0.85) return base;
   return base.map(function(t){ return t * k; });
 }
 
@@ -3720,6 +3722,12 @@ function resetSync(){
 }
 
 let AU = null, curDlg = 0, showRu = false, tickAcc = 0;
+// Подсветку ведём по кадрам, а не по событию timeupdate: браузер шлёт его всего
+// ~4 раза в секунду, из-за чего реплика загоралась с опозданием до четверти секунды.
+// DLG_LEAD добирает то, что не добрала разметка: метки расставлены на глаз, целыми
+// секундами, и строка должна загораться в начале фразы, а не после неё.
+const DLG_LEAD = 0.25;
+let dlgRaf = 0, dlgAct = -1, dlgSec = -1, dlgPrevT = -1, dlgT = null, dlgTDur = -1;
 
 function openDialog(i){
   screen = 'dialog';
@@ -3776,7 +3784,56 @@ function renderDialog(keepAudio){
     '</div>' +
     '<div class="card dl-box' + (showRu?' ru':'') + '">' + lines + '</div>';
 
-  if(!keepAudio) bindAudio(); else { const a = document.getElementById('au'); if(a && AU && a!==AU){} }
+  dlgAct = -1;                       // разметка перерисована — подсветку ставим заново
+  if(!keepAudio) bindAudio();
+  else if(AU && !dlgRaf) dlgLoop();  // звук продолжает играть на прежнем элементе
+}
+
+function dlgStop(){ if(dlgRaf) cancelAnimationFrame(dlgRaf); dlgRaf = 0; }
+function dlgLoop(){
+  dlgRaf = AU ? requestAnimationFrame(dlgLoop) : 0;
+  if(!AU) return;
+  const d = DIALOGS[curDlg];
+  if(!d) return;
+  const cur = AU.currentTime, dur = AU.duration || 1;
+
+  const f = document.getElementById('pl-fill');
+  if(f) f.style.width = (cur/dur*100) + '%';
+  const sec = Math.floor(cur);
+  if(sec !== dlgSec){ dlgSec = sec; const c = document.getElementById('pl-cur'); if(c) c.textContent = mmss(cur); }
+
+  // метки считаем один раз на длительность, а не каждый кадр
+  if(dlgT === null || dlgTDur !== AU.duration){ dlgT = dlgTimes(d, AU.duration); dlgTDur = AU.duration; }
+  let act = -1;
+  if(dlgT){ const t = cur + DLG_LEAD; for(let i=0;i<dlgT.length;i++){ if(t >= dlgT[i]) act = i; } }
+  if(act !== dlgAct){
+    const prev = document.getElementById('dl-' + dlgAct);
+    if(prev) prev.className = 'dl-line';
+    const el = document.getElementById('dl-' + act);
+    if(el) el.className = 'dl-line active';
+    dlgAct = act;
+  }
+
+}
+
+// Прослушанное считаем по реально проигранному времени и отдельно от кадров: кадры
+// замирают, когда приложение свёрнуто, а звук идёт дальше. Раньше на каждое событие
+// прибавлялось ровно 0.25 с — браузер шлёт их неравномерно, и минуты в кольце врали.
+function dlgCount(){
+  if(!AU || AU.paused) { dlgPrevT = -1; return; }
+  const d = DIALOGS[curDlg];
+  if(!d) return;
+  const cur = AU.currentTime, dur = AU.duration || 1;
+  if(dlgPrevT >= 0 && cur > dlgPrevT && cur - dlgPrevT < 2) tickAcc += cur - dlgPrevT;
+  dlgPrevT = cur;
+  if(tickAcc < 5) return;
+  const add = Math.round(tickAcc);
+  tickAcc = 0;
+  addListen(add);
+  const st = dlgStat(d.id);
+  dlgSave(d.id, { sec: (st.sec||0) + add, max: Math.max(st.max||0, cur/dur) });
+  const chip = document.getElementById('dlg-chip');
+  if(chip) chip.textContent = (((st.sec||0) + add)/3600).toFixed(1) + ' / ' + DLG_HOURS + ' ч';
 }
 
 function bindAudio(){
@@ -3787,32 +3844,9 @@ function bindAudio(){
     const dd = document.getElementById('pl-dur');
     if(dd) dd.textContent = mmss(AU.duration);
   });
-  AU.addEventListener('timeupdate', function(){
-    const d = DIALOGS[curDlg];
-    const cur = AU.currentTime, dur = AU.duration || 1;
-    const f = document.getElementById('pl-fill'), c = document.getElementById('pl-cur');
-    if(f) f.style.width = (cur/dur*100) + '%';
-    if(c) c.textContent = mmss(cur);
-    // подсветка текущей реплики
-    const T = dlgTimes(d, AU.duration);
-    let act = -1;
-    if(T){ for(let i=0;i<T.length;i++){ if(cur >= T[i]) act = i; } }
-    for(let i=0;i<d.lines.length;i++){
-      const el = document.getElementById('dl-' + i);
-      if(el) el.className = 'dl-line' + (i===act ? ' active' : '');
-    }
-    // учёт прослушанного
-    tickAcc += 0.25;
-    if(tickAcc >= 5){
-      const add = Math.round(tickAcc);
-      tickAcc = 0;
-      addListen(add);
-      const s = dlgStat(d.id);
-      dlgSave(d.id, { sec: (s.sec||0) + add, max: Math.max(s.max||0, cur/dur) });
-      const chip = document.getElementById('dlg-chip');
-      if(chip) chip.textContent = ((s.sec||0) + add)/3600 > 0 ? (((s.sec||0)+add)/3600).toFixed(1) + ' / ' + DLG_HOURS + ' ч' : '0 / ' + DLG_HOURS + ' ч';
-    }
-  });
+  dlgStop(); dlgAct = -1; dlgSec = -1; dlgPrevT = -1; dlgT = null; dlgTDur = -1;
+  AU.addEventListener('timeupdate', dlgCount);
+  dlgLoop();
   AU.addEventListener('ended', function(){
     const d = DIALOGS[curDlg];
     dlgSave(d.id, { max: 1 });
@@ -3852,7 +3886,7 @@ function seekPct(e){
   AU.currentTime = ((e.clientX - r.left) / r.width) * AU.duration;
 }
 function setRu(v){ showRu = v; const b = document.querySelector('.dl-box'); renderDialog(); }
-function closeDialog(){ if(AU){ AU.pause(); AU = null; } renderDialogs(); }
+function closeDialog(){ dlgStop(); if(AU){ AU.pause(); AU = null; } renderDialogs(); }
 
 // ─── ИИ (через Cloudflare Worker — ключ хранится на сервере) ───
 const AI_URL = 'https://ro-ai.nikosgolub.workers.dev';
