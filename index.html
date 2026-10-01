@@ -158,29 +158,57 @@ button{touch-action:manipulation}
 .why-cmp span{opacity:.6;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
 .why-rule{margin-top:9px;padding-top:9px;border-top:1px solid var(--line)}
 #chat-screen{display:flex;flex-direction:column;min-height:calc(100vh - 90px)}
-.ch-fab{position:fixed;z-index:40;right:max(16px,env(safe-area-inset-right),var(--tg-right,0px));bottom:calc(16px + max(env(safe-area-inset-bottom),var(--tg-bottom,0px)));width:54px;height:54px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);background:rgba(255,255,255,0.10);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border:1px solid rgba(255,255,255,0.16);box-shadow:0 6px 24px rgba(0,0,0,0.40);transition:transform .15s,opacity .2s}
+.ch-in{animation:chOpen .34s cubic-bezier(.2,.8,.3,1) both;transform-origin:calc(100% - 46px) calc(100% - 46px)}
+@keyframes chOpen{from{opacity:0;transform:scale(.88) translateY(14px)}to{opacity:1;transform:none}}
+.ch-in .ch-hero > *{animation:chRise .42s cubic-bezier(.2,.8,.3,1) both}
+.ch-in .ch-hero-mark{animation-delay:.10s}
+.ch-in .ch-hero-t{animation-delay:.16s}
+.ch-in .ch-hero-d{animation-delay:.21s}
+.ch-in .ch-tips{animation-delay:.26s}
+@keyframes chRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.ch-in,.ch-in .ch-hero > *{animation:none}}
+.ch-fab{position:fixed;z-index:40;right:max(16px,env(safe-area-inset-right),var(--tg-right,0px));bottom:calc(18px + max(env(safe-area-inset-bottom),var(--tg-bottom,0px)));width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--ink);background:rgba(255,255,255,0.10);backdrop-filter:blur(22px) saturate(150%);-webkit-backdrop-filter:blur(22px) saturate(150%);border:1px solid rgba(255,255,255,0.16);box-shadow:0 6px 24px rgba(0,0,0,0.40);transition:transform .15s,opacity .2s}
 .ch-fab:active{transform:scale(.93)}
 .ch-fab.off{opacity:0;pointer-events:none;transform:scale(.8)}
 body.light .ch-fab{background:rgba(255,255,255,0.94);border-color:rgba(0,0,0,0.14);box-shadow:0 2px 6px rgba(0,0,0,0.10),0 10px 28px rgba(0,0,0,0.18)}
-.ch-modes{display:flex;gap:6px;margin:0 0 14px}
-.ch-mode{flex:1;background:none;border:1px solid var(--line);color:var(--ink2);font-family:inherit;font-size:13px;font-weight:500;padding:9px 0;border-radius:12px;cursor:pointer;transition:all .2s}
-.ch-mode.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ch-switch{margin-bottom:8px;display:flex;width:100%}
+.ch-switch .mode-btn{flex:1;gap:6px;white-space:nowrap}
+.ch-sub{font-size:12.5px;color:var(--ink3);margin:0 0 16px 2px;min-height:17px}
+/* приветствие — приглашение спросить, а не абзац текста */
+.ch-hero{padding:22px 2px 6px;max-width:34em}
+.ch-hero-mark{width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;
+  color:var(--ink);background:rgba(255,255,255,0.07);border:1px solid rgba(255,255,255,0.12);margin-bottom:16px}
+.ch-hero-t{font-size:21px;font-weight:700;letter-spacing:-.4px;line-height:1.25;margin-bottom:8px}
+.ch-hero-d{font-size:14px;color:var(--ink2);line-height:1.65}
+.ch-tips{display:flex;flex-direction:column;align-items:flex-start;gap:8px;margin-top:20px}
+.ch-tip{max-width:100%;text-align:left;background:none;border:1px solid var(--line);color:var(--ink);
+  font-family:inherit;font-size:13.5px;line-height:1.45;padding:10px 14px;border-radius:14px;cursor:pointer;
+  transition:border-color .18s,background .18s}
+.ch-tip:hover{border-color:var(--ink2)}
+.ch-tip:active{background:rgba(255,255,255,0.06)}
+body.light .ch-hero-mark{background:rgba(0,0,0,0.05);border-color:rgba(0,0,0,0.10)}
+body.light .ch-tip:active{background:rgba(0,0,0,0.04)}
 .ch-body{flex:1;display:flex;flex-direction:column;gap:10px;padding-bottom:14px}
+.ch-body.empty{justify-content:center;padding-bottom:30px}
 .ch-msg{max-width:88%;padding:11px 14px;border-radius:16px;font-size:14.5px;line-height:1.6;word-wrap:break-word;overflow-wrap:anywhere}
 .ch-msg.ai{align-self:flex-start;background:rgba(255,255,255,0.06);border:1px solid var(--line);border-bottom-left-radius:5px}
 .ch-msg.me{align-self:flex-end;background:var(--ink);color:var(--bg);border-bottom-right-radius:5px}
 .ch-msg.me code{color:inherit}
 .ch-msg code{background:none;border:none;padding:0;font-family:inherit;font-size:inherit;font-weight:600;color:var(--ink)}
 .ch-msg.ai{color:var(--ink2)}
-.ch-greet{color:var(--ink2)}
-.ch-wait{color:var(--ink3);font-style:italic;opacity:.8}
+.ch-wait{display:flex;gap:5px;align-items:center;padding:15px 16px}
+.ch-wait i{width:6px;height:6px;border-radius:50%;background:var(--ink2);animation:chDot 1.1s ease-in-out infinite}
+.ch-wait i:nth-child(2){animation-delay:.16s}
+.ch-wait i:nth-child(3){animation-delay:.32s}
+@keyframes chDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-4px)}}
 .ch-fix{display:inline-block;color:var(--green);font-weight:500}
 .ch-say{display:block;margin-top:7px;background:none;border:1px solid var(--line);color:var(--ink2);border-radius:9px;padding:3px 9px;cursor:pointer;line-height:0}
 .ch-bar{position:sticky;bottom:0;display:flex;gap:8px;align-items:flex-end;padding:10px 0 14px;background:var(--bg)}
 .ch-inp{flex:1;resize:none;background:var(--card-bg,rgba(255,255,255,0.05));border:1px solid var(--line);border-radius:16px;color:var(--ink);font-family:inherit;font-size:15px;line-height:1.5;padding:12px 14px;max-height:140px;outline:none}
 .ch-inp:focus{border-color:var(--ink2)}
 .ch-inp::placeholder{color:var(--ink3)}
-.ch-send{flex:0 0 auto;width:46px;height:46px;border:none;border-radius:16px;background:var(--ink);color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .2s}
+.ch-send{flex:0 0 auto;width:46px;height:46px;border:none;border-radius:50%;background:var(--ink);color:var(--bg);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:opacity .2s,transform .15s}
+.ch-send:active{transform:scale(.92)}
 .ch-send:disabled,.ch-inp:disabled{opacity:.45;cursor:default}
 body.light .ch-msg.ai{background:rgba(0,0,0,0.04)}
 .play-big{display:block;margin:6px auto 10px;background:#fff;color:#000001;font-size:16px;font-weight:600;font-family:inherit;border:none;border-radius:16px;padding:16px 30px;cursor:pointer;min-height:54px;transition:transform .1s,opacity .2s}
@@ -1883,13 +1911,25 @@ function persist(key,val){
 }
 function buzz(kind){
   if(TG && TG.HapticFeedback){
-    try{ kind==="win" ? TG.HapticFeedback.notificationOccurred("success")
-       : kind==="ok" ? TG.HapticFeedback.impactOccurred("light")
-       : TG.HapticFeedback.notificationOccurred("error"); }catch(e){}
+    try{
+      if(kind==="tap"){
+        if(TG.HapticFeedback.selectionChanged) TG.HapticFeedback.selectionChanged();
+        else TG.HapticFeedback.impactOccurred("light");
+      }
+      else if(kind==="soft"){ TG.HapticFeedback.impactOccurred("soft"); }
+      else if(kind==="win"){ TG.HapticFeedback.notificationOccurred("success"); }
+      else if(kind==="ok"){ TG.HapticFeedback.impactOccurred("light"); }
+      else { TG.HapticFeedback.notificationOccurred("error"); }
+    }catch(e){}
     return;
   }
   if(typeof navigator!=="undefined" && navigator.vibrate){
-    try{ navigator.vibrate(kind==="win" ? [50,50,50,50,150] : kind==="ok" ? 25 : [60,40,60]); }catch(e){}
+    try{ navigator.vibrate(
+      kind==="tap" ? 10
+      : kind==="soft" ? 16
+      : kind==="win" ? [50,50,50,50,150]
+      : kind==="ok" ? 25
+      : [60,40,60]); }catch(e){}
   }
 }
 function canShare(){ return !!(TG || (typeof navigator!=="undefined" && navigator.share)); }
@@ -1921,7 +1961,7 @@ function ic(n,sz){
     cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
     bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
     chat:'<path d="M21 12a8 8 0 0 1-8 8H7l-4 3v-6.5A8 8 0 0 1 11 4h2a8 8 0 0 1 8 8z"/>',
-    send:'<path d="M4 12 20 4l-4 16-4.5-6.5z"/><path d="M11.5 13.5 20 4"/>',
+    up:'<path d="M12 19V6"/><path d="M5.5 12.5 12 6l6.5 6.5"/>',
     ruler:'<rect x="2" y="8" width="20" height="8" rx="2"/><path d="M7 8v3M12 8v4M17 8v3"/>',
     trophy:'<path d="M7 4h10v6a5 5 0 0 1-10 0z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/><path d="M10 15v3h4v-3M8 21h8"/>',
     cards:'<rect x="7" y="4" width="12" height="16" rx="2"/><path d="M4 7v11a2 2 0 0 0 2 2"/>',
@@ -2965,6 +3005,7 @@ function addWord(i){
   state.selected=[...state.selected,w];
   state.pool=state.pool.filter((_,j)=>j!==i);
   state.hintAt=null;
+  buzz("tap");
   render();
 }
 function removeWord(i){
@@ -2973,6 +3014,7 @@ function removeWord(i){
   state.pool=shuffle([...state.pool,w]);
   state.selected=state.selected.filter((_,j)=>j!==i);
   state.hintAt=null;
+  buzz("tap");
   render();
 }
 
@@ -3007,7 +3049,7 @@ function dragStart(e){
   drag.ghost = g;
   drag.chip.classList.add('dragging');
   drag.on = true;
-  buzz('ok');
+  buzz('soft');            // слово «отлипло» от своего места
 }
 function dragMove(e){
   // слово висит над пальцем, чтобы было видно, куда оно ляжет
@@ -3022,6 +3064,7 @@ function dragMove(e){
     const chips = [].slice.call(box.querySelectorAll('.word-chip')).filter(function(c){ return c!==skip; });
     const caret = document.createElement('span'); caret.className = 'drop-caret';
     if(k < chips.length) box.insertBefore(caret, chips[k]); else box.appendChild(caret);
+    if(drag.to !== k) buzz('tap');       // короткий отклик на каждую новую позицию
     drag.to = k;
   } else {
     const ph = box && box.querySelector('.placeholder'); if(ph) ph.style.visibility = '';
@@ -3047,6 +3090,7 @@ function dragEnd(e){
     pool.push(sel[d.i]); sel.splice(d.i,1);   // вытащил из ответа — слово вернулось в набор
   } else { render(); return; }
   state.selected = sel; state.pool = pool; state.hintAt = null;
+  buzz('tap');
   render();
 }
 if(typeof document!=='undefined' && document.addEventListener){
@@ -4516,6 +4560,14 @@ ru:{ title:'Спросить', teach:'Объяснить', talk:'Поговор�
   hi_talk:'Nå snakker vi norsk. Jeg skriver enkelt, og retter deg underveis.\n\nHva gjorde du i dag?',
   send:'Отправить', clear:'Очистить', thinking:'Печатает…',
   ch_clr_q:'Очистить всю переписку?', listen:'Послушать',
+  sub_teach:'Отвечаю по-русски и показываю примеры',
+  sub_talk:'Пишу только по-норвежски и поправляю по ходу',
+  hero_t:'Спроси про норвежский',
+  hero_d:'Я вижу, на каком ты уроке, какие фразы заваливаешь и что лежит в твоём словаре. Поэтому спрашивать можно коротко.',
+  hero_t2:'La oss snakke norsk',
+  hero_d2:'Пишу простыми фразами твоего уровня. Ошибёшься — покажу исправленный вариант и продолжу разговор.',
+  tips:['Когда huset, а когда et hus?','Чем mye отличается от mange?','Куда в предложении ставить ikke?'],
+  tips2:['Hei! Hvordan går det?','Hva gjorde du i dag?','Fortell om været i dag'],
   ctx_on:'вижу твой прогресс' },
 en:{ title:'Ask', teach:'Explain', talk:'Let\'s talk',
   ph_teach:'Ask about a rule or a mistake…',
@@ -4524,6 +4576,14 @@ en:{ title:'Ask', teach:'Explain', talk:'Let\'s talk',
   hi_talk:'Nå snakker vi norsk. Jeg skriver enkelt, og retter deg underveis.\n\nHva gjorde du i dag?',
   send:'Send', clear:'Clear', thinking:'Typing…',
   ch_clr_q:'Clear the whole conversation?', listen:'Listen',
+  sub_teach:'I answer in your language and show examples',
+  sub_talk:'I write only in Norwegian and correct you as we go',
+  hero_t:'Ask about Norwegian',
+  hero_d:'I can see which lesson you are on, which phrases you keep failing and what is in your vocabulary. So short questions work.',
+  hero_t2:'La oss snakke norsk',
+  hero_d2:'I write simple sentences at your level. Slip up and I show the corrected version, then carry on.',
+  tips:['When huset and when et hus?','How is mye different from mange?','Where does ikke go?'],
+  tips2:['Hei! Hvordan går det?','Hva gjorde du i dag?','Fortell om været i dag'],
   ctx_on:'I can see your progress' }
 };
 function t2(k){
@@ -4635,7 +4695,9 @@ function chatSetMode(m){
   renderChat();
 }
 
+let chatEnter = false;
 function openChat(){
+  chatEnter = true;
   const back = lastScreen;
   chatBack = (typeof back === 'function') ? back : function(){ renderCourses(); };
   renderChat();
@@ -4653,10 +4715,17 @@ function renderChat(){
           : '';
         return '<div class="' + cls + '">' + chatFmt(m.t) + say + '</div>';
       }).join('')
-    : '<div class="ch-msg ai ch-greet">' + chatFmt(greet) + '</div>';
+    : '<div class="ch-hero">' +
+        '<div class="ch-hero-mark">' + ic('chat',26) + '</div>' +
+        '<div class="ch-hero-t">' + t2(mode==='talk' ? 'hero_t2' : 'hero_t') + '</div>' +
+        '<div class="ch-hero-d">' + t2(mode==='talk' ? 'hero_d2' : 'hero_d') + '</div>' +
+        '<div class="ch-tips">' + (t2(mode==='talk' ? 'tips2' : 'tips')||[]).map(function(x,i){
+          return '<button class="ch-tip" style="--i:' + i + '" data-q="' + chatEsc(x).replace(/"/g,'&quot;') + '" onclick="chatAsk(this.dataset.q)">' + chatEsc(x) + '</button>';
+        }).join('') + '</div>' +
+      '</div>';
 
   document.getElementById('app').innerHTML =
-    '<div id="chat-screen">' +
+    '<div id="chat-screen"' + (chatEnter ? ' class="ch-in"' : '') + '>' +
       '<div class="header">' +
         '<div class="logo" onclick="renderCourses()">Ro!</div>' +
         '<div class="header-right">' +
@@ -4664,21 +4733,22 @@ function renderChat(){
           '<button class="back-btn" onclick="chatBack()">←</button>' +
         '</div>' +
       '</div>' +
-      '<div class="ch-modes">' +
-        '<button class="ch-mode' + (mode==='teach'?' on':'') + '" onclick="chatSetMode(\'teach\')">' + t2('teach') + '</button>' +
-        '<button class="ch-mode' + (mode==='talk'?' on':'') + '" onclick="chatSetMode(\'talk\')">' + t2('talk') + '</button>' +
+      '<div class="mode-toggle ch-switch">' +
+        '<button class="mode-btn ' + (mode==='teach'?'active':'') + '" onclick="chatSetMode(\'teach\')">' + ic('book',15) + ' ' + t2('teach') + '</button>' +
+        '<button class="mode-btn ' + (mode==='talk'?'active':'') + '" onclick="chatSetMode(\'talk\')">' + ic('chat',15) + ' ' + t2('talk') + '</button>' +
       '</div>' +
-      '<div class="ch-body" id="ch-body">' + msgs +
-        (chatBusy ? '<div class="ch-msg ai ch-wait">' + t2('thinking') + '</div>' : '') +
+      '<div class="ch-sub">' + t2(mode==='talk' ? 'sub_talk' : 'sub_teach') + '</div>' +
+      '<div class="ch-body' + (chatLog.length ? '' : ' empty') + '" id="ch-body">' + msgs +
+        (chatBusy ? '<div class="ch-msg ai ch-wait" aria-label="' + t2('thinking') + '"><i></i><i></i><i></i></div>' : '') +
       '</div>' +
       '<div class="ch-bar">' +
         '<textarea id="ch-inp" class="ch-inp" rows="1" placeholder="' +
           (mode==='talk' ? t2('ph_talk') : t2('ph_teach')) + '"' + (chatBusy?' disabled':'') +
-          ' oninput="chatDraft=this.value;chatGrow(this)"' +
+          ' oninput="chatDraft=this.value;chatGrow(this);chatLive()"' +
           ' onkeydown="if(event.key===\'Enter\'&&!event.shiftKey){event.preventDefault();chatSend();}">' +
           chatEsc(chatDraft) + '</textarea>' +
-        '<button class="ch-send" id="ch-send" onclick="chatSend()"' + (chatBusy?' disabled':'') + '>' +
-          ic('send',18) + '</button>' +
+        '<button class="ch-send" id="ch-send" aria-label="' + t2('send') + '" onclick="chatSend()"' +
+          (chatBusy||!(chatDraft||'').trim() ? ' disabled' : '') + '>' + ic('up',20) + '</button>' +
       '</div>' +
     '</div>';
 
@@ -4690,10 +4760,20 @@ function renderChat(){
   }else{
     window.scrollTo(0, 0);
   }
+  chatEnter = false;
   mountChatBtn();
 }
 let chatToEnd = false;
 
+function chatLive(){
+  const b = document.getElementById('ch-send');
+  if(b) b.disabled = chatBusy || !(chatDraft||'').trim();
+}
+function chatAsk(q){
+  if(chatBusy || !q) return;
+  chatDraft = q;
+  chatSend();
+}
 function chatGrow(el){
   el.style.height = 'auto';
   el.style.height = Math.min(el.scrollHeight, 140) + 'px';
@@ -4730,7 +4810,7 @@ function mountChatBtn(){
     chatFab = document.createElement('button');
     chatFab.className = 'ch-fab off';
     chatFab.setAttribute('aria-label', t2('title'));
-    chatFab.innerHTML = ic('chat',22);
+    chatFab.innerHTML = ic('chat',26);
     chatFab.onclick = openChat;
     document.body.appendChild(chatFab);
   }
