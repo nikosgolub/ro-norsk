@@ -3020,10 +3020,10 @@ function render(){
             '" data-src="ans" data-i="' + i + '" onclick="removeWord(' + i + ')">' + w + '</span>').join("")) +
     '</div>' +
     (hintOn ? '<div class="hint-note">' + (state.exam
-        ? (state.hintAt<0 ? 'Не хватает слов — это единственная подсказка на экзамене'
-                          : 'Прыгающее слово не на месте — единственная подсказка на экзамене')
-        : (state.hintAt<0 ? 'Пока всё верно — но не хватает слов'
-                          : 'Ошибка начинается с прыгающего слова')) + '</div>' : '') +
+        ? (state.hintAt<0 ? 'Пока всё верно, но слов не хватает. Подсказка на экзамене одна'
+                          : 'Вот здесь не так. Подсказка на экзамене одна')
+        : (state.hintAt<0 ? 'Пока всё верно, но слов не хватает'
+                          : 'Вот здесь не так')) + '</div>' : '') +
     '<div class="pool-label" style="margin-top:1rem">' + t('pool') + '</div>' +
     '<div class="word-pool" id="word-pool">' +
       pool.map((w,i)=>'<span class="word-chip pool" data-src="pool" data-i="' + i + '" onclick="addWord(' + i + ')">' + w + '</span>').join("") +
