@@ -2172,7 +2172,31 @@ function t(k){
   }
   return v;
 }
-function srcText(q){ if(!meta.lang || meta.lang==='ru') return q.ru; return q[meta.lang] || q.en || q.ru; }
+let PHRASE_BY_NO = null;
+function phraseByNo(no){
+  if(PHRASE_BY_NO === null){
+    PHRASE_BY_NO = {};
+    try{
+      COURSES.forEach(function(c){
+        (c.L || []).forEach(function(l){
+          (l.parts || []).forEach(function(pt){
+            pt.q.forEach(function(x){ if(!PHRASE_BY_NO[x.no]) PHRASE_BY_NO[x.no] = x; });
+          });
+        });
+      });
+    }catch(e){}
+  }
+  return PHRASE_BY_NO[no] || null;
+}
+function srcText(q){
+  if(!meta.lang || meta.lang==='ru') return q.ru;
+  if(q[meta.lang]) return q[meta.lang];
+  if(q.en) return q.en;
+  // старые записи в очереди повторения хранят только русский — достаём перевод из курса
+  const full = q.no ? phraseByNo(q.no) : null;
+  if(full && (full[meta.lang] || full.en)) return full[meta.lang] || full.en;
+  return q.ru;
+}
 // Названия уроков, блоков и курсов: русский — исходный, остальные языки берут свой перевод.
 function enLang(){ try{ return !!(typeof meta !== 'undefined' && meta && meta.lang && meta.lang !== 'ru'); }catch(e){ return false; } }
 function tx(obj, field){
@@ -2262,7 +2286,7 @@ const RECAP_MAX = 12;      // сколько старых фраз берём з
 function addMistake(q){
   const old = meta.mistakes.find(m=>m.no===q.no);
   if(old){ old.s = 0; old.d = dnum(); saveMeta(); return; }   // снова ошибся — в начало очереди
-  meta.mistakes.push({ru:q.ru,no:q.no,type:q.type,s:0,d:dnum()});
+  meta.mistakes.push({ru:q.ru,en:q.en,no:q.no,type:q.type,s:0,d:dnum()});
   if(meta.mistakes.length>60) meta.mistakes.shift();
   saveMeta();
 }
@@ -2506,6 +2530,10 @@ const ONB = [
 // Язык интерфейса Telegram — только подсказка: кнопка подсвечена, но нажать нужно самому.
 let langFrom = null;
 function langBack(){ const f = langFrom; langFrom = null; (typeof f === 'function' ? f : renderCourses)(); }
+// Опорный язык — тот, через который человек учит норвежский.
+const HELP_LANG = {ru:['RU','🇷🇺'], en:['ENG','🇬🇧'], uk:['UKR','🇺🇦'], pl:['PL','🇵🇱'], es:['ES','🇪🇸']};
+function helpLang(){ return (HELP_LANG[meta.lang] || HELP_LANG.ru)[0]; }
+function helpFlag(){ return (HELP_LANG[meta.lang] || HELP_LANG.ru)[1]; }
 function langName(code){
   const l = LANGS_ALL.find(function(x){ return x[0] === code; });
   return l ? l[1] : (code || '—');
@@ -3122,7 +3150,7 @@ function render(){
     if(!passedPart){
       nextBtn = '<button class="restart-btn" onclick="startPart(' + currentLessonIdx + ',' + currentPartIdx + ')">' + ic('redo',16) + (enLang()?' Redo the block</button>':' Пройти блок заново</button>');
     } else if(!isLastPart){
-      nextBtn = '<button class="restart-btn" onclick="startPart(' + currentLessonIdx + ',' + (currentPartIdx+1) + ')">' + t('nxt_b') + ' «' + lesson.parts[currentPartIdx+1].t + '» →</button>';
+      nextBtn = '<button class="restart-btn" onclick="startPart(' + currentLessonIdx + ',' + (currentPartIdx+1) + ')">' + t('nxt_b') + ' «' + partTitle(lesson.parts[currentPartIdx+1]) + '» →</button>';
     } else if(!isLastLesson && lessonUnlocked(currentLessonIdx+1)){
       nextBtn = '<button class="restart-btn" onclick="startPart(' + (currentLessonIdx+1) + ',0)">' + t('lesson') + ' ' + (currentLessonIdx+2) + ': ' + LESSONS[currentLessonIdx+1].title + ' →</button>';
     } else {
@@ -3582,8 +3610,8 @@ function renderWords(){
       ((rev||wordsState.my) ? '' : '<div class="progress-track"><div class="progress-fill" style="width:' + pct + '%"></div></div>') +
     '</div>' +
     '<div class="mode-toggle">' +
-      '<button class="mode-btn ' + (wordsState.mode==="no-ru"?"active":"") + '" onclick="switchWordsMode(\'no-ru\')">🇳🇴 NO → RU</button>' +
-      '<button class="mode-btn ' + (wordsState.mode==="ru-no"?"active":"") + '" onclick="switchWordsMode(\'ru-no\')">🇷🇺 RU → NO</button>' +
+      '<button class="mode-btn ' + (wordsState.mode==="no-ru"?"active":"") + '" onclick="switchWordsMode(\'no-ru\')">🇳🇴 NO → ' + helpLang() + '</button>' +
+      '<button class="mode-btn ' + (wordsState.mode==="ru-no"?"active":"") + '" onclick="switchWordsMode(\'ru-no\')">' + helpFlag() + ' ' + helpLang() + ' → NO</button>' +
     '</div>' +
     '<div class="word-stage" onclick="flipWord()">' +
       '<div class="word-main">' + front + '</div>' +
