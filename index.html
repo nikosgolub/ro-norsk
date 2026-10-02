@@ -1751,7 +1751,7 @@ function toggleTheme(){
 
 function restoreCourse(){
   const i = meta.course || 0;
-  if(COURSES[i] && !COURSES[i].soon){ ci = i; LESSONS = COURSES[i].L; WORDS = COURSES[i].W; }
+  if(COURSES[i] && !COURSES[i].soon){ ci = i; LESSONS = COURSES[i].L || []; WORDS = COURSES[i].W || []; }
 }
 
 function resumeLast(){
@@ -1759,7 +1759,7 @@ function resumeLast(){
   if(!m) return;
   const cIdx = m.c || 0;
   if(!COURSES[cIdx] || COURSES[cIdx].soon) return;
-  ci = cIdx; LESSONS = COURSES[cIdx].L; WORDS = COURSES[cIdx].W;
+  ci = cIdx; LESSONS = COURSES[cIdx].L || []; WORDS = COURSES[cIdx].W || [];
   meta.course = cIdx; saveMeta();
   if(!lessonUnlocked(m.l)){ renderLessons(); return; }
   if(partPassed(m.l, m.p) || !partUnlocked(m.l, m.p)){
@@ -1772,7 +1772,7 @@ function openCourse(i){
   if(COURSES[i].soon) return;
   if(COURSES[i].audio){ ci = i; meta.course = i; saveMeta(); renderDialogs(); return; }
   ci = i;
-  LESSONS = COURSES[i].L;
+  LESSONS = COURSES[i].L || [];
   WORDS = COURSES[i].W;
   meta.course = i; saveMeta();
   renderLessons();
@@ -1810,7 +1810,7 @@ function openSrsAll(){
   const due = srsDueAll();
   for(let i=0;i<COURSES.length;i++){
     if(due[COURSES[i].id]){
-      ci = i; LESSONS = COURSES[i].L; WORDS = COURSES[i].W;
+      ci = i; LESSONS = COURSES[i].L || []; WORDS = COURSES[i].W || [];
       meta.course = i; saveMeta();
       startWordsReview(); return;
     }
@@ -2263,13 +2263,15 @@ function mistakesDue(){ const t = dnum(); return meta.mistakes.filter(m=>(m.d===
 // хранилища для этого не нужно — у урока уже есть отметка последнего захода.
 function recapPool(){
   const out = [], t = dnum();
+  if(!LESSONS || !LESSONS.length) return out;        // курс без уроков (например, диалоги)
   for(let l=0;l<LESSONS.length;l++){
     const rec = progress[K(l)] || {};
     if(rec.ts === undefined || t - rec.ts < RECAP_DAYS) continue;
-    for(let p=0;p<PARTS;p++){
+    const parts = (LESSONS[l] && LESSONS[l].parts) || [];
+    for(let p=0;p<parts.length;p++){
       const done = partProgress(l,p);
       if(!done) continue;
-      const qs = LESSONS[l].parts[p].q;
+      const qs = (parts[p] && parts[p].q) || [];
       for(let i=0;i<Math.min(done,qs.length);i++) out.push(qs[i]);
     }
   }
@@ -2767,6 +2769,7 @@ function saveName(){
 }
 
 function renderLessons(){
+  if(!LESSONS || !LESSONS.length){ renderCourses(); return; }   // курс без уроков
   screen = "lessons";
   const grand = totalPhrases();
   const solvedAll = totalSolved();
@@ -2848,6 +2851,7 @@ function lockedHint(i){
 }
 
 function renderLesson(i){
+  if(!LESSONS || !LESSONS[i]){ renderCourses(); return; }
   screen = "lesson";
   currentLessonIdx = i;
   const l = LESSONS[i];
@@ -2932,6 +2936,7 @@ function startNextPart(i){
 }
 
 function startPart(i,p){
+  if(!LESSONS || !LESSONS[i] || !LESSONS[i].parts[p]){ renderCourses(); return; }
   if(!partUnlocked(i,p)){ partLockHint(p); return; }
   currentLessonIdx = i;
   currentPartIdx = p;
@@ -3448,6 +3453,7 @@ function advance(){
 let wordsState = { deck: [], flipped: false, mode: "no-ru", review: false, my: false };
 
 function startWords(i){
+  if(!WORDS || !WORDS[i]){ renderCourses(); return; }
   currentLessonIdx = i;
   screen = "words";
   const known = new Set(wordsKnown(i));
