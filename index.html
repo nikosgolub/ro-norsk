@@ -334,6 +334,7 @@ body.light .cover img{opacity:1;filter:invert(1) hue-rotate(180deg) brightness(1
 .fjord-banner{border-radius:20px;overflow:hidden;border:1px solid var(--line);margin-bottom:12px;line-height:0}
 .fjord-banner svg{width:100%;height:auto;display:block}
 .footer{text-align:center;font-size:12px;color:var(--ink3);margin-top:2.25rem;line-height:1.7}
+.foot-dot{margin:0 8px;opacity:.4}
 .tour-link{display:inline-block;margin-bottom:10px;cursor:pointer}
 .footer a{color:var(--ink2);text-decoration:none;border-bottom:1px solid var(--line);transition:color .2s}
 .footer a:hover{color:var(--ink)}
@@ -2021,7 +2022,7 @@ function renderCourses(){
           '</div>' +
         '</div>';
     })() +
-    (enLang()?'<div class="footer"><a class="tour-link" onclick="startTour()">How it works</a><br>':'<div class="footer"><a class="tour-link" onclick="startTour()">Как это работает</a><br>') + t('footer') + ' <a href="https://t.me/nikolaiholub" target="_blank" rel="noopener">@nikolaiholub</a></div>';
+    (enLang()?'<div class="footer"><a class="tour-link" onclick="startTour()">How it works</a>':'<div class="footer"><a class="tour-link" onclick="startTour()">Как это работает</a>') + '<span class="foot-dot">·</span><a class="tour-link" onclick="renderLangSelect(1)">' + langName(meta.lang) + '</a><br>' + t('footer') + ' <a href="https://t.me/nikolaiholub" target="_blank" rel="noopener">@nikolaiholub</a></div>';
   setTimeout(animateRings, 20);
 }
 function K(l){ return (ci===0 ? '' : COURSES[ci].id + '_') + 'l' + l; }
@@ -2503,6 +2504,12 @@ const ONB = [
 ];
 
 // Язык интерфейса Telegram — только подсказка: кнопка подсвечена, но нажать нужно самому.
+let langFrom = null;
+function langBack(){ const f = langFrom; langFrom = null; (typeof f === 'function' ? f : renderCourses)(); }
+function langName(code){
+  const l = LANGS_ALL.find(function(x){ return x[0] === code; });
+  return l ? l[1] : (code || '—');
+}
 function tgLang(){
   try{
     const c = TG && TG.initDataUnsafe && TG.initDataUnsafe.user && TG.initDataUnsafe.user.language_code;
@@ -2511,6 +2518,7 @@ function tgLang(){
   }catch(e){ return null; }
 }
 function renderLangSelect(back){
+  if(back) langFrom = (screen === 'lessons') ? renderLessons : renderCourses;
   screen = "lang";
   const old = document.querySelector(".welcome");
   if(old) old.remove();
@@ -2530,7 +2538,7 @@ function setLang(l, back){
   meta.lang = l; saveMeta();
   const w = document.querySelector(".welcome");
   if(w) w.remove();
-  if(back){ renderLessons(); return; }
+  if(back){ langBack(); return; }         // вернёмся на экран, с которого открыли
   goToLessons();
 }
 
@@ -2862,7 +2870,7 @@ function renderLessons(){
     '<div class="lessons-sub">' + tx(COURSES[ci],'sub') + '</div>' +
     '<div class="lesson-list">' + cards + '</div>' +
 
-    (enLang()?'<div class="footer"><a class="tour-link" onclick="startTour()">How it works</a><br>':'<div class="footer"><a class="tour-link" onclick="startTour()">Как это работает</a><br>') + t('footer') + ' <a href="https://t.me/nikolaiholub" target="_blank" rel="noopener">@nikolaiholub</a></div>';
+    (enLang()?'<div class="footer"><a class="tour-link" onclick="startTour()">How it works</a>':'<div class="footer"><a class="tour-link" onclick="startTour()">Как это работает</a>') + '<span class="foot-dot">·</span><a class="tour-link" onclick="renderLangSelect(1)">' + langName(meta.lang) + '</a><br>' + t('footer') + ' <a href="https://t.me/nikolaiholub" target="_blank" rel="noopener">@nikolaiholub</a></div>';
 }
 
 // ─── LESSON DETAIL PAGE ───
