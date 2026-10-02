@@ -4815,7 +4815,7 @@ function chatContext(){
 
   try{
     const my = (meta.my || []).slice(-14);
-    if(my.length) L.push('В личном словаре: ' + my.map(function(w){ return w.no; }).filter(Boolean).join(', ') + '.');
+    if(my.length) L.push('В личном словаре: ' + my.map(function(w){ return w.n || w.no; }).filter(Boolean).join(', ') + '.');
   }catch(e){}
 
   if(!L.length) return '';
@@ -5166,7 +5166,7 @@ function mergeMeta(a, b){            // a — локальное, b — обла
   out.hist = Object.keys(hs).sort(function(x,y){ return dayNum(x)-dayNum(y); }).slice(-400);
 
   out.mistakes = uniqBy((a.mistakes||[]).concat(b.mistakes||[]), function(m){ return m.no; }).slice(-50);
-  out.my       = uniqBy((a.my||[]).concat(b.my||[]), function(w){ return (w.no||'') + '|' + (w.set||''); });
+  out.my       = uniqBy((a.my||[]).concat(b.my||[]), function(w){ return ((w.n||w.no||'')+'').toLowerCase() + '|' + (w.set||''); });
   out.mysets   = uniqBy((a.mysets||[]).concat(b.mysets||[]), function(x){ return x.id; });
 
   out.srs = Object.assign({}, b.srs||{});              // SRS — дальше продвинутая ступень
