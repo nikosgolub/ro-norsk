@@ -1658,6 +1658,73 @@ try{
   }
 }catch(e){}
 
+// ─── ЗАПИСАННАЯ ОЗВУЧКА ────────────────────────────────────────────
+// Если рядом с приложением лежит файл для фразы — играем его: живой голос
+// вместо синтезатора. Нет файла (новая фраза, ответ ИИ, нет сети) — читает
+// синтезатор, как и раньше. Имя файла — хэш от самой фразы, тот же, что
+// считает скрипт генерации, поэтому список файлов не надо держать в коде.
+const SND_BASE = 'audio/p/';
+let sndIdx = undefined;        // undefined — не пробовали, null — файлов нет, объект — есть
+let sndWait = [];
+let sndEl = null;
+
+function sndHash(text){
+  const t = (text||'').replace(/\s+/g,' ').trim();
+  let b;
+  try{ b = new TextEncoder().encode(t); }catch(e){ return ''; }
+  const one = function(seed){
+    let h = seed >>> 0;
+    for(let i=0;i<b.length;i++){ h ^= b[i]; h = Math.imul(h, 0x01000193) >>> 0; }
+    return ('0000000' + h.toString(16)).slice(-8);
+  };
+  return one(0x811c9dc5) + one(0x7f4a7c15);
+}
+function sndLoad(cb){
+  if(sndIdx !== undefined){ if(cb) cb(); return; }
+  if(cb) sndWait.push(cb);
+  if(sndWait.length > 1 || sndLoad.going) return;
+  sndLoad.going = true;
+  const done = function(v){
+    if(sndIdx !== undefined) return;
+    sndIdx = v;
+    const q = sndWait; sndWait = [];
+    q.forEach(function(f){ try{ f(); }catch(e){} });
+  };
+  setTimeout(function(){ done(null); }, 3000);          // нет ответа — просто читаем сами
+  try{
+    fetch(SND_BASE + 'index.json')
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(j){
+        if(!j || !j.ids || !j.ids.length){ done(null); return; }
+        const set = {};
+        for(let i=0;i<j.ids.length;i++) set[j.ids[i]] = 1;
+        done({has:set, ext:j.ext || 'mp3'});
+      })
+      .catch(function(){ done(null); });
+  }catch(e){ done(null); }
+}
+function sndStop(){
+  try{ if(sndEl){ sndEl.pause(); sndEl.currentTime = 0; } }catch(e){}
+  try{ window.speechSynthesis.cancel(); }catch(e){}
+}
+function sndPlay(text, slow, onFail){
+  const id = sndHash(text);
+  if(!id || !sndIdx || !sndIdx.has[id]) return false;
+  let failed = false;
+  const fail = function(){ if(failed) return; failed = true; onFail(); };
+  try{
+    if(!sndEl){ sndEl = new Audio(); sndEl.preload = 'auto'; }
+    sndEl.onerror = null;
+    try{ sndEl.pause(); }catch(e){}
+    sndEl.src = SND_BASE + id + '.' + sndIdx.ext;
+    sndEl.playbackRate = slow ? 0.75 : 1;
+    sndEl.onerror = fail;
+    const pr = sndEl.play();
+    if(pr && pr.catch) pr.catch(fail);
+  }catch(e){ fail(); }
+  return true;
+}
+
 let lastSpoke = {t:'', at:0};
 function speakText(text, rate){
   if(!(typeof window !== 'undefined' && 'speechSynthesis' in window)) return;
@@ -1679,9 +1746,17 @@ function speakText(text, rate){
 }
 function speak(text){
   const now = Date.now();
-  const again = text === lastSpoke.t && now - lastSpoke.at < 4000;
+  const again = text === lastSpoke.t && now - lastSpoke.at < 4000;   // повтор — медленнее
   lastSpoke = {t:text, at:now};
-  speakText(text, again ? 0.72 : 0.95);     // повторное нажатие — медленнее
+  sndStop();
+  const synth = function(){ speakText(text, again ? 0.72 : 0.95); };
+  // Опись уже в руках — играем сразу, не разрывая жест пользователя:
+  // iOS разрешает звук только внутри обработчика нажатия.
+  if(sndIdx !== undefined){
+    if(!sndIdx || !sndPlay(text, again, synth)) synth();
+    return;
+  }
+  sndLoad(function(){ if(!sndIdx || !sndPlay(text, again, synth)) synth(); });
 }
 // Как доставить на устройство голос получше — путь свой на каждой системе.
 function voiceTip(){
@@ -1703,7 +1778,10 @@ function voiceTip(){
   return en ? 'Install a Norwegian voice in your system speech settings.'
             : 'Поставь норвежский голос в системных настройках речи.';
 }
-function voiceNoteHTML(){
+function sndHas(text){ try{ return !!(sndIdx && sndIdx.has && sndIdx.has[sndHash(text)]); }catch(e){ return false; } }
+function voiceNoteHTML(text){
+  // Для фразы есть запись — её читает живой голос, жаловаться не на что.
+  if(text && sndHas(text)) return '';
   if(!voiceWeak() || (meta && meta.vtip)) return '';
   const en = enLang();
   return '<div class="voice-note" id="voice-note">' +
@@ -3468,7 +3546,7 @@ function render(){
         ? '<button class="play-big" onclick="speak(state.questions[state.idx].no)">' + t('play') + '</button>' +
           '<div class="listen-hint">' + t('l_hint') +
             (enLang()?'<span class="again">Tap again — it reads more slowly</span>':'<span class="again">Нажми ещё раз — произнесёт медленнее</span>') +
-          '</div>' + voiceNoteHTML()
+          '</div>' + voiceNoteHTML(current.no)
         : '<div class="q-ru">' + srcHTML(current) + '</div>') +
       (mode==="text" ? textHTML : builderHTML) +
     '</div>' +
@@ -3609,7 +3687,7 @@ function switchMode(m){
   state.retryUsed=false;state.retryMode=false;
   state.pool=makePool(state.questions[state.idx].no);
   render();
-  if(m==="listen") setTimeout(()=>speak(state.questions[state.idx].no), 250);
+  if(m==="listen") speak(state.questions[state.idx].no);
 }
 
 function doSubmit(){
@@ -5490,6 +5568,7 @@ function bootApp(){
       }catch(e){}
     }
     applyTheme();
+    sndLoad();                       // опись записей — заранее, до первого нажатия
     initTelegram();
     wrapScreens();
     goToLessons();
