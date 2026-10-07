@@ -3470,14 +3470,14 @@ function render(){
         '<div class="diff-view"><span class="diff-label">' + t('corr') + '</span>' +
           feedback.diff.map(d=>'<span class="dw ' + d.status + '">' + d.word + '</span>').join(" ") + '</div>' +
         (state.exam ? '' : explainHTML(current)) +
-        (state.exam ? '' : '<button class="listen-btn" style="margin-top:10px" onclick="aiExplain()">' + ic('star',14) + (enLang()?' Why?</button><div class="pron-res" id="ai-exp"></div>':' Почему?</button><div class="pron-res" id="ai-exp"></div>')) +
+        (state.exam ? '' : '<button class="listen-btn" id="ai-why" style="margin-top:10px" onclick="aiExplain()">' + ic('star',14) + (enLang()?' Why?</button><div class="pron-res" id="ai-exp"></div>':' Почему?</button><div class="pron-res" id="ai-exp"></div>')) +
       '</div>';
     } else {
       feedbackHTML = '<div class="feedback err">' +
         '<div class="fb-title">' + t('err_t') + '</div>' +
         '<div class="diff-view">' + feedback.diff.map(d=>'<span class="dw ' + d.status + '">' + d.word + '</span>').join(" ") + '</div>' +
         (state.exam ? '' : explainHTML(current)) +
-        (state.exam ? '' : '<button class="listen-btn" style="margin-top:10px" onclick="aiExplain()">' + ic('star',14) + (enLang()?' Why?</button><div class="pron-res" id="ai-exp"></div>':' Почему?</button><div class="pron-res" id="ai-exp"></div>')) +
+        (state.exam ? '' : '<button class="listen-btn" id="ai-why" style="margin-top:10px" onclick="aiExplain()">' + ic('star',14) + (enLang()?' Why?</button><div class="pron-res" id="ai-exp"></div>':' Почему?</button><div class="pron-res" id="ai-exp"></div>')) +
       '</div>';
     }
   }
@@ -4344,8 +4344,22 @@ async function aiFillWord(){
 // 2. Объяснение ошибки
 async function aiExplain(){
   const box = document.getElementById('ai-exp');
-  if(!box) return;
+  if(!box || aiExplain.busy) return;
   const q = state.questions[state.idx];
+  const btn = document.getElementById('ai-why');
+  if(btn) btn.disabled = true;
+  aiExplain.busy = true;
+  // Ответ модели идёт несколько секунд — показываем счётчик, чтобы экран не казался мёртвым.
+  const t0 = Date.now();
+  const tick = setInterval(function(){
+    const sec = Math.round((Date.now()-t0)/1000);
+    box.innerHTML = (enLang()?'Explaining…':'Разбираю…') + (sec >= 3 ? ' ' + sec + (enLang()?'s':' с') : '');
+  }, 500);
+  const stop = function(){
+    clearInterval(tick);
+    aiExplain.busy = false;
+    if(btn) btn.disabled = false;
+  };
   box.innerHTML = (enLang()?'Explaining…':'Разбираю…');
   try{
     const txt = await aiAsk((enLang()?'The learner is studying Norwegian (bokmål) at level A1-A2, their support language is English. ':'Ученик изучает норвежский (bokmål), уровень A1–A2, родной язык русский. ') +
@@ -4355,8 +4369,10 @@ async function aiExplain(){
       (enLang()?'Explain in English, in 2-3 short sentences, exactly what they got wrong and how to remember the rule. ':'Объясни по-русски в 2-3 коротких предложениях, в чём именно его ошибка и как запомнить правило. ') +
       (enLang()?'Explain exactly the mistake they made, not the topic of the task in general. ':'Разбирай именно ту ошибку, которую он допустил, а не тему задания вообще. ') +
       (enLang()?'No greetings and no lists, just the explanation.':'Без приветствий и без списков, просто объяснение.'));
+    stop();
     box.innerHTML = txt.replace(/</g,'&lt;').replace(/\n/g,'<br>');
   }catch(e){
+    stop();
     box.innerHTML = ((e && e.message ? e.message : aiErrText('other')) + '').replace(/</g,'&lt;');
   }
 }
