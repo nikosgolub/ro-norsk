@@ -15,7 +15,11 @@
 html{-webkit-text-size-adjust:100%}
 :root{
   --bg:#0c0c0c;--paper:#131313;--ink:#f5f5f5;--ink2:#a3a3a3;--ink3:#666;
-  --r1:#ffffff;--r2:rgba(255,255,255,0.58);--r3:rgba(255,255,255,0.40);--rtrack:rgba(255,255,255,0.10);--rdone:rgba(255,255,255,0.15);
+  --r1:#57e8a4;--r2:#39c8d8;--r3:#8a8cf2;--rtrack:rgba(255,255,255,0.10);--rdone:rgba(255,255,255,0.15);--rglow:rgba(255,255,255,0.42);
+  /* Полярное сияние: зелёный кислорода 557.7 нм, бирюза на краю,
+     сине-фиолетовый и малиновая бахрома азота внизу. */
+  --au1:#57e8a4;--au2:#39c8d8;--au3:#8a8cf2;--au4:#d978dd;
+  --aug1:rgba(87,232,164,0.55);--aug2:rgba(57,200,216,0.45);--aug3:rgba(138,140,242,0.40);
   --line:#232325;--blue:#7aa2f7;--blue-light:#16213a;--green:#4ade80;
   --green-light:#0d2818;--red:#f87171;--red-light:#2d1414;
   --amber:#fbbf24;--amber-light:#2b2210;
@@ -459,6 +463,39 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
 .ring-lap{filter:drop-shadow(0 0 2px var(--bg)) drop-shadow(0 0 2px var(--bg)) drop-shadow(0 0 1px var(--bg))}
 .lg-lap{margin-left:5px;font-size:11px;font-weight:700;opacity:.55;vertical-align:1px}
 .rings-small{font-size:12px;color:var(--ink3);margin-top:2px;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+/* Свечение идёт от самой линии прогресса — каждое кольцо светится своим цветом.
+   Дорожка под дугой остаётся матовой, иначе кольцо превращается в пятно. */
+.ring-arc{filter:drop-shadow(0 0 5px var(--rglow))}
+.ring-arc.ring-lap{filter:drop-shadow(0 0 7px var(--rglow))}
+.ring-l0{--rglow:var(--aug1)}
+.ring-l1{--rglow:var(--aug2)}
+.ring-l2{--rglow:var(--aug3)}
+/* Два слоя: узкий держит линию чёткой, широкий даёт мягкий ореол вокруг. */
+.ring-l0 .ring-arc{filter:drop-shadow(0 0 5px var(--aug1)) drop-shadow(0 0 16px var(--aug1))}
+.ring-l1 .ring-arc{filter:drop-shadow(0 0 4px var(--aug2)) drop-shadow(0 0 13px var(--aug2))}
+.ring-l2 .ring-arc{filter:drop-shadow(0 0 4px var(--aug3)) drop-shadow(0 0 11px var(--aug3))}
+.au-dust{filter:drop-shadow(0 0 4px currentColor)}
+/* Пылинки сияния: садятся вдоль пройденной части дуги и медленно всплывают. */
+.au-dust{transform-box:fill-box;transform-origin:center;
+  animation:auDrift var(--t,9s) ease-in-out var(--d,0s) infinite alternate}
+@keyframes auDrift{
+  from{opacity:.12;transform:translate(0,0) scale(.7)}
+  to{opacity:.62;transform:translate(var(--mx,0px),var(--my,-6px)) scale(1.25)}
+}
+@media (prefers-reduced-motion:reduce){ .au-dust{animation:none;opacity:.32} }
+/* Наклон телефона разводит кольца по глубине: дальние смещаются слабее ближних.
+   Сами кольца остаются ровными окружностями — перспектива их не искажает,
+   иначе дуги перестали бы сравниваться между собой. */
+.rings-wrap{--tx:0px;--ty:0px}
+.ring-l{transition:transform .13s cubic-bezier(.2,.7,.3,1);will-change:transform}
+.ring-l0{transform:translate(calc(var(--tx) * .22),calc(var(--ty) * .22))}
+.ring-l1{transform:translate(calc(var(--tx) * .52),calc(var(--ty) * .52))}
+.ring-l2{transform:translate(calc(var(--tx) * .82),calc(var(--ty) * .82))}
+.rings-center{transition:transform .13s cubic-bezier(.2,.7,.3,1);will-change:transform;
+  transform:translate(var(--tx),var(--ty))}
+@media (prefers-reduced-motion:reduce){
+  .ring-l,.rings-center{transform:none!important;transition:none}
+}
 .rings-legend{display:flex;flex-direction:column;gap:11px;min-width:0}
 .rings-wrap svg{width:100%;height:100%;display:block}
 @media (max-width:389px){
@@ -605,7 +642,9 @@ body.light .wk-bar.today{background:#15161a}
 /* ─── СВЕТЛАЯ ТЕМА ─── */
 body.light{
   --bg:#f4f5f7;--paper:#ffffff;--ink:#15161a;--ink2:#5b6068;--ink3:#8c919a;--line:#e3e5ea;
-  --r1:#15161a;--r2:rgba(21,22,26,0.64);--r3:rgba(21,22,26,0.45);--rtrack:rgba(15,22,40,0.12);--rdone:rgba(21,22,26,0.17);
+  --r1:#0f9c68;--r2:#0d7f91;--r3:#5157ad;--rtrack:rgba(15,22,40,0.12);--rdone:rgba(21,22,26,0.17);--rglow:rgba(21,22,26,0.22);
+  --au1:#0f9c68;--au2:#0d7f91;--au3:#5157ad;--au4:#8f3d96;
+  --aug1:rgba(15,156,104,0.30);--aug2:rgba(13,127,145,0.26);--aug3:rgba(81,87,173,0.22);
   --blue:#2f5fd0;--blue-light:#e7eeff;--green:#15803d;--green-light:#e4f7ea;
   --red:#c92a2a;--red-light:#fdeaea;--amber:#a16207;--amber-light:#fdf4d9;
   color:var(--ink);
@@ -2701,6 +2740,78 @@ function ringArc(pct,size,stroke,color,offsetR,idx){
   out += arc(rest, 1, color);
   return out;
 }
+// ─── НАКЛОН ТЕЛЕФОНА ───────────────────────────────────────────────
+// Кольца расходятся слоями, как обои на айфоне. Смещаем слои, а не искажаем
+// их перспективой: окружности остаются окружностями и дуги можно сравнивать.
+// В Telegram источник наклона свой (Bot API 8.0), в обычном браузере — событие
+// deviceorientation. Нет ни того, ни другого — кольца просто стоят на месте.
+const TILT_MAX = 9;                       // пикселей смещения на краю
+let tilt = {on:false, b0:null, g0:null, x:0, y:0, raf:0};
+
+function tiltBox(){ return document.querySelector('.rings-wrap'); }
+function tiltPaint(){
+  tilt.raf = 0;
+  const el = tiltBox();
+  if(!el){ tiltStop(); return; }
+  el.style.setProperty('--tx', tilt.x.toFixed(2) + 'px');
+  el.style.setProperty('--ty', tilt.y.toFixed(2) + 'px');
+}
+function tiltFeed(beta, gamma){           // в градусах
+  if(beta === null || beta === undefined) return;
+  gamma = gamma || 0;
+  if(tilt.b0 === null){ tilt.b0 = beta; tilt.g0 = gamma; }
+  // Точка покоя медленно тянется за телефоном: его можно переложить в руке,
+  // и кольца не должны залипать в углу.
+  tilt.b0 += (beta - tilt.b0) * 0.004;
+  tilt.g0 += (gamma - tilt.g0) * 0.004;
+  const cl = function(v){ return Math.max(-1, Math.min(1, v/22)); };
+  const tx = cl(gamma - tilt.g0) * TILT_MAX;
+  const ty = cl(beta - tilt.b0) * TILT_MAX;
+  tilt.x += (tx - tilt.x) * 0.18;         // сглаживание, иначе дрожит от шума датчика
+  tilt.y += (ty - tilt.y) * 0.18;
+  if(!tilt.raf && typeof requestAnimationFrame === 'function') tilt.raf = requestAnimationFrame(tiltPaint);
+}
+function tiltTg(){
+  try{
+    const d = TG && TG.DeviceOrientation;
+    if(d) tiltFeed(d.beta * 180/Math.PI, d.gamma * 180/Math.PI);
+  }catch(e){}
+}
+function tiltDom(e){ tiltFeed(e.beta, e.gamma); }
+function tiltWeb(){
+  try{
+    if(typeof window === 'undefined' || !window.DeviceOrientationEvent) return;
+    window.addEventListener('deviceorientation', tiltDom);
+    tilt.on = true;
+  }catch(e){}
+}
+function tiltStart(){
+  if(tilt.on) return;
+  try{ if(scReduced()) return; }catch(e){}
+  try{
+    if(TG && TG.DeviceOrientation && TG.DeviceOrientation.start){
+      TG.onEvent('deviceOrientationChanged', tiltTg);
+      TG.DeviceOrientation.start({refresh_rate: 60}, function(ok){ if(!ok) tiltWeb(); });
+      tilt.on = true;
+      return;
+    }
+  }catch(e){}
+  tiltWeb();
+}
+function tiltStop(){
+  if(!tilt.on) return;
+  try{ if(TG && TG.DeviceOrientation && TG.DeviceOrientation.stop) TG.DeviceOrientation.stop(); }catch(e){}
+  try{ if(TG && TG.offEvent) TG.offEvent('deviceOrientationChanged', tiltTg); }catch(e){}
+  try{ window.removeEventListener('deviceorientation', tiltDom); }catch(e){}
+  tilt.on = false; tilt.b0 = null; tilt.g0 = null; tilt.x = 0; tilt.y = 0;
+}
+// Датчик живёт только пока кольца на экране и приложение открыто.
+function tiltSync(){
+  if(document.hidden || !tiltBox()) tiltStop();
+  else tiltStart();
+}
+try{ document.addEventListener('visibilitychange', tiltSync); }catch(e){}
+
 function lapsOf(pct){ return Math.max(1, Math.floor(pct/100) + (pct % 100 > 0 ? 1 : 0)); }
 function lapBadge(pct){
   const l = Math.floor(pct/100);
@@ -2735,11 +2846,54 @@ function trioRings(size, stroke, gap){
   const aPct = LISTEN_GOAL ? Math.round(listenToday()/LISTEN_GOAL*100) : 0;
   const wGoal = WORD_GOAL;
   const wPct = wGoal ? Math.round((dayLog().w||0)/wGoal*100) : 0;
-  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '" style="transform:rotate(-90deg)">' +
-    ringArc(pPct,size,stroke,'var(--r1)',0,0) +
-    ringArc(LISTEN_GOAL ? aPct : 100, size,stroke, LISTEN_GOAL ? 'var(--r2)' : 'var(--rdone)', gap,1) +
-    ringArc(wGoal ? wPct : 100, size,stroke, wGoal ? 'var(--r3)' : 'var(--rdone)', gap*2,2) +
+  // Поворот на -90° раньше висел на всём <svg>. Он переехал внутрь каждого слоя:
+  // смещение от наклона телефона должно считаться в обычных координатах экрана,
+  // иначе «вправо» превращается во «вниз».
+  const c = size/2;
+  const rot = ' transform="rotate(-90 ' + c + ' ' + c + ')"';
+  const uid = 'au' + (++trioRings.n);
+  function layer(i, inner){ return '<g class="ring-l ring-l' + i + '"><g' + rot + '>' + inner + '</g></g>'; }
+  // Каждое кольцо — своя полоса сияния: зелёный → бирюза → сине-фиолетовый → малиновый.
+  function grad(i, from, to){
+    return '<linearGradient id="' + uid + '-' + i + '" gradientUnits="userSpaceOnUse" ' +
+      'x1="' + (size*0.1) + '" y1="' + (size*0.9) + '" x2="' + (size*0.9) + '" y2="' + (size*0.1) + '">' +
+      '<stop offset="0" stop-color="' + from + '"/><stop offset="1" stop-color="' + to + '"/></linearGradient>';
+  }
+  const defs = '<defs>' + grad(0,'var(--au1)','var(--au2)') +
+    grad(1,'var(--au2)','var(--au3)') + grad(2,'var(--au3)','var(--au4)') + '</defs>';
+  const g = function(i){ return 'url(#' + uid + '-' + i + ')'; };
+  return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' + defs +
+    layer(0, ringArc(pPct,size,stroke,g(0),0,0) + auroraDust(size,stroke,pPct,0,0)) +
+    layer(1, ringArc(LISTEN_GOAL ? aPct : 100, size,stroke, LISTEN_GOAL ? g(1) : 'var(--rdone)', gap,1) +
+             (LISTEN_GOAL ? auroraDust(size,stroke,aPct,gap,1) : '')) +
+    layer(2, ringArc(wGoal ? wPct : 100, size,stroke, wGoal ? g(2) : 'var(--rdone)', gap*2,2) +
+             (wGoal ? auroraDust(size,stroke,wPct,gap*2,2) : '')) +
   '</svg>';
+}
+trioRings.n = 0;
+
+// Пылинки сияния вдоль пройденной части дуги. Чистый CSS: ни одного кадра
+// на JS, иначе на главном экране крутился бы вечный цикл и грелся телефон.
+function auroraDust(size, stroke, pct, offsetR, idx){
+  if(!pct || pct < 4 || size < 120) return '';          // на мелких кольцах это мусор
+  const r = (size-stroke)/2 - (offsetR||0);
+  const c = size/2;
+  const col = ['var(--au1)','var(--au2)','var(--au3)'][idx] || 'var(--au1)';
+  const span = Math.min(pct, 100)/100;
+  const n = Math.max(2, Math.round(span * (idx===0 ? 11 : 7)));
+  let out = '';
+  for(let i=0;i<n;i++){
+    const j = function(k){ const x = Math.sin((i+1)*12.9898 + k*78.233 + idx*5.1) * 43758.5453; return x - Math.floor(x); };
+    const a = 2*Math.PI * span * ((i + 0.35 + j(1)*0.3) / n);
+    const rr = r + (j(2)-0.5) * stroke * 2.1;
+    const x = c + rr*Math.cos(a), y = c + rr*Math.sin(a);
+    // всплывают наружу от центра — как дрожь сияния над горизонтом
+    const mx = (Math.cos(a) * (3 + j(3)*5)).toFixed(1), my = (Math.sin(a) * (3 + j(3)*5)).toFixed(1);
+    out += '<circle class="au-dust" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' +
+      (0.9 + j(4)*1.5).toFixed(1) + '" fill="' + col + '" style="--d:' + (j(5)*5).toFixed(2) +
+      's;--t:' + (6 + j(6)*5).toFixed(1) + 's;--mx:' + mx + 'px;--my:' + my + 'px"/>';
+  }
+  return out;
 }
 function ringSVG(pct,size,stroke,color){
   const r = (size-stroke)/2;
@@ -4328,15 +4482,40 @@ function aiErrText(reason){
   const d = (meta.lang && meta.lang!=='ru' && AI_ERR[meta.lang]) ? AI_ERR[meta.lang] : (meta.lang && meta.lang!=='ru' ? AI_ERR.en : AI_ERR.ru);
   return d[reason] || d.other;
 }
-async function aiAsk(prompt, json){
+// onText — ответ приходит кусками и показывается по мере генерации.
+// Модель может думать двадцать секунд, но первые слова появляются через одну-две.
+async function aiAsk(prompt, json, onText){
+  const stream = !!onText && !json && typeof ReadableStream !== 'undefined';
   let res;
   try{
     res = await fetch(AI_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: prompt, json: !!json })
+      body: JSON.stringify({ prompt: prompt, json: !!json, stream: stream })
     });
   }catch(e){ throw new Error(aiErrText('net')); }
+  if(stream && res.ok && res.body && /event-stream/.test(res.headers.get('Content-Type')||'')){
+    const reader = res.body.getReader(), dec = new TextDecoder();
+    let buf = '', text = '', info = null;
+    for(;;){
+      const r = await reader.read();
+      if(r.done) break;
+      buf += dec.decode(r.value, {stream:true});
+      let i;
+      while((i = buf.indexOf('\n\n')) >= 0){
+        const chunk = buf.slice(0, i); buf = buf.slice(i + 2);
+        const line = chunk.split('\n').find(function(x){ return x.indexOf('data:') === 0; });
+        if(!line) continue;
+        let j; try{ j = JSON.parse(line.slice(5).trim()); }catch(e){ continue; }
+        if(j.t){ text += j.t; onText(text); }
+        else if(j.done) info = j;
+        else if(j.error) throw new Error(aiErrText('other'));
+      }
+    }
+    if(!text.trim()) throw new Error(aiErrText('other'));
+    aiAsk.last = info || null;
+    return text.trim();
+  }
   if(!res.ok){
     let reason = 'other';
     try{ const j = await res.json(); if(j && j.reason) reason = j.reason; }catch(e){}
@@ -4393,15 +4572,22 @@ async function aiExplain(){
   };
   box.innerHTML = (enLang()?'Explaining…':'Разбираю…');
   try{
+    let first = true;
+    const show = function(t){
+      if(first){ stop(); first = false; }        // первые слова пришли — счётчик больше не нужен
+      box.innerHTML = t.replace(/</g,'&lt;').replace(/\n/g,'<br>');
+    };
     const txt = await aiAsk((enLang()?'The learner is studying Norwegian (bokmål) at level A1-A2, their support language is English. ':'Ученик изучает норвежский (bokmål), уровень A1–A2, родной язык русский. ') +
       (enLang()?'Task: translate "':'Задание: перевести «') + srcText(q) + (enLang()?'". Correct answer: "':'». Правильный ответ: «') + q.no + '». ' +
       (enLang()?'The learner answered: "':'Ученик ответил: «') + (state.lastAnswer || '') + '». ' +
       (state.feedback && state.feedback.diag ? (enLang()?'The trainer flagged the mistake as: "':'Тренажёр определил ошибку так: «') + plainDiag(state.feedback.diag) + '». ' : '') +
       (enLang()?'Explain in English, in 2-3 short sentences, exactly what they got wrong and how to remember the rule. ':'Объясни по-русски в 2-3 коротких предложениях, в чём именно его ошибка и как запомнить правило. ') +
       (enLang()?'Explain exactly the mistake they made, not the topic of the task in general. ':'Разбирай именно ту ошибку, которую он допустил, а не тему задания вообще. ') +
-      (enLang()?'No greetings and no lists, just the explanation.':'Без приветствий и без списков, просто объяснение.'));
+      (enLang()?'No greetings and no lists, just the explanation.':'Без приветствий и без списков, просто объяснение.'), false, show);
     stop();
     box.innerHTML = txt.replace(/</g,'&lt;').replace(/\n/g,'<br>');
+    // Модель и время — не для глаз, но пригодятся, если снова станет медленно.
+    if(aiAsk.last) box.title = (aiAsk.last.model||'') + ' · ' + Math.round((aiAsk.last.ms||0)/100)/10 + ' c';
   }catch(e){
     stop();
     box.innerHTML = ((e && e.message ? e.message : aiErrText('other')) + '').replace(/</g,'&lt;');
@@ -5507,7 +5693,7 @@ function wrapScreens(){
   });
   const app = document.getElementById('app');
   if(typeof MutationObserver !== 'undefined'){
-    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); });
+    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); tiltSync(); });
     if(app) mo.observe(app, { childList:true });
     mo.observe(document.body, { childList:true });
   }
