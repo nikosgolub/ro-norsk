@@ -1978,7 +1978,7 @@ function courseStats(i){
   ci = i; LESSONS = c.L; WORDS = c.W;
   let solved = 0, total = 0;
   for(let l=0;l<LESSONS.length;l++){ solved += lessonSolved(l); total += lessonTotal(l); }
-  const done = lessonsDoneCount();
+  const done = lessonsPassedCount();
   ci = sl; LESSONS = sL; WORDS = sW;
   return { pct: total ? Math.round(solved/total*100) : 0, done: done, total: c.L.length };
 }
@@ -2237,16 +2237,45 @@ function setPartAcc(l,p,pct){ if(!progress[K(l)]) progress[K(l)]={}; const k='a'
 function partPassed(l,p){ return partAcc(l,p) >= PART_PASS; }
 function partUnlocked(l,p){ return p===0 || partPassed(l,p-1); }
 function examUnlocked(l){ const n=nParts(l); for(let p=0;p<n;p++){ if(!partPassed(l,p)) return false; } return true; }   // порог сдачи экзамена, %
-const EXPIRE_DAYS = 14;               // через сколько дней урок «остывает»
-function touchLesson(l){ if(!progress[K(l)]) progress[K(l)]={}; progress[K(l)].ts = dnum(); saveProgress(); }
+// Урок остывает не каждые две недели, а всё реже: освежил — следующий раз
+// напомним позже. Иначе обслуживание курса растёт линейно и к концу съедает
+// весь дневной бюджет, не оставляя времени на новое.
+const LESSON_INT = [14, 30, 60, 120];
+const EXPIRE_DAYS = LESSON_INT[0];    // через сколько дней остывает свежесданный урок
+function lessonStage(l){ return Math.min((progress[K(l)]||{}).rs || 0, LESSON_INT.length - 1); }
+function lessonInt(l){ return LESSON_INT[lessonStage(l)]; }
+function touchLesson(l){
+  if(!progress[K(l)]) progress[K(l)] = {};
+  const rec = progress[K(l)];
+  if(isExpired(l)){
+    const over = lessonAge(l) / lessonInt(l);
+    // Освежил вовремя — интервал растёт. Забросил надолго — сужаем обратно.
+    rec.rs = over > 2 ? Math.max(lessonStage(l) - 1, 0)
+                      : Math.min(lessonStage(l) + 1, LESSON_INT.length - 1);
+  }
+  rec.ts = dnum();
+  saveProgress();
+}
 function lessonAge(l){ const ts=(progress[K(l)]||{}).ts; return ts===undefined ? null : dnum()-ts; }
 function examPassed(l){ return everPassed(l) || examScore(l) >= EXAM_PASS; }
 function everPassed(l){ return !!(progress[K(l)]||{}).ok; }
-function isExpired(l){ const a=lessonAge(l); return everPassed(l) && a!==null && a >= EXPIRE_DAYS; }
+function isExpired(l){ const a=lessonAge(l); return everPassed(l) && a!==null && a >= lessonInt(l); }
+// Самый «залежавшийся» урок — показываем только его, а не список из двенадцати.
+function staleOne(){
+  let best = -1, worst = 0;
+  for(let i=0;i<LESSONS.length;i++){
+    if(!isExpired(i)) continue;
+    const over = lessonAge(i) / lessonInt(i);
+    if(over > worst){ worst = over; best = i; }
+  }
+  return best;
+}
 function lessonUnlocked(l){ return l===0 || everPassed(l-1); }
 function expiredList(){ const out=[]; for(let i=0;i<LESSONS.length;i++) if(isExpired(i)) out.push(i); return out; }
 function lessonDone(l){ return examPassed(l) && !isExpired(l); }
 function lessonsDoneCount(){ let c=0; for(let i=0;i<LESSONS.length;i++){ if(lessonDone(i)) c++; } return c; }
+// Сданный урок остаётся сданным: «остыл» — повод освежить, а не отмена заслуги.
+function lessonsPassedCount(){ let c=0; for(let i=0;i<LESSONS.length;i++){ if(everPassed(i)) c++; } return c; }
 function totalPhrases(){ let s=0; for(let i=0;i<LESSONS.length;i++) s += lessonTotal(i); return s; }
 function totalSolved(){ let s=0; for(let i=0;i<LESSONS.length;i++) s += lessonSolved(i); return s; }
 // ─── TELEGRAM / HAPTICS / SHARE ───
@@ -3116,7 +3145,7 @@ function renderLessons(){
     const note = !unlocked
       ? (enLang()?'<div class="lock-note">Pass the exam of lesson ':'<div class="lock-note">Сдай экзамен урока ') + i + (enLang()?' at 100%</div>':' на 100%</div>')
       : expired
-        ? (enLang()?'<div class="expire-note">Gone cold — retake the exam</div>':'<div class="expire-note">Остыл — пересдай экзамен</div>')
+        ? (enLang()?'<div class="expire-note">Passed — time to refresh</div>':'<div class="expire-note">Сдан — пора освежить</div>')
         : '';
     return '<div class="' + cls + '" onclick="' + (unlocked ? 'renderLesson(' + i + ')' : 'lockedHint(' + i + ')') + '">' +
       '<div class="lesson-num">' + icon + '</div>' +
@@ -3138,10 +3167,12 @@ function renderLessons(){
   if(meta.last && (meta.last.c||0)===ci && lessonUnlocked(meta.last.l) && !lessonDone(meta.last.l)){
     continueBtn = '<button class="continue-btn" onclick="resumeLast()">' + t('cont') + ' ' + (meta.last.l+1) + ' · ' + lesTitle(LESSONS[meta.last.l]) + '</button>';
   }
-  const exp = expiredList();
+  // Один урок за раз: список из двенадцати дел закрыть невозможно, и он читается как упрёк.
+  const stale = staleOne();
   let expBanner = '';
-  if(exp.length > 0){
-    expBanner = '<div class="plan-banner" onclick="renderLesson(' + exp[0] + (enLang()?')">⏳ Lessons gone cold: ':')">⏳ Остыло уроков: ') + exp.length + (enLang()?' — time to refresh (':' — пора освежить (') + LESSONS[exp[0]].title + ')</div>';
+  if(stale >= 0){
+    expBanner = '<div class="plan-banner" onclick="renderLesson(' + stale + ')">⏳ ' +
+      (enLang()?'Refresh lesson ':'Освежи урок ') + (stale+1) + ' · ' + lesTitle(LESSONS[stale]) + '</div>';
   }
   let srsCard = '';
   let mistakesCard = '';
@@ -3244,7 +3275,7 @@ function renderLesson(i){
         '<div class="section-label">' + t('sec3') + '</div>' +
         '<div class="block-card exam-card' + (passed?' full':'') + (exOpen?'':' locked') + '" onclick="' + (exOpen ? 'startExam(' + i + ')' : 'examLockHint()') + '">' +
           '<div class="block-num">' + (exOpen?ic('cap',17):ic('lock',17)) + '</div>' +
-          '<div class="block-title">' + t('exam') + (!exOpen ? (enLang()?' · pass all ' + nParts(i) + ' blocks at ':' · сдай ' + nParts(i) + ' ' + blockWord(nParts(i)) + ' на ') + PART_PASS + '%' : passed ? (isExpired(i) ? (enLang()?' — gone cold, take it again':' — остыл, пересдай') : t('exam_ok')) : ' · ' + EXAM_N + (enLang()?' questions, one mistake allowed':' вопросов, одна ошибка допустима')) + '</div>' +
+          '<div class="block-title">' + t('exam') + (!exOpen ? (enLang()?' · pass all ' + nParts(i) + ' blocks at ':' · сдай ' + nParts(i) + ' ' + blockWord(nParts(i)) + ' на ') + PART_PASS + '%' : passed ? (isExpired(i) ? (enLang()?' — passed, worth refreshing':' — сдан, стоит освежить') : t('exam_ok')) : ' · ' + EXAM_N + (enLang()?' questions, one mistake allowed':' вопросов, одна ошибка допустима')) + '</div>' +
           (es > 0 ? '<div class="lesson-mini-pct"' + '' + '>' + es + '%</div>' : '') +
         '</div>' +
       '</div>';
