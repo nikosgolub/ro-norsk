@@ -182,8 +182,15 @@ button{touch-action:manipulation}
 /* шапка не ездит вместе с содержимым — иначе прыгает логотип */
 .sc-a.sc-h{animation:scFade .2s ease both;animation-delay:0s}
 .pop-in{animation:scRise .3s cubic-bezier(.22,.78,.3,1) both}
+/* Карточки, до которых человек ещё не долистал, ждут чуть уменьшенными и
+   разворачиваются до полного размера, когда входят в кадр. Прозрачность
+   возвращается к var(--dim), иначе «скоро» перестало бы быть приглушённым. */
+.rv{opacity:0;transform:scale(.92) translate3d(0,10px,0);
+  transition:opacity .4s cubic-bezier(.22,.78,.3,1),transform .52s cubic-bezier(.22,.78,.3,1)}
+.rv.rv-in{opacity:var(--dim,1);transform:none}
 @media (prefers-reduced-motion:reduce){
   .sc-a,.sc-a.sc-h,.pop-in{animation:none}
+  .rv{opacity:var(--dim,1);transform:none;transition:none}
 }
 #chat-screen{display:flex;flex-direction:column;min-height:calc(100vh - 90px)}
 .ch-in{animation:chOpen .34s cubic-bezier(.2,.8,.3,1) both;transform-origin:calc(100% - 46px) calc(100% - 46px)}
@@ -2272,12 +2279,19 @@ function renderCourses(){
       }
       const rq = reviewQueue();
       if(rq.length > 0){
-        const bad = mistakesDue().length;
+        const badAll = mistakesDue().length;          // всего созрело
+        const bad = Math.min(badAll, MIST_MAX);       // столько берём сейчас
+        const oldN = rq.length - bad;                 // добор из пройденного
+        // Если в колоде больше, чем влезает в заход, честно пишем «20 из 48» —
+        // иначе цифра на плашке не сходилась бы с подписью.
+        const note = badAll > bad
+          ? bad + (enLang()?' of ':' из ') + badAll + ' ' + mistWordOf(badAll)
+          : bad + ' ' + mistWord(bad) + (enLang()?' due':' по сроку');
         out += '<div class="block-card live" style="margin-bottom:10px" onclick="startMistakes()">' +
           '<div class="block-num">' + ic('redo',17) + '</div>' +
           '<div class="block-title">' + t('mist') +
-            (bad ? '<div class="lock-note">' + bad + ' ' + (bad===1?(enLang()?'mistake':'ошибка'):bad<5?(enLang()?'mistakes':'ошибки'):(enLang()?'mistakes':'ошибок')) + (enLang()?' due':' по сроку') +
-                   (rq.length>bad ? ' · ' + (rq.length-bad) + (enLang()?' from completed lessons':' из пройденного') : '') + '</div>'
+            (bad ? '<div class="lock-note">' + note +
+                   (oldN > 0 ? ' · ' + oldN + (enLang()?' from completed lessons':' из пройденного') : '') + '</div>'
                  : (enLang()?'<div class="lock-note">Phrases from completed lessons</div>':'<div class="lock-note">Фразы из пройденных уроков</div>')) +
           '</div>' +
           '<div class="score-chip">' + rq.length + '</div>' +
@@ -2674,11 +2688,21 @@ function bumpDaily(){
 // ответил верно — ушла на 1, 3, 7, 14, 30 дней и лишь потом покинула очередь.
 const RECAP_DAYS = 3;      // через сколько дней урок можно подмешивать в повторение
 const RECAP_MAX = 12;      // сколько старых фраз берём за один заход
+const MIST_MAX = 20;       // сколько ошибок берём за один заход
+const MIST_DECK = 60;      // сколько ошибок всего помещается в колоду
 function addMistake(q){
   const old = meta.mistakes.find(m=>m.no===q.no);
   if(old){ old.s = 0; old.d = dnum(); saveMeta(); return; }   // снова ошибся — в начало очереди
   meta.mistakes.push({ru:q.ru,en:q.en,no:q.no,type:q.type,s:0,d:dnum()});
-  if(meta.mistakes.length>60) meta.mistakes.shift();
+  // Колода переполнилась — выбрасываем не самую старую, а самую выученную:
+  // ей до выхода из очереди остался шаг, а нетвёрдая фраза нужнее.
+  if(meta.mistakes.length > MIST_DECK){
+    let out = 0;
+    for(let i=1;i<meta.mistakes.length;i++){
+      if((meta.mistakes[i].s||0) > (meta.mistakes[out].s||0)) out = i;
+    }
+    meta.mistakes.splice(out, 1);
+  }
   saveMeta();
 }
 function promoteMistake(no){
@@ -2691,7 +2715,31 @@ function promoteMistake(no){
   saveMeta();
 }
 function removeMistake(no){ meta.mistakes = meta.mistakes.filter(m=>m.no!==no); saveMeta(); }
+function mistWord(n){
+  if(enLang()) return n === 1 ? 'mistake' : 'mistakes';
+  const m = n % 10, h = n % 100;
+  if(h >= 11 && h <= 14) return 'ошибок';
+  if(m === 1) return 'ошибка';
+  if(m >= 2 && m <= 4) return 'ошибки';
+  return 'ошибок';
+}
+// После «из» всё словосочетание уходит в родительный: «из 21 ошибки», «из 48 ошибок».
+function mistWordOf(n){
+  if(enLang()) return n === 1 ? 'mistake' : 'mistakes';
+  return (n % 10 === 1 && n % 100 !== 11) ? 'ошибки' : 'ошибок';
+}
 function mistakesDue(){ const t = dnum(); return meta.mistakes.filter(m=>(m.d===undefined?0:m.d) <= t); }
+// За один заход берём только часть колоды. Сроки ставятся «на сегодня», и за
+// неделю без повторения накапливается столько, что одна плашка вываливала бы
+// почти всю дневную цель — обслуживание старого вытесняло бы новое.
+// Вперёд идут самые просроченные, при равном сроке — самые нетвёрдые.
+function mistakesTake(){
+  return mistakesDue().sort(function(a,b){
+    const da = a.d === undefined ? 0 : a.d, db = b.d === undefined ? 0 : b.d;
+    if(da !== db) return da - db;
+    return (a.s||0) - (b.s||0);
+  }).slice(0, MIST_MAX);
+}
 // Старые фразы берём из уроков, которых человек не касался несколько дней. Отдельного
 // хранилища для этого не нужно — у урока уже есть отметка последнего захода.
 function recapPool(){
@@ -2711,7 +2759,7 @@ function recapPool(){
   return out;
 }
 function reviewQueue(){
-  const due = mistakesDue();
+  const due = mistakesTake();
   const seen = {}; due.forEach(function(m){ seen[m.no] = 1; });
   const old = shuffle(recapPool().filter(function(q){ return !seen[q.no]; })).slice(0, RECAP_MAX);
   return due.concat(old);
@@ -5699,6 +5747,48 @@ function scEnter(app, dir){
     mark(kids[i], base, kids[i].classList && kids[i].classList.contains('header'));
   }
 }
+// ─── КАРТОЧКИ РАЗВОРАЧИВАЮТСЯ ПРИ ПРОКРУТКЕ ────────────────────────
+// То, что уже на экране, играет обычную анимацию входа. Всё, что ниже сгиба,
+// ждёт уменьшенным и разворачивается в момент появления — лист оживает по мере
+// прокрутки, а не разом.
+const RV_SEL = '.course-card,.lesson-card';
+let rvObs = null;
+function rvSetup(){
+  if(scReduced()) return;
+  if(typeof IntersectionObserver !== 'function') return;   // нет наблюдателя — пусть просто видно
+  if(!rvObs){
+    rvObs = new IntersectionObserver(function(list){
+      for(let i=0;i<list.length;i++){
+        if(!list[i].isIntersecting) continue;
+        list[i].target.classList.add('rv-in');
+        rvObs.unobserve(list[i].target);
+      }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+  }
+  const vh = window.innerHeight || 800;
+  const all = document.querySelectorAll(RV_SEL);
+  for(let i=0;i<all.length;i++){
+    const el = all[i];
+    if(el.dataset.rv) continue;
+    // уже в кадре — не трогаем и не помечаем: раскладка ещё поедет, когда
+    // дорисуются шрифты и обложки, и карточка может уехать за сгиб.
+    if(el.getBoundingClientRect().top < vh * 0.92) continue;
+    el.dataset.rv = '1';
+    el.classList.remove('sc-a','sc-f','sc-b');
+    el.classList.add('rv');
+    rvObs.observe(el);
+  }
+}
+// Первый проход идёт сразу, чтобы карточка не успела мелькнуть в полный рост,
+// а повторные догоняют раскладку после шрифтов и обложек.
+function rvSync(){
+  rvSetup();
+  try{
+    requestAnimationFrame(rvSetup);
+    setTimeout(rvSetup, 220);
+  }catch(e){}
+}
+
 function scPaint(recs){
   if(recs && recs.length){
     let hit = false;
@@ -5744,7 +5834,7 @@ function wrapScreens(){
   });
   const app = document.getElementById('app');
   if(typeof MutationObserver !== 'undefined'){
-    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); peelSync(); });
+    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); peelSync(); rvSync(); });
     if(app) mo.observe(app, { childList:true });
     mo.observe(document.body, { childList:true });
   }
