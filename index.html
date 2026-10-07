@@ -519,19 +519,6 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
   to{opacity:.7;transform:translate(var(--mx,0px),var(--my,-6px)) scale(1.3)}
 }
 @media (prefers-reduced-motion:reduce){ .au-dust{animation:none;opacity:.32} }
-/* Наклон телефона разводит кольца по глубине: дальние смещаются слабее ближних.
-   Сами кольца остаются ровными окружностями — перспектива их не искажает,
-   иначе дуги перестали бы сравниваться между собой. */
-.rings-wrap{--tx:0px;--ty:0px}
-.ring-l{transition:transform .13s cubic-bezier(.2,.7,.3,1);will-change:transform}
-.ring-l0{transform:translate(calc(var(--tx) * .22),calc(var(--ty) * .22))}
-.ring-l1{transform:translate(calc(var(--tx) * .52),calc(var(--ty) * .52))}
-.ring-l2{transform:translate(calc(var(--tx) * .82),calc(var(--ty) * .82))}
-.rings-center{transition:transform .13s cubic-bezier(.2,.7,.3,1);will-change:transform;
-  transform:translate(var(--tx),var(--ty))}
-@media (prefers-reduced-motion:reduce){
-  .ring-l,.rings-center{transform:none!important;transition:none}
-}
 .rings-legend{display:contents}
 .rings-wrap svg{width:100%;height:100%;display:block}
 /* Подпись над значением: так три цели встают в строку даже на узком экране,
@@ -2816,78 +2803,8 @@ function ringArc(pct,size,stroke,color,offsetR,idx,noTrack){
   out += arc(rest, 1, color);
   return out;
 }
-// ─── НАКЛОН ТЕЛЕФОНА ───────────────────────────────────────────────
-// Кольца расходятся слоями, как обои на айфоне. Смещаем слои, а не искажаем
-// их перспективой: окружности остаются окружностями и дуги можно сравнивать.
-// В Telegram источник наклона свой (Bot API 8.0), в обычном браузере — событие
-// deviceorientation. Нет ни того, ни другого — кольца просто стоят на месте.
-const TILT_MAX = 9;                       // пикселей смещения на краю
-let tilt = {on:false, b0:null, g0:null, x:0, y:0, raf:0};
-
-function tiltBox(){ return document.querySelector('.rings-wrap'); }
-function tiltPaint(){
-  tilt.raf = 0;
-  const el = tiltBox();
-  if(!el){ tiltStop(); return; }
-  el.style.setProperty('--tx', tilt.x.toFixed(2) + 'px');
-  el.style.setProperty('--ty', tilt.y.toFixed(2) + 'px');
-}
-function tiltFeed(beta, gamma){           // в градусах
-  if(beta === null || beta === undefined) return;
-  gamma = gamma || 0;
-  if(tilt.b0 === null){ tilt.b0 = beta; tilt.g0 = gamma; }
-  // Точка покоя медленно тянется за телефоном: его можно переложить в руке,
-  // и кольца не должны залипать в углу.
-  tilt.b0 += (beta - tilt.b0) * 0.004;
-  tilt.g0 += (gamma - tilt.g0) * 0.004;
-  const cl = function(v){ return Math.max(-1, Math.min(1, v/22)); };
-  const tx = cl(gamma - tilt.g0) * TILT_MAX;
-  const ty = cl(beta - tilt.b0) * TILT_MAX;
-  tilt.x += (tx - tilt.x) * 0.18;         // сглаживание, иначе дрожит от шума датчика
-  tilt.y += (ty - tilt.y) * 0.18;
-  if(!tilt.raf && typeof requestAnimationFrame === 'function') tilt.raf = requestAnimationFrame(tiltPaint);
-}
-function tiltTg(){
-  try{
-    const d = TG && TG.DeviceOrientation;
-    if(d) tiltFeed(d.beta * 180/Math.PI, d.gamma * 180/Math.PI);
-  }catch(e){}
-}
-function tiltDom(e){ tiltFeed(e.beta, e.gamma); }
-function tiltWeb(){
-  try{
-    if(typeof window === 'undefined' || !window.DeviceOrientationEvent) return;
-    window.addEventListener('deviceorientation', tiltDom);
-    tilt.on = true;
-  }catch(e){}
-}
-function tiltStart(){
-  if(tilt.on) return;
-  try{ if(scReduced()) return; }catch(e){}
-  try{
-    if(TG && TG.DeviceOrientation && TG.DeviceOrientation.start){
-      TG.onEvent('deviceOrientationChanged', tiltTg);
-      TG.DeviceOrientation.start({refresh_rate: 60}, function(ok){ if(!ok) tiltWeb(); });
-      tilt.on = true;
-      return;
-    }
-  }catch(e){}
-  tiltWeb();
-}
-function tiltStop(){
-  if(!tilt.on) return;
-  try{ if(TG && TG.DeviceOrientation && TG.DeviceOrientation.stop) TG.DeviceOrientation.stop(); }catch(e){}
-  try{ if(TG && TG.offEvent) TG.offEvent('deviceOrientationChanged', tiltTg); }catch(e){}
-  try{ window.removeEventListener('deviceorientation', tiltDom); }catch(e){}
-  tilt.on = false; tilt.b0 = null; tilt.g0 = null; tilt.x = 0; tilt.y = 0;
-}
-// Датчик живёт только пока кольца на экране и приложение открыто.
-function tiltSync(){
-  if(document.hidden || !tiltBox()) tiltStop();
-  else tiltStart();
-  peelSync();
-}
-try{ document.addEventListener('visibilitychange', tiltSync); }catch(e){}
+// Кольца и срез маски пересчитываются при смене экрана и возврате в приложение.
+try{ document.addEventListener('visibilitychange', function(){ peelSync(); }); }catch(e){}
 
 // ─── КОЛЬЦА УХОДЯТ ЗА КАРТОЧКУ ─────────────────────────────────────
 // Кольца липнут к верху экрана, карточка наезжает на них снизу. Стекло
@@ -5827,7 +5744,7 @@ function wrapScreens(){
   });
   const app = document.getElementById('app');
   if(typeof MutationObserver !== 'undefined'){
-    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); tiltSync(); });
+    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); peelSync(); });
     if(app) mo.observe(app, { childList:true });
     mo.observe(document.body, { childList:true });
   }
