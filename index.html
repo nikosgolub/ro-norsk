@@ -170,27 +170,43 @@ button{touch-action:manipulation}
    Движение тут не украшение, а подсказка о направлении: глубже по иерархии —
    экран приходит справа, назад — уходит влево, на том же уровне просто
    поднимается. Внутри экрана (нажал слово, проверил ответ) не анимируем. */
-@keyframes scFwd{from{opacity:0;transform:translate3d(18px,0,0)}to{opacity:var(--dim,1);transform:none}}
-@keyframes scBack{from{opacity:0;transform:translate3d(-18px,0,0)}to{opacity:var(--dim,1);transform:none}}
-@keyframes scRise{from{opacity:0;transform:translate3d(0,12px,0)}to{opacity:var(--dim,1);transform:none}}
+/* Одна кривая на всё приложение: резкий старт и очень мягкая посадка —
+   движение успевает показаться быстрым и при этом нигде не щёлкает. */
+@keyframes scFwd{from{opacity:0;transform:translate3d(22px,0,0)}to{opacity:var(--dim,1);transform:none}}
+@keyframes scBack{from{opacity:0;transform:translate3d(-22px,0,0)}to{opacity:var(--dim,1);transform:none}}
+@keyframes scRise{from{opacity:0;transform:translate3d(0,18px,0)}to{opacity:var(--dim,1);transform:none}}
 @keyframes scFade{from{opacity:0}to{opacity:var(--dim,1)}}
 /* Класс висит на самих объектах, а не на контейнере: перерисовка внутри экрана
    создаёт элементы уже без него — и ничего заново не дёргается. */
-.sc-a{animation:scRise .36s cubic-bezier(.22,.78,.3,1) both;animation-delay:var(--sd,0s)}
+.sc-a{animation:scRise .62s cubic-bezier(.16,1,.3,1) both;animation-delay:var(--sd,0s)}
 .sc-a.sc-f{animation-name:scFwd}
 .sc-a.sc-b{animation-name:scBack}
 /* шапка не ездит вместе с содержимым — иначе прыгает логотип */
-.sc-a.sc-h{animation:scFade .2s ease both;animation-delay:0s}
-.pop-in{animation:scRise .3s cubic-bezier(.22,.78,.3,1) both}
-/* Карточки, до которых человек ещё не долистал, ждут чуть уменьшенными и
-   разворачиваются до полного размера, когда входят в кадр. Прозрачность
-   возвращается к var(--dim), иначе «скоро» перестало бы быть приглушённым. */
-.rv{opacity:0;transform:scale(.92) translate3d(0,10px,0);
-  transition:opacity .4s cubic-bezier(.22,.78,.3,1),transform .52s cubic-bezier(.22,.78,.3,1)}
+.sc-a.sc-h{animation:scFade .26s ease both;animation-delay:0s}
+.pop-in{animation:scRise .42s cubic-bezier(.16,1,.3,1) both}
+/* Карточка, до которой человек ещё не долистал, всплывает снизу и садится без
+   рывка — без «зума», от него веет шаблоном. Прозрачность возвращается к
+   var(--dim), иначе «скоро» перестало бы быть приглушённым. */
+.rv{opacity:0;transform:translate3d(0,24px,0) scale(.988);
+  transition:opacity .72s cubic-bezier(.16,1,.3,1),transform .92s cubic-bezier(.16,1,.3,1)}
 .rv.rv-in{opacity:var(--dim,1);transform:none}
+/* Содержимое проявляется следом, построчно и из лёгкого расфокуса: сначала
+   приходит сама плашка, потом её смысл. Размытие вешаем на внутренние блоки,
+   а не на карточку — у неё своё backdrop-filter, вместе они мылят рамку. */
+.rv > *{opacity:0;transform:translate3d(0,9px,0);filter:blur(5px);
+  transition:opacity .66s cubic-bezier(.16,1,.3,1),transform .72s cubic-bezier(.16,1,.3,1),
+             filter .56s cubic-bezier(.16,1,.3,1)}
+.rv.rv-in > *{opacity:1;transform:none;filter:none}
+.rv.rv-in > *:nth-child(1){transition-delay:.10s}
+.rv.rv-in > *:nth-child(2){transition-delay:.17s}
+.rv.rv-in > *:nth-child(3){transition-delay:.23s}
+.rv.rv-in > *:nth-child(4){transition-delay:.28s}
+.rv.rv-in > *:nth-child(5){transition-delay:.32s}
+.rv.rv-in > *:nth-child(n+6){transition-delay:.35s}
 @media (prefers-reduced-motion:reduce){
   .sc-a,.sc-a.sc-h,.pop-in{animation:none}
-  .rv{opacity:var(--dim,1);transform:none;transition:none}
+  .rv,.rv > *{opacity:var(--dim,1);transform:none;filter:none;transition:none}
+  .rv > *{opacity:1}
 }
 #chat-screen{display:flex;flex-direction:column;min-height:calc(100vh - 90px)}
 .ch-in{animation:chOpen .34s cubic-bezier(.2,.8,.3,1) both;transform-origin:calc(100% - 46px) calc(100% - 46px)}
@@ -5737,11 +5753,11 @@ function scEnter(app, dir){
   // длинные списки оживают сами, по карточке, а не одним блоком
   const hosts = app.querySelectorAll ? [].slice.call(app.querySelectorAll(SC_STAG)) : [];
   for(let i=0;i<kids.length;i++){
-    const base = Math.min(i,6) * 0.03;
+    const base = Math.min(i,6) * 0.045;
     const host = hosts.indexOf(kids[i]) >= 0 ? kids[i] : null;
     if(host){
       const cs = host.children;
-      for(let j=0;j<cs.length;j++) mark(cs[j], base + 0.04 + Math.min(j,9) * 0.035, false);
+      for(let j=0;j<cs.length;j++) mark(cs[j], base + 0.05 + Math.min(j,9) * 0.06, false);
       continue;                               // сам список не анимируем — только карточки в нём
     }
     mark(kids[i], base, kids[i].classList && kids[i].classList.contains('header'));
@@ -5763,7 +5779,10 @@ function rvSetup(){
         list[i].target.classList.add('rv-in');
         rvObs.unobserve(list[i].target);
       }
-    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.08 });
+    // Порог нулевой: карточке достаточно показать край. С порогом в доли
+    // карточки та, что осталась узкой полоской у верхней кромки, так и
+    // висела бы спрятанной.
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
   }
   const vh = window.innerHeight || 800;
   const all = document.querySelectorAll(RV_SEL);
