@@ -445,9 +445,9 @@ body.light .yr-bar-bg{background:rgba(15,22,40,0.07)}
 body.light .score-chip{background:rgba(15,22,40,0.06);color:var(--ink)}
 body.light .lesson-num,body.light .block-num{background:rgba(15,22,40,0.05);border-color:rgba(15,22,40,0.10)}
 body.light .wk-bar{background:rgba(15,22,40,0.14)}
-.ring-arc{transition:stroke-dashoffset 1.15s cubic-bezier(.22,.68,.32,1)}
+.ring-arc{transition:stroke-dashoffset 1.25s cubic-bezier(.16,1,.3,1)}
 .ring-arc.done{animation:ringPop .55s ease-out forwards}
-@keyframes numIn{from{opacity:0;transform:scale(.88)}to{opacity:1;transform:scale(1)}}
+@keyframes numIn{from{opacity:0;transform:translate3d(0,9px,0)}to{opacity:1;transform:none}}
 @keyframes ringPop{
   0%{filter:none}
   45%{filter:drop-shadow(0 0 7px rgba(255,255,255,0.75))}
@@ -483,43 +483,33 @@ body.light .toast{background:linear-gradient(160deg,#fff,#f4f5f7);border-color:r
 body.light .toast-ic{background:rgba(15,22,40,0.07)}
 body.light .allwin{background:rgba(244,245,247,0.94)}
 /* ─── дневные кольца ─── */
-/* Кольца вынесены из карточки: внутри их всё равно резал бы backdrop-filter.
-   Нижним краем они уходят за стекло, а при прокрутке липнут к верху экрана —
-   карточка наезжает снизу и постепенно забирает их себе. */
-/* В покое кольца видны целиком и ничем не закрыты, а плашки с цифрами стоят
-   по их краям — слева сверху, справа посередине, слева снизу. */
+/* Кольца живут снаружи карточки: внутри их резал бы её backdrop-filter.
+   Стоят на месте — при прокрутке просто уезжают со страницей, как всё остальное.
+   Плашки с цифрами стоят по их краям, каждая на своей дорожке. */
 .hero-stack{position:relative;--ring:clamp(240px,74vw,292px);--gap:14px;--chip:46px;
-  --sc:0;--sy:0;--par:0;margin-bottom:1.25rem}
-.ring-rail{height:var(--ring);pointer-events:none}
-/* Кольцо не липнет к верху экрана — оно просто отстаёт от страницы на 30%,
-   и карточка снизу его догоняет. Так ничего не «замирает» в шапке. */
-.rings-hero{position:relative;z-index:0;display:flex;justify-content:center;
-  height:var(--ring);cursor:pointer;pointer-events:auto;
-  transform:translateY(calc(var(--par,0) * 1px));
-  /* Срез по верхней кромке карточки: ниже него кольцо плавно растворяется.
-     Стекло полупрозрачное, и без среза кольцо читалось бы сквозь подписи. */
-  --cut:100%;   /* до первого пересчёта кольцо видно целиком */
-  -webkit-mask-image:linear-gradient(to bottom,#000 var(--cut),transparent calc(var(--cut) + 38px));
-  mask-image:linear-gradient(to bottom,#000 var(--cut),transparent calc(var(--cut) + 38px))}
-.hero-stack > .hero{position:relative;z-index:1;margin-top:var(--gap);margin-bottom:0}
-/* Плашки «Фразы · Аудио · Слова» — не часть карточки, а подписи к кольцам.
-   Живут внутри .rings-hero, поэтому липнут и уезжают вместе с кольцом.
-   Всплывают при запуске и тают, едва человек начинает листать. */
-.stat-float{position:absolute;inset:0;pointer-events:none;
-  opacity:clamp(0,calc(1 - var(--sy,0) * 1.25),1);
-  transform:translateY(calc(var(--sy,0) * -9px))}
-/* Кольцо при прокрутке уезжает вверх и уменьшается — будто уходит под карточку. */
-.rings-wrap{transform-origin:top center;transform:scale(calc(1 - var(--sc,0) * 0.36))}
-/* Свечение и пылинки выходят за рамку svg — иначе ореол срезало бы по квадрату. */
+  margin-bottom:1.25rem}
+.rings-hero{position:relative;display:flex;justify-content:center;
+  height:var(--ring);cursor:pointer}
+.hero-stack > .hero{position:relative;margin-top:var(--gap);margin-bottom:0}
+.stat-float{position:absolute;inset:0;pointer-events:none}
+/* Свечение выходит за рамку svg — иначе ореол срезало бы по квадрату. */
 .rings-wrap svg{overflow:visible}
-.rings-wrap{position:relative;width:var(--ring,200px);aspect-ratio:1;flex-shrink:0}
+.rings-wrap{position:relative;width:var(--ring,200px);aspect-ratio:1;flex-shrink:0;
+  animation:ringIn .72s cubic-bezier(.16,1,.3,1) both}
+@keyframes ringIn{from{opacity:0;transform:translate3d(0,14px,0) scale(.99)}
+                  to{opacity:1;transform:none}}
 .rings-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-.rings-big{animation:numIn .5s .25s both ease-out;font-size:clamp(38px,13vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1}
+/* Число приходит следом за кольцом: подъём и проявление, без скачка масштаба. */
+.rings-big{animation:numIn .66s .22s both cubic-bezier(.16,1,.3,1);font-size:clamp(38px,13vw,52px);font-weight:700;letter-spacing:-1.5px;line-height:1}
 /* Рекордный день в четыре знака — ужимаем, чтобы число не вылезло за дорожку. */
 .rings-big.long{font-size:clamp(30px,10vw,40px);letter-spacing:-1.2px}
 .ring-lap{filter:drop-shadow(0 0 2px var(--bg)) drop-shadow(0 0 2px var(--bg)) drop-shadow(0 0 1px var(--bg))}
 .lg-lap{margin-left:5px;font-size:11px;font-weight:700;opacity:.55;vertical-align:1px}
-.rings-small{font-size:14.5px;color:var(--ink3);margin-top:2px;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.rings-small{font-size:14.5px;color:var(--ink3);margin-top:2px;white-space:nowrap;font-variant-numeric:tabular-nums;letter-spacing:.01em;
+  animation:numIn .66s .30s both cubic-bezier(.16,1,.3,1)}
+@media (prefers-reduced-motion:reduce){
+  .rings-wrap,.rings-big,.rings-small{animation:none}
+}
 /* Свечение идёт от самой линии прогресса. Дорожка под дугой остаётся матовой,
    иначе кольцо превращается в пятно. */
 .ring-arc{filter:drop-shadow(0 0 5px var(--rglow))}
@@ -534,14 +524,6 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
 .ring-l2 .ring-halo{animation-duration:8.3s;animation-delay:-4.4s}
 @keyframes haloBreath{0%,100%{opacity:.34}50%{opacity:1}}
 @media (prefers-reduced-motion:reduce){ .ring-halo{animation:none;opacity:.72} }
-/* Пылинки сияния: садятся вдоль пройденной части дуги и медленно всплывают. */
-.au-dust{transform-box:fill-box;transform-origin:center;
-  animation:auDrift var(--t,9s) ease-in-out var(--d,0s) infinite alternate}
-@keyframes auDrift{
-  from{opacity:.12;transform:translate(0,0) scale(.7)}
-  to{opacity:.7;transform:translate(var(--mx,0px),var(--my,-6px)) scale(1.3)}
-}
-@media (prefers-reduced-motion:reduce){ .au-dust{animation:none;opacity:.32} }
 .rings-legend{display:contents}
 .rings-wrap svg{width:100%;height:100%;display:block}
 /* Подпись над значением: так три цели встают в строку даже на узком экране,
@@ -555,7 +537,7 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
   background:linear-gradient(165deg,rgba(28,28,31,0.95),rgba(17,17,19,0.93));
   border:1px solid rgba(255,255,255,0.13);border-radius:15px;
   box-shadow:0 8px 22px rgba(0,0,0,0.42);
-  animation:chipIn .52s var(--d,0s) both cubic-bezier(.2,.8,.3,1)}
+  animation:chipIn .62s var(--d,0s) both cubic-bezier(.16,1,.3,1)}
 /* На дугу садится сама точка, а не плашка целиком: якорь смещён в центр точки
    (10px поля + половина кружка; по вертикали — середина строки с подписью).
    Доли радиуса те же, по которым рисуются дуги, поэтому точка всегда попадает
@@ -2240,7 +2222,6 @@ function renderCourses(){
       ? '<div class="plan-banner" onclick="renderSchedule()">' + t('plan') + ' ' + sched().time + '</div>'
       : '') +
     '<div class="hero-stack">' +
-      '<div class="ring-rail">' +
       (enLang()?'<div class="rings-hero" onclick="renderGoalEdit()" title="Edit goals">':'<div class="rings-hero" onclick="renderGoalEdit()" title="Изменить цели">') +
         '<div class="rings-wrap">' + trioRings(288) +
           '<div class="rings-center">' +
@@ -2255,7 +2236,6 @@ function renderCourses(){
             (enLang()?'<div class="lg"><span class="lg-dot" style="background:var(--r3)"></span><span class="lg-t">Words</span>':'<div class="lg"><span class="lg-dot" style="background:var(--r3)"></span><span class="lg-t">Слова</span>') + (WORD_GOAL ? '<span class="lg-v' + ((dayLog().w||0)>=WORD_GOAL?' over':'') + '">' + (dayLog().w||0) + ' / ' + WORD_GOAL + lapBadge((dayLog().w||0)/WORD_GOAL*100) + '</span>' : (enLang()?'<span class="lg-v off">off</span>':'<span class="lg-v off">выключено</span>')) + '</div>' +
           '</div>' +
         '</div>' +
-      '</div>' +
       '</div>' +
       '<div class="hero">' +
       (function(){
@@ -2867,66 +2847,6 @@ function ringArc(pct,size,stroke,color,offsetR,idx,noTrack){
   out += arc(rest, 1, color);
   return out;
 }
-// Кольца и срез маски пересчитываются при смене экрана и возврате в приложение.
-try{ document.addEventListener('visibilitychange', function(){ peelSync(); }); }catch(e){}
-
-// ─── КОЛЬЦА УХОДЯТ ЗА КАРТОЧКУ ─────────────────────────────────────
-// Кольца липнут к верху экрана, карточка наезжает на них снизу. Стекло
-// полупрозрачное, поэтому просто спрятать за ним кольцо нельзя — оно читалось
-// бы сквозь подписи. Вместо этого двигаем срез маски по верхней кромке
-// карточки: что ушло под стекло, то плавно растворяется.
-let peel = {raf:0, on:false};
-function peelBox(){ return document.querySelector('.hero-stack'); }
-function peelPaint(){
-  peel.raf = 0;
-  const st = peelBox();
-  if(!st){ peelStop(); return; }
-  const hero = st.querySelector('.rings-hero'), card = st.querySelector('.hero');
-  if(!hero || !card) return;
-  const h = hero.offsetHeight || 0;
-  if(!h) return;
-  const y = window.pageYOffset || document.documentElement.scrollTop || 0;
-  // 1. Отставание кольца от страницы. Доезжает до предела и дальше уходит наверх
-  //    вместе со всем остальным — ничего не зависает на экране.
-  st.style.setProperty('--par', Math.min(y * 0.7, h * 0.75).toFixed(1));
-  // 2. Срез маски — по кромке карточки. Замеряем ПОСЛЕ сдвига: иначе срез
-  //    отставал бы на один кадр и тянулся бы за кольцом шлейфом.
-  const cut = Math.max(-54, card.getBoundingClientRect().top - hero.getBoundingClientRect().top);
-  hero.style.setProperty('--cut', cut.toFixed(1) + 'px');
-  // 3. Кольцо ужимается ровно в такт тому, как карточка на него наезжает: считаем
-  //    не прокрутку, а саму встречу. Иначе между ними разошлась бы пустая полоса.
-  st.style.setProperty('--sc', Math.max(0, Math.min(1, (h - cut) / (h * 0.59))).toFixed(3));
-  // 4. Плашки живут своей жизнью: тают от первого же движения пальца.
-  const sy = Math.max(0, Math.min(1, y / 90));
-  st.style.setProperty('--sy', sy.toFixed(3));
-  const chips = st.querySelector('.stat-float');
-  if(chips) chips.style.pointerEvents = sy > 0.5 ? 'none' : 'auto';
-}
-function peelTick(){ if(!peel.raf) peel.raf = requestAnimationFrame(peelPaint); }
-function peelStart(){
-  if(peel.on) return;
-  peel.on = true;
-  try{
-    window.addEventListener('scroll', peelTick, {passive:true});
-    window.addEventListener('resize', peelTick);
-  }catch(e){}
-  peelTick();
-}
-function peelStop(){
-  if(!peel.on) return;
-  peel.on = false;
-  try{
-    window.removeEventListener('scroll', peelTick);
-    window.removeEventListener('resize', peelTick);
-  }catch(e){}
-  if(peel.raf){ cancelAnimationFrame(peel.raf); peel.raf = 0; }
-}
-function peelSync(){
-  if(document.hidden || !peelBox()) peelStop();
-  // Экран мог перерисоваться — у нового кольца инлайновых значений ещё нет,
-  // поэтому пересчитываем их сразу, не дожидаясь первой прокрутки.
-  else { peelStart(); peelTick(); }
-}
 
 function lapsOf(pct){ return Math.max(1, Math.floor(pct/100) + (pct % 100 > 0 ? 1 : 0)); }
 function lapBadge(pct){
@@ -2975,7 +2895,7 @@ function trioRings(size, stroke, gap){
   function set(i, pct, col, off){
     const o = pad + off;
     return '<g class="ring-halo">' + ringArc(pct,size,stroke,col,o,i,true) + '</g>' +
-      ringArc(pct,size,stroke,col,o,i) + auroraDust(size,stroke,pct,o,i);
+      ringArc(pct,size,stroke,col,o,i);
   }
   return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 ' + size + ' ' + size + '">' +
     layer(0, set(0, pPct, 'var(--r1)', 0)) +
@@ -2986,30 +2906,6 @@ function trioRings(size, stroke, gap){
   '</svg>';
 }
 
-// Пылинки у свечения: садятся вдоль пройденной части дуги и медленно всплывают.
-// Чистый CSS: ни одного кадра на JS, иначе на главном экране крутился бы вечный
-// цикл и грелся телефон.
-function auroraDust(size, stroke, pct, offsetR, idx){
-  if(!pct || pct < 4 || size < 120) return '';          // на мелких кольцах это мусор
-  const r = (size-stroke)/2 - (offsetR||0);
-  const c = size/2;
-  const col = ['var(--r1)','var(--r2)','var(--r3)'][idx] || 'var(--r1)';
-  const span = Math.min(pct, 100)/100;
-  const n = Math.max(4, Math.round(span * (idx===0 ? 44 : 28)));
-  let out = '';
-  for(let i=0;i<n;i++){
-    const j = function(k){ const x = Math.sin((i+1)*12.9898 + k*78.233 + idx*5.1) * 43758.5453; return x - Math.floor(x); };
-    const a = 2*Math.PI * span * ((i + 0.35 + j(1)*0.3) / n);
-    const rr = r + (j(2)-0.5) * stroke * 2.2;
-    const x = c + rr*Math.cos(a), y = c + rr*Math.sin(a);
-    // всплывают наружу от центра — как дрожь сияния над горизонтом
-    const mx = (Math.cos(a) * (2 + j(3)*4)).toFixed(1), my = (Math.sin(a) * (2 + j(3)*4)).toFixed(1);
-    out += '<circle class="au-dust" cx="' + x.toFixed(1) + '" cy="' + y.toFixed(1) + '" r="' +
-      (0.35 + j(4)*0.75).toFixed(2) + '" fill="' + col + '" style="--d:' + (j(5)*5).toFixed(2) +
-      's;--t:' + (6 + j(6)*5).toFixed(1) + 's;--mx:' + mx + 'px;--my:' + my + 'px"/>';
-  }
-  return out;
-}
 function ringSVG(pct,size,stroke,color){
   const r = (size-stroke)/2;
   const c = 2*Math.PI*r;
@@ -5853,7 +5749,7 @@ function wrapScreens(){
   });
   const app = document.getElementById('app');
   if(typeof MutationObserver !== 'undefined'){
-    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); peelSync(); rvSync(); });
+    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); rvSync(); });
     if(app) mo.observe(app, { childList:true });
     mo.observe(document.body, { childList:true });
   }
