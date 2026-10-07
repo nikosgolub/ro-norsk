@@ -57,6 +57,14 @@ button{touch-action:manipulation}
 }
 .app{max-width:700px;margin:0 auto;padding-bottom:calc(5.5rem + max(env(safe-area-inset-bottom),var(--tg-bottom,0px)));padding-left:max(1rem,env(safe-area-inset-left),var(--tg-left,0px));padding-right:max(1rem,env(safe-area-inset-right),var(--tg-right,0px));padding-top:max(env(safe-area-inset-top),var(--tg-top,0px))}
 .header{padding:1.25rem 0 0;display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
+/* Шапка главной собрана в свою плашку, чтобы отделяться от колец.
+   Она в обычном потоке: прокручивается вместе со страницей. */
+.header.head-card{padding:11px 12px 11px 16px;margin:.35rem 0 1.05rem;border-radius:18px;
+  background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));
+  backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);
+  border:1px solid rgba(255,255,255,0.10);
+  box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35)}
+.head-card .back-btn{padding:6px 12px}
 .ic{vertical-align:-3px;display:inline-block;flex-shrink:0}
 .logo{font-size:20px;font-weight:700;color:var(--ink);letter-spacing:-0.5px;cursor:pointer}
 .head-greet{font-size:17px;font-weight:700;letter-spacing:-0.3px;color:var(--ink);cursor:pointer;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -467,7 +475,7 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
   transform:translateY(calc(var(--par,0) * 1px));
   /* Срез по верхней кромке карточки: ниже него кольцо плавно растворяется.
      Стекло полупрозрачное, и без среза кольцо читалось бы сквозь подписи. */
-  --cut:77%;
+  --cut:100%;   /* до первого пересчёта кольцо видно целиком */
   -webkit-mask-image:linear-gradient(to bottom,#000 var(--cut),transparent calc(var(--cut) + 38px));
   mask-image:linear-gradient(to bottom,#000 var(--cut),transparent calc(var(--cut) + 38px))}
 .hero-stack > .hero{position:relative;z-index:1;margin-top:var(--gap);margin-bottom:0}
@@ -530,7 +538,7 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
    а длинное «0 / 60 мин» не ломает плашку. */
 .lg{position:absolute;display:grid;grid-template-columns:auto auto;
   grid-template-areas:"dot name" "val val";justify-content:center;align-content:center;
-  column-gap:6px;row-gap:3px;white-space:nowrap;height:var(--chip,46px);
+  align-items:center;column-gap:6px;row-gap:3px;white-space:nowrap;height:var(--chip,46px);
   font-size:clamp(11.5px,3.2vw,12.5px);padding:0 10px;
   /* Плашка почти непрозрачна: под ней проходит светящаяся дуга, и сквозь
      стекло цифры на ней не прочитались бы. */
@@ -538,23 +546,27 @@ body.light .allwin{background:rgba(244,245,247,0.94)}
   border:1px solid rgba(255,255,255,0.13);border-radius:15px;
   box-shadow:0 8px 22px rgba(0,0,0,0.42);
   animation:chipIn .52s var(--d,0s) both cubic-bezier(.2,.8,.3,1)}
-/* Каждая плашка стоит на радиусе своего кольца: «Фразы» — на внешнем, «Аудио» —
-   на среднем, «Слова» — на внутреннем. Доли радиуса взяты из той же геометрии,
-   по которой рисуются дуги, поэтому плашка всегда попадает на свою дорожку. */
-.lg{left:calc(50% + var(--ring) * var(--dx));top:calc(50% + var(--ring) * var(--dy));
-  transform:translate(-50%,-50%)}
-.lg:nth-child(1){--dx:-0.361;--dy:-0.253}   /* внешнее кольцо, 145° */
-.lg:nth-child(2){--d:.09s;--dx:0.360;--dy:-0.063}  /* среднее, 10° */
+/* На дугу садится сама точка, а не плашка целиком: якорь смещён в центр точки
+   (10px поля + половина кружка; по вертикали — середина строки с подписью).
+   Доли радиуса те же, по которым рисуются дуги, поэтому точка всегда попадает
+   на свою дорожку: «Фразы» — внешняя, «Аудио» — средняя, «Слова» — внутренняя. */
+.lg{--ax:14px;--ay:11.5px;
+  left:calc(50% + var(--ring) * var(--dx));top:calc(50% + var(--ring) * var(--dy));
+  transform:translate(calc(0px - var(--ax)),calc(0px - var(--ay)))}
+.lg:nth-child(1){--dx:-0.361;--dy:-0.253}          /* внешнее кольцо, 145° */
+.lg:nth-child(2){--d:.09s;--dx:0.305;--dy:-0.2005} /* среднее, 33° */
 .lg:nth-child(3){--d:.18s;--dx:-0.236;--dy:0.165}  /* внутреннее, 215° */
-@keyframes chipIn{from{opacity:0;transform:translate(-50%,calc(-50% + 12px)) scale(.95)}
-                  to{opacity:1;transform:translate(-50%,-50%)}}
+@keyframes chipIn{
+  from{opacity:0;transform:translate(calc(0px - var(--ax)),calc(12px - var(--ay))) scale(.95)}
+  to{opacity:1;transform:translate(calc(0px - var(--ax)),calc(0px - var(--ay)))}}
 @media (prefers-reduced-motion:reduce){ .lg{animation:none} }
 body.light .lg{background:linear-gradient(165deg,rgba(255,255,255,0.96),rgba(245,246,249,0.94));
   border-color:rgba(15,22,40,0.10);box-shadow:0 8px 22px rgba(15,22,40,0.14)}
-.lg-dot{grid-area:dot;width:8px;height:8px;border-radius:50%;flex-shrink:0}
-.lg-t{grid-area:name;color:var(--ink2)}
+.lg-dot{grid-area:dot;width:8px;height:8px;border-radius:50%;flex-shrink:0;align-self:center}
+/* Высоты строк заданы явно: от них считается, где внутри плашки сидит точка. */
+.lg-t{grid-area:name;color:var(--ink2);line-height:16px}
 .lg-v{grid-area:val;justify-self:center;font-weight:600;font-variant-numeric:tabular-nums;
-  font-size:clamp(12px,3.6vw,14.5px)}
+  font-size:clamp(12px,3.6vw,14.5px);line-height:20px}
 
 .lg-v.over{color:var(--ink)}
 .lg-v.off{color:var(--ink3);font-weight:500}
@@ -609,6 +621,23 @@ body.light .wk-bar.today{background:#15161a}
 .exam-card.full .block-num{background:var(--green-light);border-color:#1d5c34;color:var(--green)}
 .block-card{background:linear-gradient(160deg,rgba(255,255,255,0.075),rgba(255,255,255,0.03) 45%,rgba(255,255,255,0.015));backdrop-filter:blur(26px) saturate(150%);-webkit-backdrop-filter:blur(26px) saturate(150%);border:1px solid rgba(255,255,255,0.10);box-shadow:0 1px 0 rgba(255,255,255,0.09) inset,0 8px 28px rgba(0,0,0,0.35);border-radius:16px;padding:1rem 1.15rem;cursor:pointer;transition:border-color .2s,transform .1s;display:flex;align-items:center;gap:13px}
 .block-card:hover{border-color:rgba(255,255,255,0.22)}
+/* Бегущий засвет по рамке: по кругу едет светлый участок конического
+   градиента, а маска оставляет от него только кромку в 1,5px.
+   Угол анимируется через @property — иначе браузер не умеет его
+   интерполировать; где @property нет, остаётся обычная статичная рамка. */
+@property --spin{syntax:'<angle>';initial-value:0deg;inherits:false}
+.block-card.live{position:relative;isolation:isolate}
+.block-card.live::before{content:'';position:absolute;inset:-1px;border-radius:inherit;
+  padding:1.5px;pointer-events:none;z-index:1;
+  background:conic-gradient(from var(--spin,0deg),transparent 0 74%,
+    rgba(255,255,255,0.14) 81%,var(--ink) 86%,rgba(255,255,255,0.14) 91%,transparent 98%);
+  -webkit-mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+  -webkit-mask-composite:xor;
+  mask:linear-gradient(#000,#000) content-box,linear-gradient(#000,#000);
+  mask-composite:exclude;
+  animation:spinEdge 3.6s linear infinite}
+@keyframes spinEdge{to{--spin:360deg}}
+@media (prefers-reduced-motion:reduce){ .block-card.live::before{animation:none;opacity:.5} }
 .block-card:active{transform:scale(.99)}
 .block-card.full{border-color:rgba(74,222,128,0.35)}
 .block-num{width:34px;height:34px;line-height:0;border-radius:11px;background:var(--bg);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--ink2);flex-shrink:0}
@@ -692,6 +721,7 @@ body.light .ambient{background:var(--bg)}
 body.light .amb.a1{background:radial-gradient(circle,rgba(47,95,208,0.13),transparent 70%)}
 body.light .amb.a2{background:radial-gradient(circle,rgba(201,42,42,0.09),transparent 70%)}
 body.light .card,body.light .hero,body.light .lesson-card,body.light .block-card,
+body.light .header.head-card,
 body.light .course-card,body.light .mode-toggle,body.light .word-stage,body.light .wn-item{
   background:linear-gradient(160deg,rgba(255,255,255,0.96),rgba(255,255,255,0.86));
   border-color:rgba(15,22,40,0.08);
@@ -2188,7 +2218,7 @@ function renderCourses(){
   const phPct = Math.round(ph/phT*100), wPct = Math.round(wk/wT*100);
 
   document.getElementById('app').innerHTML =
-    '<div class="header">' +
+    '<div class="header head-card">' +
       '<div class="head-greet" onclick="renderName()">' + (meta.name ? 'Hei, ' + meta.name + '!' : 'Hei!') + '<span class="edit-hint">' + ic('pencil',13) + '</span></div>' +
       '<div class="header-right">' +
         '<button class="back-btn" onclick="toggleTheme()">' + ic(meta.theme==='light'?'moon':'sun',17) + '</button>' +
@@ -2247,7 +2277,7 @@ function renderCourses(){
       const dueAll = srsDueAll();
       let dueN = 0; for(const k in dueAll) dueN += dueAll[k];
       if(dueN > 0){
-        out += '<div class="block-card" style="margin-bottom:10px" onclick="openSrsAll()">' +
+        out += '<div class="block-card live" style="margin-bottom:10px" onclick="openSrsAll()">' +
           '<div class="block-num">' + ic('cards',17) + '</div>' +
           '<div class="block-title">' + t('srs_rev') + '</div>' +
           '<div class="score-chip">' + dueN + '</div>' +
@@ -2256,7 +2286,7 @@ function renderCourses(){
       const rq = reviewQueue();
       if(rq.length > 0){
         const bad = mistakesDue().length;
-        out += '<div class="block-card" style="margin-bottom:10px" onclick="startMistakes()">' +
+        out += '<div class="block-card live" style="margin-bottom:10px" onclick="startMistakes()">' +
           '<div class="block-num">' + ic('redo',17) + '</div>' +
           '<div class="block-title">' + t('mist') +
             (bad ? '<div class="lock-note">' + bad + ' ' + (bad===1?(enLang()?'mistake':'ошибка'):bad<5?(enLang()?'mistakes':'ошибки'):(enLang()?'mistakes':'ошибок')) + (enLang()?' due':' по сроку') +
@@ -2912,7 +2942,9 @@ function peelStop(){
 }
 function peelSync(){
   if(document.hidden || !peelBox()) peelStop();
-  else peelStart();
+  // Экран мог перерисоваться — у нового кольца инлайновых значений ещё нет,
+  // поэтому пересчитываем их сразу, не дожидаясь первой прокрутки.
+  else { peelStart(); peelTick(); }
 }
 
 function lapsOf(pct){ return Math.max(1, Math.floor(pct/100) + (pct % 100 > 0 ? 1 : 0)); }
