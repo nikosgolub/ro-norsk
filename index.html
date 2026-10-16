@@ -5956,7 +5956,8 @@ function fjH(x,z){
   let h = Math.pow(w, 1.55) * 40;
   h *= 0.40 + 1.15 * fjFbm(x*0.015+11, z*0.015+7);
   h += fjFbm(x*0.055, z*0.055, 3) * 2.4 - 1.1;
-  return h - 1.4;
+  h -= 1.4 + 2.8 * (1 - Math.min(w * 3, 1));         // в русле дно глубже, берег круче
+  return h;
 }
 
 function fjSync(){
@@ -6018,7 +6019,8 @@ function fjBuild(THREE){
   land.rotation.x = -Math.PI/2; land.position.z = -320; scene.add(land);
 
   const water = new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),
-    new THREE.MeshBasicMaterial({ color:0x545c63 }));
+    new THREE.MeshBasicMaterial({ color:0x545c63,
+      polygonOffset:true, polygonOffsetFactor:-1, polygonOffsetUnits:-1 }));
   water.rotation.x = -Math.PI/2; scene.add(water);
 
   const gv = document.createElement('canvas'); gv.width = gv.height = 256;
@@ -6039,9 +6041,9 @@ function fjBuild(THREE){
   let p = 0, shownP = -1, on = false, raf = 0, hidden = false;
 
   function place(){
-    const t = 20 - p * 18, a = t - 40;                   // параллакс: уходим вперёд и чуть вверх
-    camera.position.set(fjCentre(t), 1.75 + p*1.6, t);
-    camera.lookAt(fjCentre(a), 3.4 + p*2.2, a);
+    const t = 30 - p * 20, a = t - 46;                   // параллакс: уходим вперёд и выше
+    camera.position.set(fjCentre(t), 10.5 + p*4.5, t);
+    camera.lookAt(fjCentre(a), 7.0 + p*2.5, a);
   }
   function size(){
     const w = cv.clientWidth, h = cv.clientHeight;
