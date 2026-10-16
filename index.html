@@ -55,6 +55,19 @@ body.fj-on .fj-fade{opacity:1}
 /* Отдельный слой затемнения: им управляет скролл, поэтому переходов на нём нет. */
 .fj-dim{position:absolute;inset:0;background:var(--bg);opacity:0}
 body.fj-on .amb{display:none}
+/* Птицы живут не в сцене, а слоем над ней: CSS-трансформы идут мимо
+   пересчёта размытия, поэтому движение здесь почти ничего не стоит. */
+.birds{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.birds > b{position:absolute;left:-16%;top:var(--y);width:var(--w);
+  height:calc(var(--w) * 0.4);
+  animation:birdFly var(--t) linear var(--d) infinite}
+.birds > b > i{display:block;width:100%;height:100%;opacity:var(--o);
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 16'%3E%3Cpath d='M2 11C7 3 11 2 14 7c1.5 2.5 2.5 3.5 6 3.5s4.5-1 6-3.5c3-5 7-6 12 4' fill='none' stroke='%23141a1f' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center/contain no-repeat;
+  animation:birdFlap var(--f) ease-in-out infinite}
+@keyframes birdFly{from{transform:translate3d(0,0,0)}
+                   to{transform:translate3d(470vw,var(--dy),0)}}
+@keyframes birdFlap{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.34)}}
+@media (prefers-reduced-motion:reduce){ .birds{display:none} }
 body.light .fj-fade{background:linear-gradient(to bottom,rgba(245,245,245,.30) 0%,
   rgba(245,245,245,.48) 30%,rgba(245,245,245,.9) 58%,var(--bg) 74%)}
 .amb{position:absolute;border-radius:50%;filter:blur(120px)}
@@ -921,7 +934,7 @@ body.light .builder-answer.wrong-state,body.light .text-input.wrong-state{border
 <script data-goatcounter="https://nikosgolub.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-<div class="ambient"><canvas class="fj" id="fjord"></canvas><div class="fj-fade"></div><div class="fj-dim" id="fjdim"></div><div class="amb a1"></div><div class="amb a2"></div></div>
+<div class="ambient"><canvas class="fj" id="fjord"></canvas><div class="birds" id="birds"></div><div class="fj-fade"></div><div class="fj-dim" id="fjdim"></div><div class="amb a1"></div><div class="amb a2"></div></div>
 <div class="app" id="app"></div>
 
 <script>
@@ -6271,8 +6284,8 @@ function fjBuild(THREE){
   }
   function place(){
     const t = FJ_START - adv * FJ_PATH - p * 44, a = t - 46;
-    camera.position.set(fjCentre(t), 11.5 + p*4.5, t);
-    camera.lookAt(fjCentre(a), 2.6 + p*2.5, a);
+    camera.position.set(fjCentre(t), 10.5 + p*4.5, t);
+    camera.lookAt(fjCentre(a), 7.0 + p*2.5, a);
     revealFall();
   }
   function applySize(){
@@ -6358,6 +6371,27 @@ function fjBuild(THREE){
   }
 }
 
+// Стая проходит редко: каждая птица большую часть цикла находится за кадром.
+function buildBirds(){
+  const host = document.getElementById('birds');
+  if(!host) return;
+  host.innerHTML = '';
+  try{ if(scReduced()) return; }catch(e){}
+  const SET = [
+    { w:23, y:12, o:0.24, t:124, d:-18,  dy:5  },
+    { w:16, y:17, o:0.18, t:168, d:-96,  dy:-4 },
+    { w:29, y:8,  o:0.28, t:142, d:-175, dy:3  }
+  ];
+  let html = '';
+  SET.forEach(function(b){
+    html += '<b style="' +
+      '--w:' + b.w + 'px;--y:' + b.y + '%;--o:' + b.o +
+      ';--t:' + b.t + 's;--d:' + b.d + 's;--dy:' + b.dy + 'vh' +
+      ';--f:' + (0.42 + Math.random() * 0.22).toFixed(2) + 's"><i></i></b>';
+  });
+  host.innerHTML = html;
+}
+
 function bootApp(){
   cloudGet(function(res){
     if(res){
@@ -6377,6 +6411,7 @@ function bootApp(){
     }
     applyTheme();
     buildWeather();
+    try{ buildBirds(); }catch(e){}
     try{ fjSync(); }catch(e){}
     sndLoad();                       // опись записей — заранее, до первого нажатия
     initTelegram();
