@@ -6047,7 +6047,7 @@ function fjBuild(THREE){
 
   const HAZE = 0x6f777e;
   const scene = new THREE.Scene();
-  scene.fog = new THREE.Fog(HAZE, 10, 185);
+  scene.fog = new THREE.Fog(HAZE, 8, 150);          // даль бледнеет быстрее
   const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 700);
 
   function grad(stops, w, h){
@@ -6122,6 +6122,69 @@ function fjBuild(THREE){
       q.position.set(m[4] * 0.35, m[1]*0.42, m[0]);    // лёгкий разброс вместо движения
       scene.add(q); mists.push(q);
     });
+
+  // ── Ближний план ──
+  // Главный источник ощущения глубины — не туман, а то, что близко. Расставляем
+  // валуны вдоль всего маршрута по краям русла: мимо них лодка и проходит, и
+  // именно они дают настоящий параллакс при прокрутке.
+  function fjBoulder(seed){
+    const rnd = (function(x){ return function(){ x = Math.sin(x * 12.9898) * 43758.5453;
+      return x - Math.floor(x); }; })(seed);
+    const g = new THREE.SphereGeometry(1, 20, 14);
+    const pa = g.attributes.position;
+    const a1 = rnd()*6.28, a2 = rnd()*6.28, a3 = rnd()*6.28;
+    const v = new THREE.Vector3();
+    for(let k=0;k<pa.count;k++){
+      v.fromBufferAttribute(pa, k);
+      const f = 1 + 0.20*Math.sin(2.4*v.x + a1) + 0.16*Math.sin(2.1*v.y + a2)
+                  + 0.14*Math.sin(2.9*v.z + a3);
+      pa.setXYZ(k, v.x*f, v.y*f, v.z*f);
+    }
+    g.computeVertexNormals();
+    return g;
+  }
+  const rockMat = new THREE.MeshStandardMaterial({ color:0x333a41, roughness:1, metalness:0 });
+  for(let i = 0; i < 22; i++){
+    const rz = 22 - i * 9.6 - fjVn(i * 3.1, 0.7) * 5;
+    const side = (i % 2 === 0) ? -1 : 1;
+    const away = 10 + fjVn(i * 1.7, 5.3) * 8;
+    const sc = 1.6 + fjVn(i * 2.3, 9.1) * 5.2;
+    const r = new THREE.Mesh(fjBoulder(i * 37 + 5), rockMat);
+    r.scale.set(sc, sc * (0.5 + fjVn(i, 2) * 0.5), sc * (0.8 + fjVn(i, 3) * 0.5));
+    r.position.set(fjCentre(rz) + side * away, -sc * 0.30, rz);
+    r.rotation.set(fjVn(i,4)*0.5, fjVn(i,5)*6.28, fjVn(i,6)*0.5);
+    r.castShadow = true;
+    scene.add(r);
+  }
+
+  // ── Лучи света: не постпроцесс, а геометрия ──
+  // Настоящие godrays считают по картам глубины каждый кадр. Нам это не нужно:
+  // сцена статична, поэтому лучи — просто несколько мягких плоскостей с аддитивным
+  // свечением. Глубина у них проверяется, так что за скалу луч не вылезает.
+  const rv = document.createElement('canvas'); rv.width = 64; rv.height = 256;
+  const rg2 = rv.getContext('2d');
+  for(let yy=0; yy<256; yy++){
+    const down = yy / 255;
+    const len = Math.pow(1 - down, 1.5) * (0.35 + 0.65 * Math.min(down / 0.12, 1));
+    for(let xx=0; xx<64; xx++){
+      const off = Math.abs(xx / 63 * 2 - 1);
+      const core = Math.pow(1 - off, 2.4);                  // мягкие края
+      const grit = 0.82 + 0.18 * fjVn(xx * 0.8, yy * 0.05);
+      const a = Math.min(core * len * grit, 1) * 0.9;
+      rg2.fillStyle = 'rgba(232,238,244,' + a.toFixed(3) + ')';
+      rg2.fillRect(xx, yy, 1, 1);
+    }
+  }
+  const shaftTex = new THREE.CanvasTexture(rv);
+  [[-17, -34, 11, 54, 0.30], [-3, -58, 8, 60, 0.26], [11, -50, 15, 52, 0.20],
+   [-13, -92, 10, 64, 0.18], [5, -124, 17, 70, 0.14]].forEach(function(r){
+    const q = new THREE.Mesh(new THREE.PlaneGeometry(r[2], r[3]),
+      new THREE.MeshBasicMaterial({ map:shaftTex, transparent:true, opacity:r[4],
+        blending:THREE.AdditiveBlending, depthWrite:false }));
+    q.position.set(r[0], r[3] * 0.40, r[1]);
+    q.rotation.z = 0.24;                                    // лучи падают наискось
+    scene.add(q);
+  });
 
   // ── Водопад: цель, к которой идёт весь курс ──
   const FALL_Z = -198, FALL_X = fjCentre(FALL_Z);   // у самого подножия стены
@@ -6207,9 +6270,9 @@ function fjBuild(THREE){
     }
   }
   function place(){
-    const t = FJ_START - adv * FJ_PATH - p * 16, a = t - 46;
-    camera.position.set(fjCentre(t), 10.5 + p*4.5, t);
-    camera.lookAt(fjCentre(a), 7.0 + p*2.5, a);
+    const t = FJ_START - adv * FJ_PATH - p * 44, a = t - 46;
+    camera.position.set(fjCentre(t), 11.5 + p*4.5, t);
+    camera.lookAt(fjCentre(a), 2.6 + p*2.5, a);
     revealFall();
   }
   function applySize(){
