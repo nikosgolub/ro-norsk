@@ -43,6 +43,20 @@ button{touch-action:manipulation}
 .tour-next{flex:1;background:#fff;color:#000001;border:none;border-radius:13px;padding:11px;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;min-height:44px}
 .tour-skip{background:none;border:none;color:var(--ink3);font-family:inherit;font-size:13px;font-weight:500;cursor:pointer;padding:11px 4px}
 .ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;background:var(--bg);pointer-events:none}
+/* Фьорд: фон главного экрана. Холст лежит в .ambient, поэтому осадки и всё
+   содержимое рисуются поверх него, а сам он не ловит касания. */
+.fj{position:absolute;inset:0;width:100%;height:100%;display:block;opacity:0;
+  transition:opacity .9s cubic-bezier(.16,1,.3,1)}
+.fj.on{opacity:1}
+.fj-fade{position:absolute;inset:0;opacity:0;transition:opacity .9s cubic-bezier(.16,1,.3,1);
+  background:linear-gradient(to bottom,rgba(12,12,12,.40) 0%,rgba(12,12,12,.52) 30%,
+    rgba(12,12,12,.88) 58%,var(--bg) 74%)}
+body.fj-on .fj-fade{opacity:1}
+/* Отдельный слой затемнения: им управляет скролл, поэтому переходов на нём нет. */
+.fj-dim{position:absolute;inset:0;background:var(--bg);opacity:0}
+body.fj-on .amb{display:none}
+body.light .fj-fade{background:linear-gradient(to bottom,rgba(245,245,245,.30) 0%,
+  rgba(245,245,245,.48) 30%,rgba(245,245,245,.9) 58%,var(--bg) 74%)}
 .amb{position:absolute;border-radius:50%;filter:blur(120px)}
 .amb.a1{width:70vw;height:70vw;min-width:420px;min-height:420px;top:-25%;right:-20%;background:radial-gradient(circle,rgba(122,162,247,0.20),transparent 70%)}
 .amb.a2{width:60vw;height:60vw;min-width:360px;min-height:360px;bottom:-20%;left:-18%;background:radial-gradient(circle,rgba(248,113,113,0.14),transparent 70%)}
@@ -909,7 +923,7 @@ body.light .builder-answer.wrong-state,body.light .text-input.wrong-state{border
 <script data-goatcounter="https://nikosgolub.goatcounter.com/count" async src="//gc.zgo.at/count.js"></script>
 </head>
 <body>
-<div class="ambient"><div class="amb a1"></div><div class="amb a2"></div></div>
+<div class="ambient"><canvas class="fj" id="fjord"></canvas><div class="fj-fade"></div><div class="fj-dim" id="fjdim"></div><div class="amb a1"></div><div class="amb a2"></div></div>
 <div class="app" id="app"></div>
 
 <script>
@@ -5782,7 +5796,7 @@ function wrapScreens(){
   });
   const app = document.getElementById('app');
   if(typeof MutationObserver !== 'undefined'){
-    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); rvSync(); });
+    const mo = new MutationObserver(function(recs){ mountChatBtn(); scPaint(recs); rvSync(); fjSync(); });
     if(app) mo.observe(app, { childList:true });
     mo.observe(document.body, { childList:true });
   }
@@ -5922,6 +5936,161 @@ function buildWeather(){
   host.appendChild(box);
 }
 
+// ─── ФЬОРД: фон главного экрана ───────────────────────────────────
+// three.js грузится лениво и только когда главная действительно открыта.
+// В покое не рисуется ни одного кадра; при скролле — пониженное разрешение
+// и остановка, как только сцену закрыло затемнение.
+const FJ_SRC = 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js';
+const FJ_FADE = 560;                 // на этой прокрутке фьорд уже не виден
+let fjState = 0;                     // 0 — не трогали, 1 — грузится, 2 — работает, 3 — отказ
+let fjApi = null, fjWanted = false;
+
+function fjHash(x,y){ const n = Math.sin(x*127.1 + y*311.7) * 43758.5453; return n - Math.floor(n); }
+function fjVn(x,y){
+  const xi=Math.floor(x), yi=Math.floor(y), xf=x-xi, yf=y-yi;
+  const u=xf*xf*(3-2*xf), v=yf*yf*(3-2*yf);
+  return (fjHash(xi,yi)*(1-u)+fjHash(xi+1,yi)*u)*(1-v)
+       + (fjHash(xi,yi+1)*(1-u)+fjHash(xi+1,yi+1)*u)*v;
+}
+function fjFbm(x,y,oct){ let a=.5,s=0,f=1; for(let i=0;i<(oct||5);i++){ s+=a*fjVn(x*f,y*f); f*=2.03; a*=.5; } return s; }
+function fjCentre(z){ return Math.sin(z*0.011)*8 + Math.sin(z*0.029+1.3)*3.4; }
+function fjH(x,z){
+  const d = Math.abs(x - fjCentre(z));
+  const w = Math.min(Math.max((d-6)/26, 0), 1);
+  let h = Math.pow(w, 1.55) * 40;
+  h *= 0.40 + 1.15 * fjFbm(x*0.015+11, z*0.015+7);
+  h += fjFbm(x*0.055, z*0.055, 3) * 2.4 - 1.1;
+  return h - 1.4;
+}
+
+function fjSync(){
+  const want = !!document.querySelector('.hero-stack');   // фьорд живёт только на главной
+  if(want !== fjWanted){
+    fjWanted = want;
+    document.body.classList.toggle('fj-on', want && fjState === 2);
+    const cv = document.getElementById('fjord');
+    if(cv) cv.classList.toggle('on', want && fjState === 2);
+    if(fjApi) fjApi.active(want);
+  }
+  if(want) fjStart();
+}
+
+function fjStart(){
+  if(fjState) return;
+  try{ if(scReduced()){ fjState = 3; return; } }catch(e){}
+  fjState = 1;
+  import(FJ_SRC).then(function(T){ try{ fjBuild(T); }catch(e){ fjState = 3; } })
+                .catch(function(){ fjState = 3; });
+}
+
+function fjBuild(THREE){
+  const cv = document.getElementById('fjord');
+  if(!cv){ fjState = 3; return; }
+  let renderer;
+  try{ renderer = new THREE.WebGLRenderer({ canvas:cv, antialias:false, alpha:false }); }
+  catch(e){ fjState = 3; return; }
+  // Это фон: резкость ему не нужна, а каждый лишний пиксель — это батарея.
+  renderer.setPixelRatio(Math.min((window.devicePixelRatio||1) * 0.7, 1.4));
+  renderer.setClearColor(0x6f777e, 1);
+
+  const HAZE = 0x6f777e;
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.Fog(HAZE, 10, 185);
+  const camera = new THREE.PerspectiveCamera(52, 1, 0.1, 700);
+
+  function grad(stops, w, h){
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d'), lg = g.createLinearGradient(0,0,0,h);
+    for(let i=0;i<stops.length;i++) lg.addColorStop(stops[i][0], stops[i][1]);
+    g.fillStyle = lg; g.fillRect(0,0,w,h);
+    return new THREE.CanvasTexture(c);
+  }
+  scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(450, 24, 18),
+    new THREE.MeshBasicMaterial({
+      map: grad([[0,'#13181c'],[0.27,'#262d33'],[0.44,'#4d555d'],[0.5,'#6f777e'],[1,'#6f777e']], 4, 256),
+      side: THREE.BackSide, fog:false, depthWrite:false })
+  ));
+
+  const geo = new THREE.PlaneGeometry(320, 760, 140, 210);
+  const pos = geo.attributes.position;
+  for(let i=0;i<pos.count;i++) pos.setZ(i, fjH(pos.getX(i), -pos.getY(i)));
+  geo.computeVertexNormals();
+  const land = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
+    color:0x414950, roughness:1.0, metalness:0.0 }));
+  land.rotation.x = -Math.PI/2; land.position.z = -320; scene.add(land);
+
+  const water = new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),
+    new THREE.MeshBasicMaterial({ color:0x545c63 }));
+  water.rotation.x = -Math.PI/2; scene.add(water);
+
+  const gv = document.createElement('canvas'); gv.width = gv.height = 256;
+  const gg = gv.getContext('2d');
+  const rg = gg.createRadialGradient(128,150,6,128,150,126);
+  rg.addColorStop(0,'rgba(214,222,230,0.42)'); rg.addColorStop(0.42,'rgba(186,195,204,0.15)');
+  rg.addColorStop(1,'rgba(198,206,214,0)');
+  gg.fillStyle = rg; gg.fillRect(0,0,256,256);
+  const glow = new THREE.Mesh(new THREE.PlaneGeometry(150,95),
+    new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(gv), transparent:true,
+      blending:THREE.AdditiveBlending, depthWrite:false, fog:false }));
+  glow.position.set(0,16,-215); scene.add(glow);
+
+  scene.add(new THREE.HemisphereLight(HAZE, 0x1b2024, 1.3));
+  const key = new THREE.DirectionalLight(0xd9e0e6, 0.7);
+  key.position.set(-24,34,-40); scene.add(key);
+
+  let p = 0, shownP = -1, on = false, raf = 0, hidden = false;
+
+  function place(){
+    const t = 20 - p * 18, a = t - 40;                   // параллакс: уходим вперёд и чуть вверх
+    camera.position.set(fjCentre(t), 1.75 + p*1.6, t);
+    camera.lookAt(fjCentre(a), 3.4 + p*2.2, a);
+  }
+  function size(){
+    const w = cv.clientWidth, h = cv.clientHeight;
+    if(!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w/h; camera.updateProjectionMatrix();
+    shownP = -1; wake();
+  }
+  function draw(){
+    raf = 0;
+    if(!on || hidden) return;
+    if(p > 0.985) return;                                // сцену закрыло затемнение
+    if(Math.abs(p - shownP) < 0.003) return;
+    shownP = p; place(); renderer.render(scene, camera);
+  }
+  function wake(){ if(!raf) raf = requestAnimationFrame(draw); }
+  const dim = document.getElementById('fjdim');
+  function scroll(){
+    const y = window.scrollY || document.documentElement.scrollTop || 0;
+    const np = Math.min(y / FJ_FADE, 1);
+    if(np === p) return;
+    p = np;
+    if(dim) dim.style.opacity = (p * 0.72).toFixed(3);   // уходя вниз, сцена гаснет
+    wake();
+  }
+
+  window.addEventListener('scroll', scroll, { passive:true });
+  window.addEventListener('resize', size);
+  document.addEventListener('visibilitychange', function(){
+    hidden = document.hidden; if(!hidden) wake();
+  });
+
+  fjApi = { active: function(v){
+    on = v;
+    if(dim) dim.style.opacity = v ? (p * 0.72).toFixed(3) : '0';
+    if(v){ shownP = -1; size(); }
+  } };
+  fjState = 2;
+  on = fjWanted;
+  size(); scroll(); wake();
+  if(fjWanted){
+    document.body.classList.add('fj-on');
+    cv.classList.add('on');
+  }
+}
+
 function bootApp(){
   cloudGet(function(res){
     if(res){
@@ -5941,6 +6110,7 @@ function bootApp(){
     }
     applyTheme();
     buildWeather();
+    try{ fjSync(); }catch(e){}
     sndLoad();                       // опись записей — заранее, до первого нажатия
     initTelegram();
     wrapScreens();
