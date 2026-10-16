@@ -5959,16 +5959,28 @@ function fjRidged(x,y,oct){
   for(let i=0;i<(oct||5);i++){ const r = 1 - Math.abs(2*fjVn(x*f,y*f) - 1); s += a*r*r; f*=2.07; a*=.5; }
   return s;
 }
-function fjCentre(z){ return Math.sin(z*0.011)*8 + Math.sin(z*0.029+1.3)*3.4; }
+function fjCentre(z){ return Math.sin(z*0.011)*4.2 + Math.sin(z*0.029+1.3)*1.7; }
 function fjH(x,z){
   const d = Math.abs(x - fjCentre(z));
-  const w = Math.min(Math.max((d-6)/26, 0), 1);
+  const w = Math.min(Math.max((d-10)/26, 0), 1);   // русло шире, чем его виляние
   let h = Math.pow(w, 1.55) * 40;
   h *= 0.34 + 1.05 * fjFbm(x*0.015+11, z*0.015+7);
   h += Math.pow(w, 1.2) * 16 * fjRidged(x*0.021+3, z*0.021+19, 5);   // хребты и кулуары
   h += fjFbm(x*0.085, z*0.085, 3) * 2.0 - 0.9;                        // фактура склона
   h -= 1.4 + 2.8 * (1 - Math.min(w * 3, 1));         // в русле дно глубже, берег круче
+  // Фьорд не бесконечен: в конце его замыкает стена, с которой падает вода.
+  const end = Math.min(Math.max((-z - 196) / 30, 0), 1);
+  h += Math.pow(end, 1.3) * 58;
   return h;
+}
+
+// Доля пройденного курса: она же — пройденный путь по фьорду.
+function fjAdvance(){
+  try{
+    let n = 0;
+    for(let i = 0; i < LESSONS.length; i++) if(everPassed(i)) n++;
+    return Math.min(n / Math.max(LESSONS.length, 1), 1);
+  }catch(e){ return 0; }
 }
 
 function fjSync(){
@@ -5981,6 +5993,7 @@ function fjSync(){
     fjWanted = want;
     if(fjApi) fjApi.active(want);
   }
+  if(want && fjApi) fjApi.goal(fjAdvance());   // сдал урок — лодка идёт дальше
   if(want) fjStart();
 }
 
@@ -6028,10 +6041,6 @@ function fjBuild(THREE){
   catch(e){ fjState = 3; return; }
   renderer.setClearColor(0x6f777e, 1);
   // Тени считаются один раз: ни свет, ни рельеф больше не двигаются.
-  renderer.shadowMap.enabled = true;
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-  renderer.shadowMap.autoUpdate = false;
-  renderer.shadowMap.needsUpdate = true;
   // Черновое разрешение на время прокрутки, чистовое — когда палец отпустили.
   const DPR = Math.min(window.devicePixelRatio || 1, 2);
   let fine = false;
@@ -6069,7 +6078,7 @@ function fjBuild(THREE){
     const up = Math.max(nrm.getZ(i), 0);                       // плоскость ещё лежит в XY
     const open = Math.min(Math.max((y + 4) / 26, 0), 1);       // как высоко над водой
     const speck = fjVn(x*0.42, z*0.42) * 0.13 + fjVn(x*1.7, z*1.7) * 0.06;
-    let v = 0.40 + 0.34*open + 0.26*up + speck - 0.12;
+    let v = 0.34 + 0.40*open + 0.32*up + speck - 0.14;
     v = Math.min(Math.max(v, 0.12), 1.25);
     col[i*3] = v * 0.97; col[i*3+1] = v; col[i*3+2] = v * 1.05;  // холодный камень
   }
@@ -6078,7 +6087,6 @@ function fjBuild(THREE){
   const land = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
     color:0x6a737b, roughness:1.0, metalness:0.0, vertexColors:true }));
   land.rotation.x = -Math.PI/2; land.position.z = -320;
-  land.castShadow = true; land.receiveShadow = true;
   scene.add(land);
 
   const wv = document.createElement('canvas'); wv.width = 4; wv.height = 256;
@@ -6115,6 +6123,47 @@ function fjBuild(THREE){
       scene.add(q); mists.push(q);
     });
 
+  // ── Водопад: цель, к которой идёт весь курс ──
+  const FALL_Z = -198, FALL_X = fjCentre(FALL_Z);   // у самого подножия стены
+  function fallTex(w, h, core){
+    const c = document.createElement('canvas'); c.width = w; c.height = h;
+    const g = c.getContext('2d');
+    for(let yy = 0; yy < h; yy++){
+      const down = yy / h;
+      for(let xx = 0; xx < w; xx++){
+        const across = Math.abs(xx / (w - 1) * 2 - 1);
+        const edge = 1 - Math.pow(across, 1.6);                 // к краям струя тает
+        const streak = 0.72 + 0.28 * fjVn(xx * 1.9, yy * 0.18); // вертикальные пряди
+        const topF = Math.min(down / 0.10, 1);                  // выныривает из скалы
+        const botF = 1 - Math.pow(Math.max(down - 0.86, 0) / 0.14, 2);
+        const a = Math.min(edge * streak * topF * botF * (0.55 + 0.45 * down) * core, 1);
+        g.fillStyle = 'rgba(235,241,246,' + a.toFixed(3) + ')';
+        g.fillRect(xx, yy, 1, 1);
+      }
+    }
+    return new THREE.CanvasTexture(c);
+  }
+  [[7.4, 34, 0.95, 0], [3.4, 29, 0.78, -4.2], [2.6, 25, 0.66, 3.6]].forEach(function(f){
+    const q = new THREE.Mesh(new THREE.PlaneGeometry(f[0], f[1]),
+      new THREE.MeshBasicMaterial({ map:fallTex(24, 96, f[2]), transparent:true,
+        depthWrite:false }));
+    q.position.set(FALL_X + f[3], f[1] * 0.5 - 0.6, FALL_Z + 0.9);
+    scene.add(q);
+  });
+
+  // Облако водяной пыли у подножия
+  const sv = document.createElement('canvas'); sv.width = sv.height = 128;
+  const sg = sv.getContext('2d');
+  const sr = sg.createRadialGradient(64, 78, 3, 64, 78, 62);
+  sr.addColorStop(0, 'rgba(226,233,239,0.80)');
+  sr.addColorStop(0.45, 'rgba(206,214,221,0.30)');
+  sr.addColorStop(1, 'rgba(206,214,221,0)');
+  sg.fillStyle = sr; sg.fillRect(0, 0, 128, 128);
+  const spray = new THREE.Mesh(new THREE.PlaneGeometry(26, 15),
+    new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(sv), transparent:true,
+      depthWrite:false, fog:false }));
+  spray.position.set(FALL_X, 3.4, FALL_Z + 4.0); scene.add(spray);
+
   const gv = document.createElement('canvas'); gv.width = gv.height = 256;
   const gg = gv.getContext('2d');
   const rg = gg.createRadialGradient(128,150,6,128,150,126);
@@ -6124,27 +6173,23 @@ function fjBuild(THREE){
   const glow = new THREE.Mesh(new THREE.PlaneGeometry(150,95),
     new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(gv), transparent:true,
       blending:THREE.AdditiveBlending, depthWrite:false, fog:false }));
-  glow.position.set(0,16,-215); scene.add(glow);
+  glow.position.set(FALL_X, 21, FALL_Z - 2);
+  glow.scale.set(0.34, 0.34, 1); scene.add(glow);   // свет над цирком, не вместо водопада
 
   scene.add(new THREE.HemisphereLight(HAZE, 0x1b2024, 1.15));
   const key = new THREE.DirectionalLight(0xdce3e9, 0.95);
   key.position.set(-110, 95, 40);
-  key.target.position.set(0, 0, -95);                  // цель в середине видимого участка
-  scene.add(key.target);
-  key.castShadow = true;
-  key.shadow.mapSize.set(2048, 2048);
-  key.shadow.camera.near = 1; key.shadow.camera.far = 480;
-  key.shadow.camera.left = -200; key.shadow.camera.right = 200;
-  key.shadow.camera.top = 200; key.shadow.camera.bottom = -200;
-  key.shadow.radius = 2.5;
-  key.shadow.bias = -0.0012;
-  key.shadow.normalBias = 1.2;                         // против ряби на продавленной сетке
-  scene.add(key);
+  key.target.position.set(0, 0, -95);
+  scene.add(key.target); scene.add(key);
 
   let p = 0, shownP = -1, on = false, raf = 0, hidden = false;
 
+  // adv — пройденная доля курса. Она двигает лодку по фьорду, прокрутка лишь
+  // добавляет небольшой параллакс поверх.
+  let adv = 0, advTo = 0, advSet = false;
+  const FJ_START = 30, FJ_PATH = 150;                   // откуда и сколько плыть
   function place(){
-    const t = 30 - p * 20, a = t - 46;                   // параллакс: уходим вперёд и выше
+    const t = FJ_START - adv * FJ_PATH - p * 16, a = t - 46;
     camera.position.set(fjCentre(t), 10.5 + p*4.5, t);
     camera.lookAt(fjCentre(a), 7.0 + p*2.5, a);
   }
@@ -6166,20 +6211,28 @@ function fjBuild(THREE){
   // Пока палец двигает страницу — черновой кадр, он дешёвый. Прокрутка кончилась —
   // через миг дорисовываем чистовой, в полном разрешении. Телефон этого не замечает,
   // потому что чистовой кадр ровно один.
-  let fineAt = 0;
+  let fineAt = 0, dirty = true;
   function draw(){
     raf = 0;
     if(!on || hidden) return;
-    if(p > 0.985) return;                                // сцену закрыло затемнение
-    if(Math.abs(p - shownP) < 0.003) return;
-    shownP = p;
-    paint(false);
-    clearTimeout(fineAt);
-    fineAt = setTimeout(function(){
-      if(on && !hidden && p <= 0.985) paint(true);
-    }, 190);
+    const moving = Math.abs(advTo - adv) > 0.0004;
+    if(moving){
+      adv += (advTo - adv) * 0.042;                      // мягкое скольжение вперёд
+      if(Math.abs(advTo - adv) <= 0.0004) adv = advTo;
+      dirty = true;
+    }
+    if(p > 0.985 && !moving){ dirty = false; return; }   // сцену закрыло затемнение
+    if(dirty || Math.abs(p - shownP) >= 0.003){
+      shownP = p; dirty = false;
+      paint(false);
+      clearTimeout(fineAt);
+      fineAt = setTimeout(function(){
+        if(on && !hidden && p <= 0.985) paint(true);
+      }, 190);
+    }
+    if(moving) raf = requestAnimationFrame(draw);
   }
-  function wake(){ if(!raf) raf = requestAnimationFrame(draw); }
+  function wake(){ if(!raf){ dirty = true; raf = requestAnimationFrame(draw); } }
   const dim = document.getElementById('fjdim');
   function scroll(){
     const y = window.scrollY || document.documentElement.scrollTop || 0;
@@ -6205,10 +6258,17 @@ function fjBuild(THREE){
       if(dim) dim.style.opacity = v ? (p * 0.72).toFixed(3) : '0';
       if(v){ shownP = -1; size(); }
     },
-    repaint: function(){ shownP = -1; wake(); }
+    repaint: function(){ shownP = -1; wake(); },
+    goal: function(v){
+      if(Math.abs(v - advTo) < 0.0005) return;
+      advTo = v;
+      if(!advSet){ adv = v; advSet = true; }             // при первом запуске — без анимации
+      shownP = -1; wake();
+    }
   };
   fjState = 2;
   on = fjWanted;
+  adv = advTo = fjAdvance(); advSet = true;
   size(); scroll(); wake();
   if(fjWanted){
     document.body.classList.add('fj-on');
