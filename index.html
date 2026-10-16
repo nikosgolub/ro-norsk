@@ -6018,10 +6018,40 @@ function fjBuild(THREE){
     color:0x414950, roughness:1.0, metalness:0.0 }));
   land.rotation.x = -Math.PI/2; land.position.z = -320; scene.add(land);
 
+  const wv = document.createElement('canvas'); wv.width = 4; wv.height = 256;
+  const wg = wv.getContext('2d');
+  for(let i=0;i<256;i++){
+    const k = Math.round(255 * (0.965 + fjVn(i*0.6, 2.4) * 0.07));
+    wg.fillStyle = 'rgb(' + k + ',' + k + ',' + k + ')';
+    wg.fillRect(0, i, 4, 1);
+  }
+  const wtex = new THREE.CanvasTexture(wv);
+  wtex.wrapS = wtex.wrapT = THREE.RepeatWrapping; wtex.repeat.set(1, 46);
   const water = new THREE.Mesh(new THREE.PlaneGeometry(1400,1400),
-    new THREE.MeshBasicMaterial({ color:0x545c63,
+    new THREE.MeshBasicMaterial({ color:0x545c63, map:wtex,
       polygonOffset:true, polygonOffsetFactor:-1, polygonOffsetUnits:-1 }));
   water.rotation.x = -Math.PI/2; scene.add(water);
+
+  // Полосы тумана поперёк русла. Они и дают движение: сцена в остальном неподвижна.
+  const mv = document.createElement('canvas'); mv.width = 4; mv.height = 128;
+  const mgc = mv.getContext('2d');
+  const mlg = mgc.createLinearGradient(0,0,0,128);
+  mlg.addColorStop(0,'rgba(124,132,140,0)');
+  mlg.addColorStop(0.58,'rgba(132,140,148,0.62)');
+  mlg.addColorStop(1,'rgba(132,140,148,0.8)');
+  mgc.fillStyle = mlg; mgc.fillRect(0,0,4,128);
+  const mtex = new THREE.CanvasTexture(mv);
+  const mists = [];
+  [[-42, 7, 0.5, 0.055, 13], [-78, 11, 0.62, 0.037, 19], [-126, 16, 0.7, 0.026, 26]]
+    .forEach(function(m){
+      const q = new THREE.Mesh(new THREE.PlaneGeometry(220, 1),
+        new THREE.MeshBasicMaterial({ map:mtex, transparent:true, opacity:m[2],
+          depthWrite:false, fog:false }));
+      q.scale.y = m[1];
+      q.position.set(0, m[1]*0.42, m[0]);
+      q.userData = { sp:m[3], amp:m[4], base:m[2] };
+      scene.add(q); mists.push(q);
+    });
 
   const gv = document.createElement('canvas'); gv.width = gv.height = 256;
   const gg = gv.getContext('2d');
@@ -6052,12 +6082,27 @@ function fjBuild(THREE){
     camera.aspect = w/h; camera.updateProjectionMatrix();
     shownP = -1; wake();
   }
-  function draw(){
+  // Живой кадр стоит денег, поэтому: 24 к/с вместо 60, пониженное разрешение,
+  // и всё это только пока главная открыта и сцену ещё не закрыло затемнение.
+  const FJ_FPS = 24, FJ_STEP = 1000 / FJ_FPS;
+  let fjLast = 0;
+  function draw(now){
     raf = 0;
     if(!on || hidden) return;
     if(p > 0.985) return;                                // сцену закрыло затемнение
-    if(Math.abs(p - shownP) < 0.003) return;
-    shownP = p; place(); renderer.render(scene, camera);
+    const ms = (typeof now === 'number') ? now : performance.now();
+    if(ms - fjLast >= FJ_STEP){
+      fjLast = ms;
+      const tt = ms * 0.001;
+      wtex.offset.y = (tt * 0.0055) % 1;                 // течение
+      for(let i=0;i<mists.length;i++){
+        const q = mists[i], u = q.userData;
+        q.position.x = Math.sin(tt * u.sp) * u.amp;      // туман сносит вдоль ущелья
+        q.material.opacity = u.base * (0.78 + 0.22 * Math.sin(tt * u.sp * 1.7 + i));
+      }
+      shownP = p; place(); renderer.render(scene, camera);
+    }
+    raf = requestAnimationFrame(draw);
   }
   function wake(){ if(!raf) raf = requestAnimationFrame(draw); }
   const dim = document.getElementById('fjdim');
