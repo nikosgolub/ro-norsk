@@ -6143,12 +6143,14 @@ function fjBuild(THREE){
     }
     return new THREE.CanvasTexture(c);
   }
+  const fallBits = [];                                  // всё, что относится к водопаду
   [[7.4, 34, 0.95, 0], [3.4, 29, 0.78, -4.2], [2.6, 25, 0.66, 3.6]].forEach(function(f){
     const q = new THREE.Mesh(new THREE.PlaneGeometry(f[0], f[1]),
       new THREE.MeshBasicMaterial({ map:fallTex(24, 96, f[2]), transparent:true,
         depthWrite:false }));
     q.position.set(FALL_X + f[3], f[1] * 0.5 - 0.6, FALL_Z + 0.9);
-    scene.add(q);
+    q.userData.full = 1;
+    scene.add(q); fallBits.push(q);
   });
 
   // Облако водяной пыли у подножия
@@ -6162,7 +6164,9 @@ function fjBuild(THREE){
   const spray = new THREE.Mesh(new THREE.PlaneGeometry(26, 15),
     new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(sv), transparent:true,
       depthWrite:false, fog:false }));
-  spray.position.set(FALL_X, 3.4, FALL_Z + 4.0); scene.add(spray);
+  spray.position.set(FALL_X, 3.4, FALL_Z + 4.0);
+  spray.userData.full = spray.material.opacity;
+  scene.add(spray); fallBits.push(spray);
 
   const gv = document.createElement('canvas'); gv.width = gv.height = 256;
   const gg = gv.getContext('2d');
@@ -6174,7 +6178,9 @@ function fjBuild(THREE){
     new THREE.MeshBasicMaterial({ map:new THREE.CanvasTexture(gv), transparent:true,
       blending:THREE.AdditiveBlending, depthWrite:false, fog:false }));
   glow.position.set(FALL_X, 21, FALL_Z - 2);
-  glow.scale.set(0.34, 0.34, 1); scene.add(glow);   // свет над цирком, не вместо водопада
+  glow.scale.set(0.34, 0.34, 1);
+  glow.userData.full = glow.material.opacity;
+  scene.add(glow); fallBits.push(glow);   // свет над цирком, не вместо водопада
 
   scene.add(new THREE.HemisphereLight(HAZE, 0x1b2024, 1.15));
   const key = new THREE.DirectionalLight(0xdce3e9, 0.95);
@@ -6188,10 +6194,23 @@ function fjBuild(THREE){
   // добавляет небольшой параллакс поверх.
   let adv = 0, advTo = 0, advSet = false;
   const FJ_START = 30, FJ_PATH = 150;                   // откуда и сколько плыть
+  // Водопада не видно до середины пути: он проступает из тумана, когда до цели
+  // уже недалеко. Пока он невидим — не рисуется вовсе.
+  const FALL_FROM = 0.46, FALL_TO = 0.86;
+  function revealFall(){
+    const r = Math.min(Math.max((adv - FALL_FROM) / (FALL_TO - FALL_FROM), 0), 1);
+    const e = r * r * (3 - 2 * r);                      // мягкое проявление
+    for(let i = 0; i < fallBits.length; i++){
+      const q = fallBits[i];
+      q.visible = e > 0.004;
+      q.material.opacity = q.userData.full * e;
+    }
+  }
   function place(){
     const t = FJ_START - adv * FJ_PATH - p * 16, a = t - 46;
     camera.position.set(fjCentre(t), 10.5 + p*4.5, t);
     camera.lookAt(fjCentre(a), 7.0 + p*2.5, a);
+    revealFall();
   }
   function applySize(){
     const w = cv.clientWidth, h = cv.clientHeight;
