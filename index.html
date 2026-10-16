@@ -5936,7 +5936,11 @@ function buildWeather(){
 // three.js грузится лениво и только когда главная действительно открыта.
 // В покое не рисуется ни одного кадра; при скролле — пониженное разрешение
 // и остановка, как только сцену закрыло затемнение.
-const FJ_SRC = 'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js';
+const FJ_SRC = [
+  'https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.min.js',
+  'https://unpkg.com/three@0.169.0/build/three.module.min.js'
+];
+let fjWhy = '';                      // почему сцены нет — видно через fjDiag()
 const FJ_FADE = 560;                 // на этой прокрутке фьорд уже не виден
 let fjState = 0;                     // 0 — не трогали, 1 — грузится, 2 — работает, 3 — отказ
 let fjApi = null, fjWanted = false;
@@ -5949,13 +5953,20 @@ function fjVn(x,y){
        + (fjHash(xi,yi+1)*(1-u)+fjHash(xi+1,yi+1)*u)*v;
 }
 function fjFbm(x,y,oct){ let a=.5,s=0,f=1; for(let i=0;i<(oct||5);i++){ s+=a*fjVn(x*f,y*f); f*=2.03; a*=.5; } return s; }
+// Гребневой шум: вместо плавных валов даёт острые хребты, как у настоящих скал.
+function fjRidged(x,y,oct){
+  let a=.5,s=0,f=1;
+  for(let i=0;i<(oct||5);i++){ const r = 1 - Math.abs(2*fjVn(x*f,y*f) - 1); s += a*r*r; f*=2.07; a*=.5; }
+  return s;
+}
 function fjCentre(z){ return Math.sin(z*0.011)*8 + Math.sin(z*0.029+1.3)*3.4; }
 function fjH(x,z){
   const d = Math.abs(x - fjCentre(z));
   const w = Math.min(Math.max((d-6)/26, 0), 1);
   let h = Math.pow(w, 1.55) * 40;
-  h *= 0.40 + 1.15 * fjFbm(x*0.015+11, z*0.015+7);
-  h += fjFbm(x*0.055, z*0.055, 3) * 2.4 - 1.1;
+  h *= 0.34 + 1.05 * fjFbm(x*0.015+11, z*0.015+7);
+  h += Math.pow(w, 1.2) * 16 * fjRidged(x*0.021+3, z*0.021+19, 5);   // хребты и кулуары
+  h += fjFbm(x*0.085, z*0.085, 3) * 2.0 - 0.9;                        // фактура склона
   h -= 1.4 + 2.8 * (1 - Math.min(w * 3, 1));         // в русле дно глубже, берег круче
   return h;
 }
@@ -5975,21 +5986,55 @@ function fjSync(){
 
 function fjStart(){
   if(fjState) return;
-  try{ if(scReduced()){ fjState = 3; return; } }catch(e){}
+  try{ if(scReduced()){ fjState = 3; fjWhy = 'включено «уменьшить движение»'; return; } }catch(e){}
+  if(location.protocol === 'file:'){
+    // С локального файла модуль не загрузить: у страницы нет источника, и браузер
+    // отклоняет импорт ещё до запроса. Нужен http(s) — GitHub Pages или локальный сервер.
+    fjState = 3; fjWhy = 'страница открыта как файл (file://), модули так не грузятся';
+    return;
+  }
   fjState = 1;
-  import(FJ_SRC).then(function(T){ try{ fjBuild(T); }catch(e){ fjState = 3; } })
-                .catch(function(){ fjState = 3; });
+  (function next(i){
+    if(i >= FJ_SRC.length){
+      fjState = 3;
+      fjWhy = fjWhy || 'не удалось загрузить three.js ни с одного адреса';
+      return;
+    }
+    import(FJ_SRC[i])
+      .then(function(T){ try{ fjBuild(T); }catch(e){ fjState = 3; fjWhy = 'сцена не собралась: ' + e.message; } })
+      .catch(function(e){ fjWhy = 'не загрузилось с ' + FJ_SRC[i] + ' — ' + e.message; next(i + 1); });
+  })(0);
 }
+
+// Короткая справка для отладки: набрать fjDiag() в консоли.
+function fjDiag(){
+  const cv = document.getElementById('fjord');
+  return {
+    состояние: ['не запускали','грузится','работает','не вышло'][fjState],
+    причина: fjWhy || '—',
+    главнаяОткрыта: !!document.querySelector('.hero-stack'),
+    классНаBody: document.body.className,
+    холст: cv ? (cv.clientWidth + '×' + cv.clientHeight + ' css, ' + cv.width + '×' + cv.height + ' буфер') : 'нет',
+    протокол: location.protocol
+  };
+}
+try{ window.fjDiag = fjDiag; }catch(e){}
 
 function fjBuild(THREE){
   const cv = document.getElementById('fjord');
   if(!cv){ fjState = 3; return; }
   let renderer;
-  try{ renderer = new THREE.WebGLRenderer({ canvas:cv, antialias:false, alpha:false }); }
+  try{ renderer = new THREE.WebGLRenderer({ canvas:cv, antialias:true, alpha:false }); }
   catch(e){ fjState = 3; return; }
-  // Это фон: резкость ему не нужна, а каждый лишний пиксель — это батарея.
-  renderer.setPixelRatio(Math.min((window.devicePixelRatio||1) * 0.7, 1.4));
   renderer.setClearColor(0x6f777e, 1);
+  // Тени считаются один раз: ни свет, ни рельеф больше не двигаются.
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.shadowMap.autoUpdate = false;
+  renderer.shadowMap.needsUpdate = true;
+  // Черновое разрешение на время прокрутки, чистовое — когда палец отпустили.
+  const DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let fine = false;
 
   const HAZE = 0x6f777e;
   const scene = new THREE.Scene();
@@ -6010,13 +6055,31 @@ function fjBuild(THREE){
       side: THREE.BackSide, fog:false, depthWrite:false })
   ));
 
-  const geo = new THREE.PlaneGeometry(320, 760, 140, 210);
+  const geo = new THREE.PlaneGeometry(320, 760, 190, 270);
   const pos = geo.attributes.position;
   for(let i=0;i<pos.count;i++) pos.setZ(i, fjH(pos.getX(i), -pos.getY(i)));
   geo.computeVertexNormals();
+
+  // Затенение запекаем в вершины: дно ущелья темнее, вершины светлее, склоны
+  // с мелкой пестротой. В рантайме это бесплатно — цвет уже лежит в сетке.
+  const nrm = geo.attributes.normal;
+  const col = new Float32Array(pos.count * 3);
+  for(let i=0;i<pos.count;i++){
+    const x = pos.getX(i), z = -pos.getY(i), y = pos.getZ(i);
+    const up = Math.max(nrm.getZ(i), 0);                       // плоскость ещё лежит в XY
+    const open = Math.min(Math.max((y + 4) / 26, 0), 1);       // как высоко над водой
+    const speck = fjVn(x*0.42, z*0.42) * 0.13 + fjVn(x*1.7, z*1.7) * 0.06;
+    let v = 0.40 + 0.34*open + 0.26*up + speck - 0.12;
+    v = Math.min(Math.max(v, 0.12), 1.25);
+    col[i*3] = v * 0.97; col[i*3+1] = v; col[i*3+2] = v * 1.05;  // холодный камень
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+
   const land = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({
-    color:0x414950, roughness:1.0, metalness:0.0 }));
-  land.rotation.x = -Math.PI/2; land.position.z = -320; scene.add(land);
+    color:0x6a737b, roughness:1.0, metalness:0.0, vertexColors:true }));
+  land.rotation.x = -Math.PI/2; land.position.z = -320;
+  land.castShadow = true; land.receiveShadow = true;
+  scene.add(land);
 
   const wv = document.createElement('canvas'); wv.width = 4; wv.height = 256;
   const wg = wv.getContext('2d');
@@ -6048,8 +6111,7 @@ function fjBuild(THREE){
         new THREE.MeshBasicMaterial({ map:mtex, transparent:true, opacity:m[2],
           depthWrite:false, fog:false }));
       q.scale.y = m[1];
-      q.position.set(0, m[1]*0.42, m[0]);
-      q.userData = { sp:m[3], amp:m[4], base:m[2] };
+      q.position.set(m[4] * 0.35, m[1]*0.42, m[0]);    // лёгкий разброс вместо движения
       scene.add(q); mists.push(q);
     });
 
@@ -6064,9 +6126,20 @@ function fjBuild(THREE){
       blending:THREE.AdditiveBlending, depthWrite:false, fog:false }));
   glow.position.set(0,16,-215); scene.add(glow);
 
-  scene.add(new THREE.HemisphereLight(HAZE, 0x1b2024, 1.3));
-  const key = new THREE.DirectionalLight(0xd9e0e6, 0.7);
-  key.position.set(-24,34,-40); scene.add(key);
+  scene.add(new THREE.HemisphereLight(HAZE, 0x1b2024, 1.15));
+  const key = new THREE.DirectionalLight(0xdce3e9, 0.95);
+  key.position.set(-110, 95, 40);
+  key.target.position.set(0, 0, -95);                  // цель в середине видимого участка
+  scene.add(key.target);
+  key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048);
+  key.shadow.camera.near = 1; key.shadow.camera.far = 480;
+  key.shadow.camera.left = -200; key.shadow.camera.right = 200;
+  key.shadow.camera.top = 200; key.shadow.camera.bottom = -200;
+  key.shadow.radius = 2.5;
+  key.shadow.bias = -0.0012;
+  key.shadow.normalBias = 1.2;                         // против ряби на продавленной сетке
+  scene.add(key);
 
   let p = 0, shownP = -1, on = false, raf = 0, hidden = false;
 
@@ -6075,34 +6148,36 @@ function fjBuild(THREE){
     camera.position.set(fjCentre(t), 10.5 + p*4.5, t);
     camera.lookAt(fjCentre(a), 7.0 + p*2.5, a);
   }
-  function size(){
+  function applySize(){
     const w = cv.clientWidth, h = cv.clientHeight;
-    if(!w || !h) return;
+    if(!w || !h) return false;
     renderer.setSize(w, h, false);
     camera.aspect = w/h; camera.updateProjectionMatrix();
-    shownP = -1; wake();
+    return true;
   }
-  // Живой кадр стоит денег, поэтому: 24 к/с вместо 60, пониженное разрешение,
-  // и всё это только пока главная открыта и сцену ещё не закрыло затемнение.
-  const FJ_FPS = 24, FJ_STEP = 1000 / FJ_FPS;
-  let fjLast = 0;
-  function draw(now){
+  function size(){ if(applySize()){ shownP = -1; wake(); } }
+  function paint(hi){
+    if(fine !== hi){ fine = hi; renderer.setPixelRatio(hi ? DPR : DPR * 0.55); applySize(); }
+    place(); renderer.render(scene, camera);
+  }
+  // Сцена снова неподвижна. Постоянный рендер грел телефон не столько сам по себе,
+  // сколько через backdrop-filter: каждый новый кадр холста заставлял все стёкла
+  // над ним пересчитывать размытие. Рисуем только когда реально сдвинулась прокрутка.
+  // Пока палец двигает страницу — черновой кадр, он дешёвый. Прокрутка кончилась —
+  // через миг дорисовываем чистовой, в полном разрешении. Телефон этого не замечает,
+  // потому что чистовой кадр ровно один.
+  let fineAt = 0;
+  function draw(){
     raf = 0;
     if(!on || hidden) return;
     if(p > 0.985) return;                                // сцену закрыло затемнение
-    const ms = (typeof now === 'number') ? now : performance.now();
-    if(ms - fjLast >= FJ_STEP){
-      fjLast = ms;
-      const tt = ms * 0.001;
-      wtex.offset.y = (tt * 0.0055) % 1;                 // течение
-      for(let i=0;i<mists.length;i++){
-        const q = mists[i], u = q.userData;
-        q.position.x = Math.sin(tt * u.sp) * u.amp;      // туман сносит вдоль ущелья
-        q.material.opacity = u.base * (0.78 + 0.22 * Math.sin(tt * u.sp * 1.7 + i));
-      }
-      shownP = p; place(); renderer.render(scene, camera);
-    }
-    raf = requestAnimationFrame(draw);
+    if(Math.abs(p - shownP) < 0.003) return;
+    shownP = p;
+    paint(false);
+    clearTimeout(fineAt);
+    fineAt = setTimeout(function(){
+      if(on && !hidden && p <= 0.985) paint(true);
+    }, 190);
   }
   function wake(){ if(!raf) raf = requestAnimationFrame(draw); }
   const dim = document.getElementById('fjdim');
